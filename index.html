@@ -328,7 +328,9 @@
             <div class="field"><label>RUT</label><input id="ef-rut" type="text" placeholder="76.123.456-7"></div>
             <div class="field"><label>Actividad económica</label><input id="ef-actividad" type="text"></div>
             <div class="field full"><label>Centro de trabajo / dirección</label><input id="ef-direccion" type="text"></div>
-            <div class="field"><label>N° de trabajadores</label><input id="ef-trab" type="number" min="0" inputmode="numeric"></div>
+            <div class="field"><label>Trabajadores masculino</label><input id="ef-trabM" type="number" min="0" inputmode="numeric" value="0"></div>
+            <div class="field"><label>Trabajadoras femenino</label><input id="ef-trabF" type="number" min="0" inputmode="numeric" value="0"></div>
+            <div class="field"><label>Total trabajadores</label><input id="ef-trabT" type="number" readonly tabindex="-1"></div>
             <div class="field"><label>Organismo administrador</label>
               <select id="ef-oa"><option value="">—</option><option>ACHS</option><option>Mutual de Seguridad CChC</option><option>IST</option><option>ISL</option></select>
             </div>
@@ -355,7 +357,9 @@
               <div class="field"><label>RUT</label><input id="ee-rut" type="text"></div>
               <div class="field"><label>Actividad económica</label><input id="ee-actividad" type="text"></div>
               <div class="field full"><label>Centro de trabajo / dirección</label><input id="ee-direccion" type="text"></div>
-              <div class="field"><label>N° de trabajadores</label><input id="ee-trab" type="number" min="0"></div>
+              <div class="field"><label>Trabajadores masculino</label><input id="ee-trabM" type="number" min="0" inputmode="numeric" value="0"></div>
+              <div class="field"><label>Trabajadoras femenino</label><input id="ee-trabF" type="number" min="0" inputmode="numeric" value="0"></div>
+              <div class="field"><label>Total trabajadores</label><input id="ee-trabT" type="number" readonly tabindex="-1"></div>
               <div class="field"><label>Organismo administrador</label>
                 <select id="ee-oa"><option value="">—</option><option>ACHS</option><option>Mutual de Seguridad CChC</option><option>IST</option><option>ISL</option></select>
               </div>
@@ -675,20 +679,40 @@
   }
   $("empresa-search").addEventListener("input", paintEmpresas);
 
+  function nInt(v) { var n = parseInt(v, 10); return isNaN(n) || n < 0 ? 0 : n; }
+  function wireDotacion(prefix) {
+    function upd() {
+      $(prefix + "-trabT").value = nInt($(prefix + "-trabM").value) + nInt($(prefix + "-trabF").value);
+    }
+    $(prefix + "-trabM").oninput = upd;
+    $(prefix + "-trabF").oninput = upd;
+    upd();
+  }
+  function dotFields(prefix) {
+    return { nTrabM: nInt($(prefix + "-trabM").value), nTrabF: nInt($(prefix + "-trabF").value), nTrab: nInt($(prefix + "-trabM").value) + nInt($(prefix + "-trabF").value) };
+  }
+  function dotDisplay(e) {
+    var m = nInt(e.nTrabM), f = nInt(e.nTrabF);
+    if (!m && !f) return (e.nTrab != null && e.nTrab !== "") ? String(e.nTrab) : "—";
+    return (m + f) + " (" + m + " masc. · " + f + " fem.)";
+  }
+  wireDotacion("ef"); wireDotacion("ee");
+
   $("btn-nueva-empresa").addEventListener("click", function () {
     $("empresa-form").style.display = "block";
-    ["ef-nombre", "ef-rut", "ef-actividad", "ef-direccion", "ef-trab"].forEach(function (i) { $(i).value = ""; });
+    ["ef-nombre", "ef-rut", "ef-actividad", "ef-direccion"].forEach(function (i) { $(i).value = ""; });
+    $("ef-trabM").value = "0"; $("ef-trabF").value = "0"; $("ef-trabT").value = "0";
     $("ef-oa").value = ""; $("ef-nombre").focus();
   });
   $("ef-cancel").addEventListener("click", function () { $("empresa-form").style.display = "none"; });
   $("ef-save").addEventListener("click", function () {
     var nombre = $("ef-nombre").value.trim();
     if (!nombre) { $("ef-nombre").focus(); return; }
-    db.collection("empresas").add({
+    db.collection("empresas").add(Object.assign({
       nombre: nombre, rut: $("ef-rut").value.trim(), actividad: $("ef-actividad").value.trim(),
-      direccion: $("ef-direccion").value.trim(), nTrab: $("ef-trab").value.trim(), organismo: $("ef-oa").value,
+      direccion: $("ef-direccion").value.trim(), organismo: $("ef-oa").value,
       creadoPor: ME.uid, creado: FV.serverTimestamp(), actualizado: FV.serverTimestamp()
-    }).then(function (ref) { $("empresa-form").style.display = "none"; openEmpresa(ref.id); })
+    }, dotFields("ef"))).then(function (ref) { $("empresa-form").style.display = "none"; openEmpresa(ref.id); })
       .catch(function (e) { alert("No se pudo guardar: " + e.message); });
   });
 
@@ -715,7 +739,7 @@
     $("ev-nombre").textContent = e.nombre;
     $("ev-datos").innerHTML =
       row("RUT", e.rut) + row("Actividad económica", e.actividad) +
-      row("Centro de trabajo / dirección", e.direccion) + row("N° de trabajadores", e.nTrab) +
+      row("Centro de trabajo / dirección", e.direccion) + row("N° de trabajadores", dotDisplay(e)) +
       row("Organismo administrador", e.organismo);
     $("ev-editform").style.display = "none";
   }
@@ -724,18 +748,22 @@
   $("ev-edit").addEventListener("click", function () {
     var e = curEmpresa;
     $("ee-nombre").value = e.nombre || ""; $("ee-rut").value = e.rut || ""; $("ee-actividad").value = e.actividad || "";
-    $("ee-direccion").value = e.direccion || ""; $("ee-trab").value = e.nTrab || ""; $("ee-oa").value = e.organismo || "";
+    $("ee-direccion").value = e.direccion || ""; $("ee-oa").value = e.organismo || "";
+    $("ee-trabM").value = nInt(e.nTrabM); $("ee-trabF").value = nInt(e.nTrabF);
+    if (!nInt(e.nTrabM) && !nInt(e.nTrabF) && e.nTrab) $("ee-trabM").value = nInt(e.nTrab);
+    wireDotacion("ee");
     $("ev-editform").style.display = "block";
   });
   $("ee-cancel").addEventListener("click", function () { $("ev-editform").style.display = "none"; });
   $("ee-save").addEventListener("click", function () {
     var nombre = $("ee-nombre").value.trim(); if (!nombre) return;
-    db.collection("empresas").doc(curEmpresa.id).set({
+    var d = dotFields("ee");
+    db.collection("empresas").doc(curEmpresa.id).set(Object.assign({
       nombre: nombre, rut: $("ee-rut").value.trim(), actividad: $("ee-actividad").value.trim(),
-      direccion: $("ee-direccion").value.trim(), nTrab: $("ee-trab").value.trim(), organismo: $("ee-oa").value,
+      direccion: $("ee-direccion").value.trim(), organismo: $("ee-oa").value,
       actualizado: FV.serverTimestamp()
-    }, { merge: true }).then(function () {
-      Object.assign(curEmpresa, { nombre: nombre, rut: $("ee-rut").value.trim(), actividad: $("ee-actividad").value.trim(), direccion: $("ee-direccion").value.trim(), nTrab: $("ee-trab").value.trim(), organismo: $("ee-oa").value });
+    }, d), { merge: true }).then(function () {
+      Object.assign(curEmpresa, { nombre: nombre, rut: $("ee-rut").value.trim(), actividad: $("ee-actividad").value.trim(), direccion: $("ee-direccion").value.trim(), organismo: $("ee-oa").value }, d);
       paintEmpresaHeader();
     }).catch(function (e) { alert(e.message); });
   });
@@ -801,7 +829,7 @@
     $("at-sub").textContent = "Auditoría " + fmtDate(A.fecha) + " · " + (A.evaluadorNombre || "—") + (PREV ? "  ·  compara con la del " + fmtDate(PREV.fecha) : "");
     $("at-datos").innerHTML =
       row("Empresa", e.nombre) + row("RUT", e.rut) + row("Centro de trabajo", e.direccion) +
-      row("Actividad", e.actividad) + row("N° trabajadores", e.nTrab) + row("Organismo administrador", e.organismo) +
+      row("Actividad", e.actividad) + row("N° trabajadores", dotDisplay(e)) + row("Organismo administrador", e.organismo) +
       row("Fecha de la evaluación", fmtDate(A.fecha)) + row("Evaluador(a)", A.evaluadorNombre);
     $("at-obs").value = A.obs || "";
     $("lockedBanner").style.display = isLocked() ? "block" : "none";
@@ -1028,7 +1056,7 @@
       '<div class="ps-grid">' +
         "<div><b>Empresa:</b> " + esc(e.nombre) + "</div><div><b>RUT:</b> " + esc(e.rut || "—") + "</div>" +
         "<div><b>Centro de trabajo:</b> " + esc(e.direccion || "—") + "</div><div><b>Actividad:</b> " + esc(e.actividad || "—") + "</div>" +
-        "<div><b>N° trabajadores:</b> " + esc(e.nTrab || "—") + "</div><div><b>Organismo administrador:</b> " + esc(e.organismo || "—") + "</div>" +
+        "<div><b>N° trabajadores:</b> " + esc(dotDisplay(e)) + "</div><div><b>Organismo administrador:</b> " + esc(e.organismo || "—") + "</div>" +
         "<div><b>Evaluador(a):</b> " + esc(A.evaluadorNombre || "—") + "</div><div><b>Fecha:</b> " + fmtDate(A.fecha) + "</div>" +
         "<div><b>Estado:</b> " + (A.estado === "cerrada" ? "Cerrada" : "Borrador") + "</div>" +
       "</div><div class=\"ps-score\">Cumplimiento: " + (o.pct == null ? "—" : o.pct + "%") + " · " + esc(st.label) +
@@ -1049,7 +1077,7 @@
       "Empresa: " + e.nombre + (e.rut ? "  (RUT " + e.rut + ")" : ""),
       "Centro de trabajo: " + (e.direccion || "—"),
       "Actividad económica: " + (e.actividad || "—"),
-      "N° de trabajadores: " + (e.nTrab || "—"),
+      "N° de trabajadores: " + dotDisplay(e),
       "Organismo administrador: " + (e.organismo || "—"),
       "Evaluador(a): " + (A.evaluadorNombre || "—"),
       "Fecha de la evaluación: " + fmtDate(A.fecha),
