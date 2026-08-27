@@ -1,0 +1,16 @@
+{
+  "firestore": { "rules": "firestore.rules" },
+  "hosting": {
+    "site": "prev-riegos",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "firestore.rules",
+      "grd_items.json",
+      "BITACORA.md",
+      "README.md",
+      "**/node_modules/**"
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // correo autorizado a crearse a sí mismo como primer administrador
+    function bootstrapEmail() { return 'marcoaraya1973@gmail.com'; }
+
+    function signedIn() { return request.auth != null; }
+    function uDoc() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+    function isActive() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && uDoc().activo == true;
+    }
+    function isAdmin() { return isActive() && uDoc().rol == 'admin'; }
+
+    // ---- usuarios ----
+    match /usuarios/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+
+      // el admin da de alta a cualquiera; además, el correo de bootstrap puede
+      // crear UNA sola vez su propio doc de administrador (arranque del sistema).
+      allow create: if isAdmin()
+        || (signedIn()
+            && request.auth.uid == uid
+            && request.auth.token.email == bootstrapEmail()
+            && request.resource.data.rol == 'admin'
+            && request.resource.data.activo == true);
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ---- empresas ----
+    match /empresas/{empresaId} {
+      allow read: if isActive();
+      allow create: if isActive()
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0;
+      allow update: if isActive();
+      allow delete: if isAdmin();
+
+      // ---- auditorías de la empresa ----
+      match /auditorias/{audId} {
+        allow read: if isActive();
+        allow create: if isActive();
+        // una auditoría cerrada queda congelada; solo el admin podría reabrirla
+        allow update: if isActive() && (resource.data.estado != 'cerrada' || isAdmin());
+        allow delete: if isAdmin();
+      }
+    }
+  }
+}
