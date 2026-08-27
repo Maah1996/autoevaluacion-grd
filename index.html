@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lista de autoevaluación de aspectos legales asociados a la Gestión del Riesgo de Desastres en centros de trabajo. Estándar, aplicable a cualquier empresa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef0f3;
+    --surface: #ffffff;
+    --surface-2: #f6f7f9;
+    --surface-3: #eff2f6;
+    --ink: #1b2230;
+    --ink-soft: #3c4658;
+    --muted: #6b7486;
+    --line: #d9dee6;
+    --line-strong: #c3cad6;
+    --navy: #1f3a63;
+    --navy-ink: #16294a;
+    --navy-soft: #e7edf6;
+    --green: #1f6f43;
+    --green-soft: #e2f0e8;
+    --amber: #9a6410;
+    --amber-soft: #f7ecd9;
+    --red: #b23b2c;
+    --red-soft: #f8e5e2;
+    --shadow: 0 1px 2px rgba(20,30,50,.05), 0 8px 24px rgba(20,30,50,.06);
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0f131a; --surface: #171c25; --surface-2: #1e242f; --surface-3: #232a37;
+      --ink: #e9ecf1; --ink-soft: #c8cede; --muted: #97a0b2;
+      --line: #2a313d; --line-strong: #3a4250;
+      --navy: #8fabd8; --navy-ink: #b9ccea; --navy-soft: #23314a;
+      --green: #5fbb8a; --green-soft: #16281f;
+      --amber: #dda548; --amber-soft: #2b2212;
+      --red: #e0806c; --red-soft: #2f1a16;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 28px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0f131a; --surface: #171c25; --surface-2: #1e242f; --surface-3: #232a37;
+    --ink: #e9ecf1; --ink-soft: #c8cede; --muted: #97a0b2;
+    --line: #2a313d; --line-strong: #3a4250;
+    --navy: #8fabd8; --navy-ink: #b9ccea; --navy-soft: #23314a;
+    --green: #5fbb8a; --green-soft: #16281f;
+    --amber: #dda548; --amber-soft: #2b2212;
+    --red: #e0806c; --red-soft: #2f1a16;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 28px rgba(0,0,0,.4);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+    padding-bottom: 104px;
+  }
+  h1, h2, h3, .display {
+    font-family: "Libre Franklin", ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em; text-wrap: balance;
+  }
+  .mono, .num { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  a { color: var(--navy); }
+  button { font-family: inherit; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 18px; }
+
+  /* header */
+  .topbar { position: sticky; top: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid var(--line); }
+  .topbar-inner { padding: 16px 18px 12px; }
+  .brand-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .brand { display: flex; align-items: flex-start; gap: 11px; }
+  .brand .mark {
+    flex: none; width: 34px; height: 34px; border-radius: 8px; background: var(--navy);
+    display: grid; place-items: center; margin-top: 1px;
+  }
+  .brand .mark svg { width: 19px; height: 19px; }
+  .brand h1 { font-size: 19px; font-weight: 700; margin: 0; color: var(--navy-ink); line-height: 1.2; }
+  .brand .sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; letter-spacing: .02em; }
+  .icon-btn {
+    border: 1px solid var(--line-strong); background: var(--surface); color: var(--muted);
+    border-radius: 8px; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer;
+    font-family: "Libre Franklin", serif; font-weight: 700; font-size: 14px; flex: none;
+  }
+  .icon-btn:hover { color: var(--navy); border-color: var(--navy); }
+
+  .gauge-row { display: flex; align-items: center; gap: 18px; margin-top: 12px; }
+  .gauge { flex: none; width: 76px; height: 76px; position: relative; }
+  .gauge svg { transform: rotate(-90deg); }
+  .gauge .pct { position: absolute; inset: 0; display: grid; place-items: center; font-size: 16px; font-weight: 600; }
+  .gauge-meta { flex: 1; min-width: 0; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 7px; padding: 3px 11px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase;
+  }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .status-verde { background: var(--green-soft); color: var(--green); } .status-verde .dot { background: var(--green); }
+  .status-ambar { background: var(--amber-soft); color: var(--amber); } .status-ambar .dot { background: var(--amber); }
+  .status-rojo  { background: var(--red-soft);  color: var(--red);  }  .status-rojo .dot  { background: var(--red); }
+  .status-vacio { background: var(--surface-3); color: var(--muted); } .status-vacio .dot { background: var(--muted); }
+  .counts { display: flex; gap: 14px; margin-top: 7px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  .counts b { color: var(--ink-soft); font-weight: 600; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 18px 12px; border-top: 1px solid var(--line); }
+  .chip {
+    flex: 0 1 auto; font-size: 12px; padding: 6px 10px; border-radius: 7px; border: 1px solid var(--line-strong);
+    background: var(--surface); color: var(--ink-soft); cursor: pointer; white-space: nowrap;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .chip .n { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--muted); }
+  .chip[data-state="verde"] { border-color: var(--green); }
+  .chip[data-state="ambar"] { border-color: var(--amber); }
+  .chip[data-state="rojo"]  { border-color: var(--red); }
+
+  /* about */
+  .about { display: none; background: var(--navy-soft); border: 1px solid var(--line); border-radius: var(--radius); padding: 15px 17px; margin: 16px 0; font-size: 13.5px; color: var(--ink-soft); }
+  .about.open { display: block; }
+  .about h3 { font-size: 14px; margin: 0 0 7px; color: var(--navy-ink); }
+  .about p { margin: 7px 0; }
+  .about ul { margin: 7px 0; padding-left: 20px; }
+
+  /* meta */
+  .meta-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 17px; margin: 18px 0; box-shadow: var(--shadow); }
+  .meta-card > h3 { margin: 0; font-size: 14px; color: var(--navy-ink); text-transform: uppercase; letter-spacing: .05em; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 11px 15px; margin-top: 11px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field.full { grid-column: 1 / -1; }
+  .field.half { grid-column: span 1; }
+  .field label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .field input, .field select {
+    font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-strong);
+    background: var(--surface-2); color: var(--ink);
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--navy); outline-offset: 1px; }
+  @media (max-width: 640px) { .meta-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 460px) { .meta-grid { grid-template-columns: 1fr; } }
+
+  /* sections */
+  .section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin: 14px 0; box-shadow: var(--shadow); overflow: hidden; }
+  .section-head { padding: 15px 17px 13px; cursor: pointer; }
+  .section-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .section-num { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--muted); }
+  .section-title { font-size: 17px; font-weight: 600; margin: 3px 0 0; color: var(--navy-ink); }
+  .section-right { display: flex; align-items: center; gap: 11px; flex: none; }
+  .section-pct { font-family: "IBM Plex Mono", monospace; font-size: 13.5px; font-weight: 600; }
+  .chevron { transition: transform .15s ease; color: var(--muted); font-size: 11px; }
+  .section.open .chevron { transform: rotate(180deg); }
+  .bar { height: 5px; border-radius: 999px; background: var(--surface-3); margin-top: 11px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 999px; background: var(--line-strong); transition: width .25s ease, background .25s ease; }
+
+  .items { display: none; border-top: 1px solid var(--line); }
+  .section.open .items { display: block; }
+  .item { padding: 15px 17px; border-bottom: 1px solid var(--line); }
+  .item:last-child { border-bottom: none; }
+  .item.flag-no { background: var(--red-soft); }
+  .item-q { font-size: 14.5px; color: var(--ink); line-height: 1.5; }
+  .item-q .qn { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); margin-right: 7px; }
+  .legal-note {
+    margin-top: 8px; font-size: 11.5px; color: var(--muted); line-height: 1.5; white-space: pre-wrap;
+    padding-left: 10px; border-left: 2px solid var(--line-strong);
+  }
+  .legal-note b { color: var(--ink-soft); font-weight: 600; letter-spacing: .03em; text-transform: uppercase; font-size: 10.5px; }
+
+  .disclosure { margin-top: 9px; }
+  .disclosure > summary {
+    list-style: none; cursor: pointer; font-size: 12.5px; color: var(--navy); font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .disclosure > summary::-webkit-details-marker { display: none; }
+  .disclosure > summary::before { content: "＋"; font-family: "IBM Plex Mono", monospace; font-size: 11px; }
+  .disclosure[open] > summary::before { content: "－"; }
+  .disclosure .body {
+    margin-top: 7px; font-size: 13px; color: var(--ink-soft); line-height: 1.55; white-space: pre-wrap;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+  }
+
+  .toggle { display: flex; gap: 7px; margin-top: 12px; }
+  .toggle button {
+    border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--muted);
+    font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; min-width: 58px; justify-content: center;
+  }
+  .toggle button:hover { border-color: var(--navy); }
+  .toggle button.active[data-v="si"] { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+  .toggle button.active[data-v="no"] { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+  .toggle button.active[data-v="na"] { background: var(--surface-3); border-color: var(--muted); color: var(--ink-soft); }
+
+  .fix { display: none; margin-top: 12px; border: 1px solid var(--red); border-left-width: 3px; border-radius: 8px; overflow: hidden; }
+  .item.flag-no .fix { display: block; }
+  .fix .fix-head { background: var(--red-soft); color: var(--red); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 7px 12px; }
+  .fix .fix-body { padding: 11px 12px; }
+  .fix .fix-text { font-size: 12.5px; color: var(--ink-soft); line-height: 1.55; white-space: pre-wrap; }
+  .fix-grid { display: grid; grid-template-columns: 1fr 180px; gap: 10px; margin-top: 11px; }
+  @media (max-width: 520px) { .fix-grid { grid-template-columns: 1fr; } }
+  .fix-grid .field input { background: var(--surface); }
+
+  .note-line { margin-top: 10px; }
+  .note-line label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .note-line textarea {
+    width: 100%; font: inherit; font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-strong);
+    background: var(--surface-2); color: var(--ink); resize: vertical; min-height: 42px; margin-top: 4px;
+  }
+
+  /* bottom bar */
+  .bottombar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(20,30,50,.09); }
+  .bottombar-inner { max-width: 820px; margin: 0 auto; padding: 10px 18px; display: flex; align-items: center; gap: 14px; }
+  .bb-pct { font-family: "IBM Plex Mono", monospace; font-size: 20px; font-weight: 600; flex: none; }
+  .bb-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .bb-actions { margin-left: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .btn { font-size: 12.5px; font-weight: 600; padding: 8px 13px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--ink-soft); cursor: pointer; }
+  .btn.primary { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .btn:hover { filter: brightness(1.04); }
+
+  footer.credits { text-align: center; font-size: 11px; color: var(--muted); padding: 24px 18px 6px; line-height: 1.6; }
+
+  .print-only { display: none; }
+
+  @media print {
+    .topbar, .bottombar, .chips, .toggle, .icon-btn, .about, .disclosure > summary { display: none !important; }
+    .disclosure { display: none !important; }
+    .items { display: block !important; }
+    .section { break-inside: avoid; box-shadow: none; border: 1px solid #999; }
+    .item { break-inside: avoid; }
+    .item.flag-no { background: #fff; }
+    body { padding-bottom: 0; background: #fff; color: #000; }
+    .print-only { display: block; }
+    .print-answer { display: block; margin-top: 9px; font-size: 12px; font-weight: 700; }
+    .print-answer[data-ans="si"] { color: #1f6f43; }
+    .print-answer[data-ans="no"] { color: #b23b2c; }
+    .print-answer[data-ans="na"], .print-answer[data-ans=""] { color: #555; }
+    .fix { display: block !important; border-color: #999; }
+    .fix .fix-head { background: #f0f0f0; color: #000; }
+    .item:not(.flag-no) .fix { display: none !important; }
+    .note-line textarea, .fix-grid .field input { border: none; background: transparent; padding: 0; min-height: 0; font-size: 12px; color: #000; resize: none; }
+    .print-summary { display: block; border: 1px solid #999; border-radius: 8px; padding: 13px 15px; margin: 0 0 16px; }
+    .print-summary h2 { margin: 0 0 9px; font-size: 15px; }
+    .print-summary .ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 18px; font-size: 12px; }
+    .print-summary .ps-score { margin-top: 9px; font-size: 12px; font-weight: 700; }
+    .meta-card, .print-summary { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand-row">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <div>
+          <h1>Autoevaluación GRD</h1>
+          <div class="sub">Aspectos legales · Gestión del Riesgo de Desastres en centros de trabajo</div>
+        </div>
+      </div>
+      <button class="icon-btn" id="aboutBtn" title="Acerca de este instrumento" aria-label="Acerca de este instrumento">i</button>
+    </div>
+    <div class="gauge-row">
+      <div class="gauge">
+        <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
+          <circle cx="38" cy="38" r="32" fill="none" stroke="var(--surface-3)" stroke-width="8"></circle>
+          <circle id="gaugeArc" cx="38" cy="38" r="32" fill="none" stroke="var(--muted)" stroke-width="8" stroke-linecap="round" stroke-dasharray="201.06" stroke-dashoffset="201.06"></circle>
+        </svg>
+        <div class="pct num" id="gaugePct">—</div>
+      </div>
+      <div class="gauge-meta">
+        <span class="status-pill status-vacio" id="statusPill"><span class="dot"></span><span id="statusText">Sin iniciar</span></span>
+        <div class="counts">
+          <span><b id="cSi">0</b> cumple</span>
+          <span><b id="cNo">0</b> no cumple</span>
+          <span><b id="cNa">0</b> no aplica</span>
+          <span><b id="cPend">56</b> pendientes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<div class="wrap">
+  <div class="print-summary print-only" id="printSummary"></div>
+
+  <div class="about" id="about">
+    <h3>Acerca de este instrumento</h3>
+    <p>Es la <b>Lista de Autoevaluación de Aspectos Legales asociados a la Gestión del Riesgo de Desastres (GRD) en Centros de Trabajo</b>, elaborada por la Mesa del Sector Laboral (Dirección del Trabajo, SUSESO, SENCE, SENAPRED y los organismos administradores de la Ley N°16.744). Permite a cualquier empresa verificar si cumple con las exigencias legales mínimas frente a amenazas de origen natural, biológico y humano.</p>
+    <p>Para cada pregunta:</p>
+    <ul>
+      <li><b>Cómo verificar</b>: qué debe constatarse para dar la pregunta por cumplida.</li>
+      <li><b>Medida a implementar</b>: acción a ejecutar cuando la respuesta es <b>No</b> (se muestra al marcar «No»), con espacio para responsable y fecha compromiso.</li>
+      <li><b>Requisito legal</b>: norma que sustenta la exigencia.</li>
+    </ul>
+    <p>El <b>% de cumplimiento</b> es <b>Sí ÷ (Sí + No)</b> sobre las preguntas ya respondidas; las marcadas «No aplica» no se contabilizan. Semáforo: <b style="color:var(--red)">no conforme &lt; 60%</b> · <b style="color:var(--amber)">parcial 60–84%</b> · <b style="color:var(--green)">conforme ≥ 85%</b>.</p>
+    <p style="color:var(--muted)">Los datos se guardan solo en este navegador. Usa «Exportar» para respaldar o traspasar el avance, e «Imprimir / PDF» para el informe formal.</p>
+  </div>
+
+  <div class="meta-card">
+    <h3>Identificación</h3>
+    <div class="meta-grid">
+      <div class="field half"><label for="m-empresa">Empresa / razón social</label><input type="text" id="m-empresa" autocomplete="organization"></div>
+      <div class="field"><label for="m-rut">RUT</label><input type="text" id="m-rut" placeholder="76.123.456-7"></div>
+      <div class="field"><label for="m-actividad">Actividad económica</label><input type="text" id="m-actividad"></div>
+      <div class="field full"><label for="m-centro">Centro de trabajo / dirección</label><input type="text" id="m-centro"></div>
+      <div class="field"><label for="m-trab">N° de trabajadores</label><input type="number" id="m-trab" min="0" inputmode="numeric"></div>
+      <div class="field"><label for="m-oa">Organismo administrador</label>
+        <select id="m-oa">
+          <option value="">—</option>
+          <option>ACHS</option>
+          <option>Mutual de Seguridad CChC</option>
+          <option>IST</option>
+          <option>ISL</option>
+        </select>
+      </div>
+      <div class="field"><label for="m-fecha">Fecha de la evaluación</label><input type="date" id="m-fecha"></div>
+      <div class="field"><label for="m-evaluador">Evaluador(a)</label><input type="text" id="m-evaluador"></div>
+      <div class="field"><label for="m-cargo">Cargo</label><input type="text" id="m-cargo"></div>
+      <div class="field"><label for="m-email">Correo del gerente / responsable</label><input type="email" id="m-email" placeholder="gerente@empresa.cl" autocomplete="email"></div>
+    </div>
+  </div>
+
+  <div id="sections"></div>
+
+  <footer class="credits">
+    Instrumento de autoevaluación estándar · aplicable a cualquier empresa.<br>
+    Fuente: Lista de Autoevaluación de Aspectos Legales GRD en Centros de Trabajo — Dirección del Trabajo · SUSESO · SENAPRED · organismos administradores Ley N°16.744.
+  </footer>
+</div>
+
+<div class="bottombar">
+  <div class="wrap bottombar-inner">
+    <div>
+      <div class="bb-pct num" id="bbPct">—</div>
+      <div class="bb-label">Cumplimiento</div>
+    </div>
+    <div class="bb-actions">
+      <button class="btn primary" id="mailBtn">Enviar por correo</button>
+      <button class="btn" id="printBtn">Imprimir / PDF</button>
+      <button class="btn" id="exportBtn">Exportar</button>
+      <button class="btn" id="importBtn">Importar</button>
+      <button class="btn" id="resetBtn">Reiniciar</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var ITEMS = [{"n":1,"q":"¿El empleador ha identificado las amenazas (de origen natural, biológico y humano), sus vulnerabilidades y evaluado los riesgos ante situaciones de emergencias potenciales, considerando las condiciones y procesos internos del centro de trabajo?","verificar":"Verificar que se haga uso de la metodología establecida en la “Guía para la Implementación del Plan para la Reducción del Riesgo de Desastres en Centros de Trabajo” o “Guía para la Implementación del Plan para la Reducción del Riesgo de Desastres en Centros de Trabajo MIPYME” confeccionadas por la Mesa Laboral de la Plataforma Nacional para la Reducción del Riesgo de Desastres de SENAPRED\", la  cual indica que se deben identificar amenazas, vulnerabilidades y evaluar riesgos, estableciendo medidas de tratamiento para estos de acuerdo a jerarquización, siendo implementadas teniendo presente la respectiva priorización. Las guías se encuentran disponibles en www.mutual.cl, y para consultas o dudas respecto a su implementación, la empresa debe tomar contacto con su experto Asesor Mutual o a través del contact center.\n\nLa empresa debe identificar las amenazas (naturales, biológico y humano) y evaluar los riesgos que pueden afectar al centro de trabajo considerando al menos:\n- Incendio estructural: En caso de que, tanto la construcción como los elementos que se encuentren en su interior puedan ser inflamables, cuenta con energía eléctrica y/o gas,\n- Corte de agua: Se debe tener presente si la empresa no cuenta con agua potable a disposición para los trabajadores, se debe suspender las labores.\n- Corte de luz eléctrica, ésta debe ser considerada sólo si el lugar cuenta con energía eléctrica.\n- Asalto o robo: Considerando si han ocurrido eventos anteriores o en lugares cercanos, las condiciones de seguridad del perímetro del centro de trabajo. La presencia de esta amenaza puede ser identificada a través del Visor STOP de Carabineros de Chile en https://stop.carabineros.cl/\n- Vectores, insectos, roedores y otras plagas de interés sanitario que pueden transmitir enfermedades y poner en riesgo la salud de los trabajadores,\n- Ubicación del centro de trabajo en edificios compartidos con otras empresas: implica que se debe considerar como amenaza si alguna empresa ubicada en el mismo edificio puede afectar las instalaciones del centro de trabajo.\n\nFrente a riesgo grave e inminente, se deben adoptar medidas de reducción del riesgo de desastres para eliminarlo o atenuarlo.","medida":"Hacer uso de la metodología establecida en la “Guía para la Implementación del Plan para la Reducción del Riesgo de Desastres en Centros de Trabajo” o “Guía para la Implementación del Plan para la Reducción del Riesgo de Desastres en Centros de Trabajo MIPYME” confeccionada por la Mesa Laboral de la Plataforma Nacional para la Reducción del Riesgo de Desastres de SENAPRED\", la  cual indica que se deben identificar amenazas, vulnerabilidades y evaluar riesgos, estableciendo medidas de tratamiento para estos de acuerdo a jerarquización, siendo implementadas teniendo presente la respectiva priorización. LaS guías se encuentran disponibles en www.mutual.cl, y para consultas o dudas respecto a su implementación, la empresa debe tomar contacto con su experto asesor Mutual o a través del contact center.\n\nLa empresa debe identificar las amenazas (naturales o de origen antrópico) y evaluar los riesgos que pueden afectar al centro de trabajo considerando:\n-- Incendio estructural: En caso de que, tanto la construcción como los elementos que se encuentren en su interior puedan ser inflamables, cuenta con energía eléctrica y/o gas,\n- Corte de agua: Se debe tener presente si la empresa no cuenta con agua potable a disposición para los trabajadores, se debe suspender las labores.\n- Corte de luz eléctrica, ésta debe ser considerada sólo si el lugar cuenta con energía eléctrica.\n- Asalto o robo: Considerando si han ocurrido eventos anteriores o en lugares cercanos, las condiciones de seguridad del perímetro del centro de trabajo. La presencia de esta amenaza puede ser identificada a través del Visor STOP de Carabineros de Chile en https://stop.carabineros.cl/\n- Vectores, insectos, roedores y otras plagas de interés sanitario que pueden transmitir enfermedades y poner en riesgo la salud de los trabajadores,\n- Ubicación del centro de trabajo en edificios compartidos con otras empresas: implica que se debe considerar como amenaza si alguna empresa ubicada en el mismo edificio puede afectar las instalaciones del centro de trabajo.\n\nFrente a riesgo grave e inminente, se deben adoptar medidas de reducción del riesgo de desastres para eliminarlo o atenuarlo.","legal":"En caso de no contar la empresa con Departamento de Prevención de Riesgos. Artículo 184 y 184 bis de Código del Trabajo; Dto. N°2, de 2023 de Mintrab.\n\nEn caso de contar la empresa con Departamento de Prevención de Riesgos.. Artículos 184, 184 bis del Código del Trabajo, Dto. N°2, de 2023 de Mintrab y Art. 66 inciso 4º de la Ley 16.744.","sec":"Identificación de amenazas y evaluación de riesgos"},{"n":2,"q":"¿El empleador ha identificado las amenazas (de origen natural, biológico y humano), sus vulnerabilidades y evaluado los riesgos ante situaciones de emergencias potenciales, considerando las condiciones y procesos del entorno (sitios, industrias, empresas colindantes) del centro de trabajo.?","verificar":"En el caso que el centro de trabajo se encuentre ubicado en algún sector donde hayan ocurrido o pudiesen ocurrir (posibles eventos según características del lugar) eventos de amenazas de origen natural, biológico o humano, se visualice el entorno donde se encuentra el centro de trabajo\n\nAlgunas amenazas pueden ser identificadas a través del Visor Chile Preparado de SENAPRED (https://senapred.cl/visor-chile-preparado-2/), correspondientes a tsunami,\terupción, volcánica, incendio forestal.\n\nA su vez, respecto de la amenaza de incendios forestales, puede revisar el visor de Bienes Nacionales, plataforma que tiene por objetivo apoyar la labor que hacen los Bomberos de Chile y CONAF permitiéndoles saber qué herramientas o inmuebles críticos hay alrededor de algún punto del mapa en el cual se produzca un incendio, a través del siguiente link https://idechile.maps.arcgis.com/apps/instant/nearby/index.html?appid=b08c5745c4c74242a4dd72ec24c7bbaa&fbclid=PAAaaMC7IucwnRjy2P4-AnjsKOJBvHmosqJnnImXd4P-3N7y-oEHjOHKdl1ZA.\n\nRespecto de las amenazas de remoción en masa o aluviones, se pueden identificar en el Visor de Mapas de Sernageomin,\n(https://portalgeominbeta.sernageomin.cl/), respecto de catastro de remociones en masa.\n\nEn caso que se identifiquen amenazas que ocurrieron en el centro de trabajo o en algún otro lugar de trabajo de la empresa (antecedentes históricos del lugar), ésta debe ser incorporada en la identificación de las amenazas. Así como también se puede obtener información con Juntas de Vecinos del sector, Carabineros, Bomberos, Municipalidades, entre otros.\n\nPara la identificación de amenazas, vulnerabilidades y evaluación del riesgo de desastres, puede considerar lo establecido en \"Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo\" o \"Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo MIPYME\" o sus actualizaciones.\n\nFrente a riesgo grave e inminente, se deben adoptar medidas de reducción del riesgo de desastres para eliminarlo o atenuarlo.","medida":"Verificar en el caso que el centro de trabajo se encuentre ubicado en algún sector donde hayan ocurrido o pudiesen ocurrir (posibles eventos según características del lugar) eventos de amenazas de origen natural, biológico o humano, se encuentre actualizado el diagnóstico del centro de trabajo\n\nAlgunas amenazas pueden ser identificadas a través del Visor Chile Preparado de SENAPRED (https://senapred.cl/visor-chile-preparado-2/), correspondientes a tsunami,\terupción, volcánica, incendio forestal.\n\nA su vez, respecto de la amenaza de incendios forestales, puede revisar el visor de Bienes Nacionales, plataforma que tiene por objetivo apoyar la labor que hacen los Bomberos de Chile y CONAF permitiéndoles saber qué herramientas o inmuebles críticos hay alrededor de algún punto del mapa en el cual se produzca un incendio, a través del siguiente link https://idechile.maps.arcgis.com/apps/instant/nearby/index.html?appid=b08c5745c4c74242a4dd72ec24c7bbaa&fbclid=PAAaaMC7IucwnRjy2P4-AnjsKOJBvHmosqJnnImXd4P-3N7y-oEHjOHKdl1ZA.\n\nRespecto de las amenazas de remoción en masa o aluviones, se pueden identificar en el Visor de Mapas de Sernageomin,\n(https://portalgeominbeta.sernageomin.cl/), respecto de catastro de remociones en masa.\n\nEn caso que se identifiquen amenazas que ocurrieron en el centro de trabajo o en algún otro lugar de trabajo de la empresa (antecedentes históricos del lugar), ésta debe ser incorporada en la identificación de las amenazas. Así como también se puede obtener información con Juntas de Vecinos del sector, Carabineros, Bomberos, Municipalidades, entre otros.\n\nPara la identificación de amenazas, vulnerabilidades y evaluación del riesgo de desastres, puede considerar lo establecido en \"Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo\"o \"Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo MIPYME\" o sus actualizaciones.\n\nFrente a riesgo grave e inminente, se deben adoptar medidas de reducción del riesgo de desastres para eliminarlo o atenuarlo.","legal":"En caso de no contar la empresa con Departamento de Prevención de Riesgos. Artículo 184 y 184 bis de Código del Trabajo; Dto. N°2, de 2023 de Mintrab.\n\nEn caso de contar la empresa con Departamento de Prevención de Riesgos.. Artículos 184, 184 bis del Código del Trabajo, Dto. N°2, de 2023 de Mintrab y Art. 66 inciso 4º de la Ley 16.744.","sec":"Identificación de amenazas y evaluación de riesgos"},{"n":3,"q":"¿Se mantienen en buenas condiciones de conservación las paredes, cielos rasos, puertas y ventanas y demás elementos estructurales, las que en caso de un evento de origen natural o humano no afecten la vida y seguridad de los trabajadores?","verificar":"Verificar que se mantengan en buenas condiciones de conservación; paredes, cielos rasos, puertas y ventanas y demás elementos estructurales, de manera que en caso de un evento de origen natural o humano, éstos elementos no afecten la vida y seguridad de los trabajadores.","medida":"Al realizar el recorrido por las instalaciones del centro de trabajo, verificar que estas se encuentren en buenas condiciones y  en caso de haber sido afectado por algún evento de origen natural o humano, hayan sido reparado o en caso de un posible evento las condiciones de edificación no se afecten a los trabajadores que laboran en el lugar.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 6 del D.S. 594 de 1999, del Ministerio de Salud.","sec":"Infraestructura, orden y almacenamiento"},{"n":4,"q":"¿Se mantienen los pisos y pasillos de tránsito libres de todo obstáculo que impida un fácil y seguro desplazamiento o evacuación de los trabajadores, en caso de emergencia.?","verificar":"Verificar que se mantengan permanentemente libre de todo obstáculo; pisos y pasillos de tránsito permitiendo un expedito y seguro desplazamiento de evacuación para los trabajadores en caso de una emergencia.","medida":"Mantener los pisos y pasillos despejados tanto para tareas habituales como en situaciones de emergencias o evacuación.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 7 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Infraestructura, orden y almacenamiento"},{"n":5,"q":"¿Los lugares de trabajo se mantienen en buenas condiciones de orden y limpieza.?","verificar":"Verificar que se mantengan los lugares de trabajo en buenas condiciones de orden y limpieza, evitando la presencia de vectores, la generación de incendios, por acumulación de materiales, entre otros.","medida":"Mantener los lugares de trabajo en buenas condiciones de orden y limpieza, evitando la presencia de vectores, la generación de incendios, por acumulación de materiales, entre otros.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 11 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Infraestructura, orden y almacenamiento"},{"n":6,"q":"¿Se toman las medidas efectivas para evitar la entrada o eliminar la presencia de insectos, roedores y otras plagas de interés sanitario.?","verificar":"Verificar que se mantengan medidas preventivas y de control que permitan evitar la entrada o eliminar la presencia de insectos, roedores y otras plagas de interés sanitario.","medida":"Prevenir y controlar la presencia de vectores que puedan poner en riesgo la salud de los trabajadores.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 11 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Infraestructura, orden y almacenamiento"},{"n":7,"q":"¿Los casilleros se encuentran empotrados o anclados?","verificar":"Verificar que los casilleros se encuentran anclados o empotrados, de manera de evitar que éstos puedan caer y provocar un accidente, o el bloqueo de vías de escape.","medida":"Anclador o empotrar casilleros, de manera de evitar que éstos puedan caer y provocar un accidente, o el bloqueo de vías de escape.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 37 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Infraestructura, orden y almacenamiento"},{"n":8,"q":"¿En caso de contar la empresa con almacenamiento de materiales, éstos cuentan con sistemas de retención que impidan que caigan si existe algún movimiento de la estructura que los contiene.?","verificar":"Verificar que se mantengan elementos de retención que impidan caida de material almacenado.","medida":"Contar con sistemas de retención que impidan que caigan materiales almacenados si existe algún movimiento de la estructura que los contiene.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 42 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Infraestructura, orden y almacenamiento"},{"n":9,"q":"¿El centro de trabajo cuenta con agua potable, con la autorización sanitaria destinada al consumo humano y necesidades básicas de higiene y aseo personal, de uso individual y colectivo.?","verificar":"Verificar que el centro de trabajo cuenta con agua potable de uso individual o colectivo destinada al consumo humano y necesidades básicas de higiene y aseo personal.\n\nEn caso de sistema propio de almacenamiento, debe contar con la autorización sanitaria.\n\nEsto también debe verificarse cuando el centro de trabajo cuente con estanque de reserva de agua potable.","medida":"Disponer de agua potable de uso individual o colectivo destinada al consumo humano y necesidades básicas de higiene y aseo personal.\n\nEn caso de sistema propio de almacenamiento, debe contar con la autorización sanitaria incluyendo estanque de reserva de agua potable.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 12 del D.S. 594\nde 1999, del Ministerio de Salud.","sec":"Agua potable"},{"n":10,"q":"¿En caso de contar el centro de trabajo con estanques de reserva o de circulación de agua potable, la empresa realiza evaluaciones periódicas de la calidad del agua almacenada.?","verificar":"Verificar si la empresa cuenta con evaluaciones del agua potable almacenada en los estanques de reserva, se debe requerir el certificado que acredite que el agua es potable.","medida":"Realizar evaluaciones del agua potable almacenada en los estanques de reserva, acreditando que el agua es potable.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 13 del D.S. 594\nde 1999, del Ministerio de Salud.","sec":"Agua potable"},{"n":11,"q":"¿Las instalaciones eléctricas del centro de trabajo se encuentran en buenas condiciones respecto a cables eléctricos canalizados, instalaciones\teléctricas protegidas, protector diferencial, enchufes, en buenas condiciones de funcionamiento.?","verificar":"Se deben revisar las instalaciones y verificar si los elementos eléctricos se encuentran en buenas condiciones de funcionamiento.\n\nLa normativa vigente la puede revisar a través del siguiente link https://www.sec.cl/reglamento-de-seguridad-de-las-instalaciones-de-consumo-de-energia-electrica-decreto-08/","medida":"Se deben revisar las instalaciones y verificar si los elementos eléctricos se encuentran en buenas condiciones de funcionamiento.\n\nLa normativa vigente la puede revisar a través del siguiente link https://www.sec.cl/reglamento-de-seguridad-de-las-instalaciones-de-consumo-de-energia-electrica-decreto-08/","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 39 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Instalaciones eléctricas, gas y combustibles"},{"n":12,"q":"¿El sistema eléctrico del centro de trabajo funciona sin sobrecarga eléctrica.?","verificar":"Consultar a los trabajadores si en el lugar se han producido cortes de electricidad debido a sobrecargas del sistema eléctrico, informando cuándo ocurren estos (que elementos se conectan y se produce la sobrecarga eléctrica).\n\nRealizar las reparaciones respectivas que permitan corregir esta condición de riesgo.","medida":"Realizar las reparaciones respectivas que permitan corregir esta condición, esto es que el sistema eléctrico funcione sin sobrecarga.\n\nPuede consultar a los trabajadores respecto a elementos que se conectan y provocan sobrecarga eléctrica para ser incorporado en diagnóstico de condiciones de trabajo.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 39 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Instalaciones eléctricas, gas y combustibles"},{"n":13,"q":"¿Las extensiones eléctricas (alargadores de zapatillas) utilizadas en el lugar de trabajo cuentan con certificación de seguridad SEC (Superintendencia de Electricidad y Combustible).?","verificar":"Verificar que se encuentra implementado un programa de inspección de condiciones de riesgo del sistema eléctrico, donde se evidencie que las extensiones eléctricas (alargadores) utilizadas en el lugar de trabajo cuentan con certificación de seguridad SEC","medida":"Los productos que tienen obligatoriedad de certificación, incluyendo extensiones eléctricas son aquellos que determina el Ministerio de Energía mediante Resolución, a proposición de esta Superintendencia, y que deben cumplir con la norma de fabricación específica para cada uno de ellos. Link de los productos que tienen obligatoriedad de certificación. (https://wlhttp.sec.cl/PublicacionPr oductos/publicacion.do)","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 39 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Instalaciones eléctricas, gas y combustibles"},{"n":14,"q":"¿Las extensiones eléctricas (alargadores de zapatillas) se utilizan hasta la carga máxima, no sobrecargando la potencia máxima para la que se encuentra diseñada.?","verificar":"Verificar que se encuentra implementado un programa de inspección de condiciones de riesgo del sistema eléctrico, donde se evidencie que las extensiones eléctricas (alargadores) utilizadas en el lugar de trabajo cuenten con certificación de seguridad SEC","medida":"En caso de utilizar en el lugar extensiones (alargadores con zapatillas) la empresa debe acreditar que la cantidad de elementos enchufados no sobrecargan (total potencia) la extensión, según fabricante.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 39 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Instalaciones eléctricas, gas y combustibles"},{"n":15,"q":"¿Se han realizado en el centro de trabajo mantenciones preventivas al sistema eléctrico y realizadas por un instalador autorizado por Superintendencia de Electricidad y Combustible (SEC).?","verificar":"Verificar que en el centro de trabajo se cuenta con un programa de mantenciones preventivas al sistema eléctrico que contemple las instalaciones de todo el centro de trabajo y que el instalador eléctrico cuente con una autorización por la Superintendencia de Electricidad y Combustible (SEC), se puede verificar en la página web de SEC, si dicho instalador cuenta con la certificación ingresando el rut. https://wlhttp.sec.cl/validadorInsta ladores/","medida":"Verificar que en el centro de trabajo se cuenta con un programa de mantenciones preventivas al sistema eléctrico que contemple las instalaciones de todo el centro de trabajo y que el instalador eléctrico cuente con una autorización por la Superintendencia de Electricidad y Combustible (SEC), se puede verificar en la página web de SEC, si dicho instalador cuenta con la certificación ingresando el rut. https://wlhttp.sec.cl/validadorInsta ladores/","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 39 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Instalaciones eléctricas, gas y combustibles"},{"n":16,"q":"¿Se realizan mantenciones preventivas al grupo electrógeno, en caso de contar con éste en las instalaciones.?","verificar":"Efectuar mantenciones preventivas del motor-alternador según lo establece fabricante del grupo electrógeno, revisando periodicidad.","medida":"Establecer un programa de mantenimiento preventivo del motor-alternador según lo indique fabricante del grupo electrógeno. Evidenciar la periodicidad.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 36 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Instalaciones eléctricas, gas y combustibles"},{"n":17,"q":"¿El centro de trabajo cuenta mantenciones preventivas a las instalaciones de gas y realizadas por un instalador  autorizado por SEC.?","verificar":"Verificar que en el centro de trabajo se cuenta con un programa de mantenciones preventivas de las instalaciones de gas de todo el centro de trabajo y que el instalador eléctrico que realiza las mantenciones, cuente con una autorización por SEC. Se puede verificar en la página web de SEC si dicho instalador cuenta con la certificación ingresando el Rut. https://wlhttp.sec.cl/validadorInsta ladores/","medida":"Mantener el programa de mantenciones preventivas de las instalaciones de gas de todo el centro de trabajo con instalador autorizado por SEC. Se puede verificar en la página web de SEC si dicho instalador cuenta con la certificación ingresando el Rut. https://wlhttp.sec.cl/validadorInsta ladores/","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 39 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Instalaciones eléctricas, gas y combustibles"},{"n":18,"q":"¿El centro de trabajo cuenta con un Plan de Mantenimiento e Inspección de la instalación de combustibles líquidos elaborado de acuerdo con las disposiciones reglamentarias de SEC?","verificar":"Verificar que la entidad empleadora realiza mantenimiento preventivo y correctivo de la instalación interior de suministro de combustibles líquidos, manteniendo registros de dichas actividades.\n\nPuede acceder a https://www.bcn.cl/leychile/navegar?idNorma=1004120","medida":"Establecer un programa de mantenimiento preventivo y correctivo de la instalación interior de suministro de combustibles líquidos, manteniendo registros de la realización de dichas actividades.\n\nPuede acceder a https://www.bcn.cl/leychile/navegar?idNorma=1004120","legal":"Artículos 184, 184 bis del Código del Trabajo en relación con Artículo 39 del D.S. 594 de 1999 del Ministerio de Salud y Decreto 160 del 2008 del Ministerio de Economía.","sec":"Instalaciones eléctricas, gas y combustibles"},{"n":19,"q":"¿Cuenta el centro de trabajo con un programa de inspección que aborde las cargas de combustibles y fuentes de calor, medidas para disminuir el inicio del fuego e inspecciones a las instalaciones que se encuentran en el lugar.?","verificar":"Verificar que se cuenta con un programa de inspección para los productos combustibles tanto almacenados, como en el proceso y las fuentes de calor que se encuentran en el lugar, por ejemplo, prohibición de fumar o encender fuego en sectores de procesos, indicar cronograma, responsable de la inspección, entre otros.","medida":"Mantener un programa de inspección para los productos combustibles tanto almacenados, como en el proceso y las fuentes de calor que se encuentran en el lugar.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 44 del D.S. 594\nde 1999, del Ministerio de Salud.","sec":"Control de carga combustible y fuentes de calor"},{"n":20,"q":"¿El control a los productos combustibles incluye medidas como programas de orden y limpieza, tanto almacenados como en proceso.?","verificar":"Verificar que el programa de inspección cuente con un programa de orden y limpieza. Además, confirmar si lo establecido en el programa se encuentra implementado en el centro de trabajo.","medida":"Mantener un programa de inspección para los productos combustibles tanto almacenados, como en el proceso que incluye programa de orden y limpieza.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 44 del D.S. 594 de 1999, del Ministerio de Salud.","sec":"Control de carga combustible y fuentes de calor"},{"n":21,"q":"¿Se prohíbe fumar y encender fuego en las áreas donde exista una gran cantidad de productos combustibles o donde se almacenen, trasvasijen o procesen sustancias inflamables o de fácil combustión.?","verificar":"Verificar que se encuentre señalizada la prohibición de fumar o encender fuego en los lugares donde exista una gran cantidad de productos combustibles o donde se almacenen, trasvasijen o procesen sustancias inflamables o de fácil combustión.","medida":"Mantener señalización a prohibición de fumar o encender fuego en los lugares donde exista una gran cantidad de productos combustibles o donde se almacenen, trasvasijen o procesen sustancias inflamables o de fácil combustión.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 44 del D.S. 594 de 1999, del Ministerio de Salud.","sec":"Control de carga combustible y fuentes de calor"},{"n":22,"q":"¿Cuenta el centro de trabajo con extintores de incendio adecuados al tipo de material combustible existente en el lugar.?","verificar":"Verificar en el recorrido del centro de trabajo, el tipo de material almacenado o las características de los materiales que se encuentran en el lugar (muebles de madera, papelería, alfombras, etc.) o de la estructura del inmueble del centro de trabajo. Con lo anterior se determinan el tipo de extintor que debe instalarse en el área evaluada.","medida":"Mantener extintores de incendio adecuados al tipo de material combustible existente en el lugar.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 45 inciso primero del D.S. 594 de 1999, del Ministerio de Salud.","sec":"Extinción y detección de incendios"},{"n":23,"q":"¿Los extintores se encuentran en lugares accesibles para su utilización. Se encuentran los extintores señalizados y libres de obstáculos.?","verificar":"Verificar que los extintores cuenten con sus señalizaciones claramente identificadas y en sitios de fácil acceso para acceder a ellos y que no se encuentren bloqueados por algún obstáculo.","medida":"Mantener extintores de incendio señalizados, libres de obstáculos y en lugares accesibles para su utilización.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 47 del D.S. 594 de 1999, del Ministerio de Salud.","sec":"Extinción y detección de incendios"},{"n":24,"q":"¿Los trabajadores del centro de trabajo se encuentran instruidos y entrenados en el uso de los extintores en el caso de una emergencia.?","verificar":"Verificar que todos los trabajadores tuvieron una capacitación teórica – práctica respecto del uso de los extintores. Se debe contar con un documento que consigne la firma de los trabajadores.","medida":"Mantener un documento que consigne la firma de todos los trabajadores respecto a una capacitación teórica - práctica respecto al uso de extintores.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 48 del D.S. 594 de 1999, del Ministerio de Salud.","sec":"Extinción y detección de incendios"},{"n":25,"q":"En caso de contar con sistema automático de extinción de incendio, sistema de detección oportuna de principio de incendio, alarma de incendio, ¿se realizan mantenciones preventivas a dichos sistemas.?","verificar":"Verificar que en caso de contar con sistema automático de extinción de incendio, sistema de detección oportuna de principio de incendio, alarma de incendio, se cuenta con una programación y la ejecución de mantenciones preventivas.","medida":"Mantener un programación y la ejecución de mantenciones preventivas en caso de contar con sistema automático de extinción de incendio, sistema de detección oportuna de principio de incendio, alarma de incendio.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 36 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Extinción y detección de incendios"},{"n":26,"q":"Los edificios que deben contar con conexiones a la red húmeda y red seca en cada piso,  realizan mantenciones periódicas a dichas redes de incendio.?","verificar":"La red húmeda debe existir en inmuebles destinados a reunión de personas (como hospitales, comercio, escuelas, industrias, edificios públicos, deportivos y otros destinados para el mismo efecto) así como en edificios con tres o más pisos. La red seca debe existir en edificios de cinco o más pisos de altura","medida":"Mantener mantenciones periódicas a redes húmedad y red seca en cada piso en caso de requerir contar con estas.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 36 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Extinción y detección de incendios"},{"n":27,"q":"¿Las zonas de seguridad informadas por la empresa a los trabajadores se encuentran fuera del área de riesgo.?","verificar":"Verificar que las zonas de seguridad informadas por la empresa se encuentran fuera del área de riesgo, para cada tipo de amenaza, por ejemplo la zona de seguridad para sismo puede no ser la misma que para tsunami, si la empresa se encuentra bajo la cota 30 metros sobre el nivel del mar (m.s.n.m.).\n\nPara la definición de zonas de seguridad puede considerar lo establecido en \"Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo MIPYME\".","medida":"Mantener informadas las zonas de seguridad definidas en el centro de trabajo considerando además información oficial.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 37 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Vías de evacuación y zonas de seguridad"},{"n":28,"q":"¿Las zonas de seguridad ante emergencia se encuentran despejadas y libres de elementos que podrían afectar a los trabajadores que se ubiquen en el lugar después de una emergencia.?","verificar":"Verificar que las zonas de seguridad donde se ubican los trabajadores después de una evacuación se encuentran despejadas y no generan nuevos riesgos a los trabajadores que se encuentran en el lugar.","medida":"Mantener zonas de seguridad despejadas y libres de elementos que podrían afectar a los trabajadores que se ubiquen en el lugar después de una emergencia.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 37 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Vías de evacuación y zonas de seguridad"},{"n":29,"q":"¿Las vías de evacuación (horizontal o vertical) y las zonas de seguridad ante emergencia se encuentran señalizadas.?","verificar":"Verificar en el recorrido de las instalaciones y revisión del plano de las instalaciones, que las vías de evacuación y zonas de seguridad ante emergencia se encuentren señalizadas.","medida":"Mantener señalizadas ías de evacuación (horizontal o vertical) y las zonas de seguridad ante emergencias.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 37 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Vías de evacuación y zonas de seguridad"},{"n":30,"q":"¿Si en el lugar laboran trabajadores extranjeros que hablan un idioma distinto al oficial de nuestro país, las señalizaciones de las vías de escape y zonas de seguridad ante emergencias se encuentran además de en español, en el idioma de dichos trabajadores..?","verificar":"Verificar que la señalética del lugar se encuentre además de español, en el idioma de los trabajadores extranjeros, que hablan uno distinto al oficial de nuestro país.","medida":"Mantener señalética del lugar se encuentre además de español, en el idioma de los trabajadores extranjeros en el caso que laboren trabajadores extranjeros que hablan un idioma distinto al oficial de nuestro país.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 37 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Vías de evacuación y zonas de seguridad"},{"n":31,"q":"¿Las puertas de salida de las vías de evacuación a las zonas de seguridad se encuentran libres de obstáculos y señalizado, se abren en el sentido de la evacuación y se mantienen sin llave.?","verificar":"Verificar que no se encuentren con obstáculos las puertas de salida de las vías de evacuación y señalizadas, que las puertas de salida de las vías de evacuación abran en el sentido de la evacuación y que las puertas de salida de las vías de escape pueden mantenerse cerradas, pero no con llave, candado u otro medio que impida su fácil apertura, que requieran un esfuerzo o conocimiento especial.","medida":"Mantener sin llave, en el sentido de la evacuación y libre de obstáculos, puertas de salida de las vías de evacuación hacia las zonas de seguridad.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 37 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Vías de evacuación y zonas de seguridad"},{"n":32,"q":"¿Existen medidas de adecuación física y de señalizaciones en vías de evacuación, para personas con discapacidad?","verificar":"Verificar que se inspeccionen y mantengan medidas para adecuación física y de señalizaciones en vías de evacuación, especialmente diseñadas para personas con capacidades diferentes, tales como ramplas, ayudas técnicas como barandas, sillas de ruedas, etc.","medida":"Establecer  un programa que incorpore medidas para adecuación física y señalización en vías de evacuación, especialmente diseñadas para personas con capacidades diferentes, tales como ramplas, ayudas técnicas como barandas, sillas de ruedas, etc.","legal":"Artículos 184, 184 bis del Código del Trabajo y Artículo 37 del D.S. 594 de 1999 del Ministerio de Salud y ley 20.422","sec":"Vías de evacuación y zonas de seguridad"},{"n":33,"q":"¿El lugar de trabajo dispone de sistema de iluminación de emergencia.?","verificar":"Verificar que el lugar dispone de sistema de iluminación de emergencia, establecido en el pliego técnico normativo RIC N°08 Sistema de Emergencia de la Superintendencia de Electricidad y Combustibles o aquella que la reemplace.\n\nPara esto debe revisar los pasillos de las vías de evacuación, puertas de salidas de emergencia, sectores de escaleras, cambios de dirección de las vías de evacuación.","medida":"Mantener un sistema de iluminación de emergencia de acuerdo a lo establecido en el pliego técnico normativo RIC N°08 Sistema de Emergencia de la Superintendencia de Electricidad y Combustibles o aquella que la reemplace.","legal":"Artículos 184, 184 bis del Código del Trabajo, Art. 37 del D.S. 594 de 1999 del Ministerio de Salud Título IV del D.S. N°8 del 2019 del Ministerio de Energía y Res.Ex. N°33.877 del 30.12.2020 de la Superintendencia de Electricidad y Combustibles.","sec":"Iluminación de emergencia"},{"n":34,"q":"¿El sistema de iluminación de emergencia se encuentra en buen estado de funcionamiento.?","verificar":"Verificar que el sistema de iluminación de emergencia se encuentra en buen estado de funcionamiento, según lo establecido en el pliego técnico normativo RIC N°08 Sistema de Emergencia de la Superintendencia de Electricidad y Combustibles o aquella que la reemplace.","medida":"Mantener un sistema de iluminación de emergencia de acuerdo a lo establecido en el pliego técnico normativo RIC N°08 Sistema de Emergencia de la Superintendencia de Electricidad y Combustibles o aquella que la reemplace.","legal":"Artículos 184, 184 bis del Código del Trabajo, Art. 37 del D.S. 594 de 1999 del Ministerio de Salud, Título IV del D.S. N°8 del 2019 del Ministerio de Energía y Res.Ex. N°33.877 del 30.12.2020 de la Superintendencia de Electricidad y Combustibles.","sec":"Iluminación de emergencia"},{"n":35,"q":"¿Se realizan mantenciones preventivas al sistema de iluminación de emergencia.?","verificar":"Verificar que el centro de trabajo cuente con una programación y mantenciones preventivas al sistema de iluminación de emergencia.","medida":"Mantener un programa de mantenimiento preventiva del sistema de iluminación de emergencia.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 36 del D.S. 594 de 1999 del Ministerio de Salud.","sec":"Iluminación de emergencia"},{"n":36,"q":"¿Las luces de emergencia se encuentran instaladas sobre cada puerta de salida de emergencia, cambio de dirección de la vía de escape y al exterior de la edificación en las zonas de seguridad.?","verificar":"Revisar que las puertas de salidas de emergencias cuenten con luces de emergencia, según lo establecido en el pliego técnico normativo RIC N°08 Sistema de Emergencia de la Superintendencia de Electricidad y Combustibles o aquella que la reemplace.","medida":"Verificar que las luces de emergencia se encuentren instaladas sobre cada puerta de salida de emergencia, cambio de dirección de la vía de escape y al exterior de la edificación en las zonas de seguridad.","legal":"Artículos 184, 184 bis del Código del Trabajo, Art. 37 del D.S. 594 de 1999 del Ministerio de Salud, Título IV del D.S. N°8 del 2019 del Ministerio de Energía y Res.Ex. N°33.877 del 30.12.2020 de la Superintendencia de Electricidad y Combustibles.","sec":"Iluminación de emergencia"},{"n":37,"q":"Si en el centro de trabajo existen bodegas donde se almacenan sustancias peligrosas, ¿se cuenta con un plan de emergencia.?","verificar":"Establecer un plan de emergencia en bodegas donde se almacenan sustancias peligrosas que debe contar con los siguientes apartados:\n- Plano a escala del predio y su entorno.\n- Plano de cada instalación de almacenamiento de sustancias peligrosas\n- Listado de sustancias peligrosas almacenadas por instalación de almacenamiento.\n- Cadena de mando (director de emergencia, directores alternos responsabilidades y funciones.\n- Responsabilidades, funciones y mecanismos de coordinación de cada individuo dentro de la empresa.\n- Procedimiento de emergencia (identificación tipos de emergencias, sistemas de comunicación, procedimiento para informar oportunamente a las autoridades competentes, definir ayuda externa, definir y señalizar zonas de seguridad)\n- Listar equipos e instrumental disponible en la instalación para detectar y analizar sustancias peligrosas y señalar su ubicación.\n- Listar sistemas y equipos disponibles en la instalación para enfrenar emergencias, señalar su ubicación.\n- Mantenimiento de la operatividad del plan, incorporando simulacros al menos una vez al año.\n- Programa de capacitación anual a todo el personal que labora en la empresa.\n- Programas de revisiones periódicas del Plan, al menos una vez al año.\n- Programación anual, definición y resultados de simulacros de activación del plan.\n- Registros de las actividades realizadas.","medida":"Mantener un plan de emergencia en bodegas donde se almacenan sustancias peligrosas que cuente con los apartados establecidas en el artículo 190 del D.S 43/15 del Ministerio de Salud.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 53 del DS 43, de 2015, del Ministerio de Salud y Art. 42 del DS 594, del Ministerio de Salud.","sec":"Plan de emergencia y respuesta"},{"n":38,"q":"¿Se encuentra confeccionado un plan de emergencia o de respuesta del centro de trabajo para cada amenaza que haya sido previamente identificada.?","verificar":"Se debe verificar que el plan de emergencia o respuesta confeccionado por la empresa corresponda al centro de trabajo y no un documento genérico o tipo, sobre todo si existe más de un centro de trabajo.\n\nSe debe desarrollar un plan de emergencia para cada amenaza que haya sido previamente identificada. Para su confección puede considerarse la metodología ACCEDER, la cual se detalla en la Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo (Resolución Exenta N°1280 de ONEMI) o “Guía para la implementación del Plan para la reducción del riesgo de desastre s en centros de trabajo MIPYME  centro de trabajo (Decreto Exento N°2/13 del Ministerio del Trabajo y Previsión Social) ”.","medida":"Mantener un plan de emergencia para cada amenaza que haya sido previamente identificada.\n\nPara su confección puede considerarse la metodología ACCEDER, la cual se detalla en la Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo (Resolución Exenta N°1280 de ONEMI) o “Guía para la implementación del Plan para la reducción del riesgo de desastre s en centros de trabajo MIPYME  centro de trabajo (Decreto Exento N°2/13 del Ministerio del Trabajo y Previsión Social) ”.","legal":"Artículos 184, 184 bis\nde Código del Trabajo, Dto. N°2 del Ministerio del Trabajo Artículo 184, incisos 1º y 2º","sec":"Plan de emergencia y respuesta"},{"n":39,"q":"¿Los trabajadores se encuentran informados y capacitados del plan de emergencia o respuesta respecto de las amenazas de origen natural y origen humano que pueden afectar al centro de trabajo.?","verificar":"Verificar que los trabajadores fueron capacitados y se les entregó el plan de emergencia o respuesta confeccionado por la empresa para el centro de trabajo, respecto de cada amenaza identificada.","medida":"Mantener un programa de capacitación y de comunicación del plan de emergencia para cada amenaza que haya sido previamente identificada.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 21 del D.S. 40 de 1969 del Ministerio del Trabajo y Previsión Social.","sec":"Plan de emergencia y respuesta"},{"n":40,"q":"¿Cada plan de emergencia o respuesta considera en su procedimiento los elementos establecidos en la metodología ACCEDER?.","verificar":"Verificar que cada plan de emergencia del centro de trabajo contenga la estructura indicada en metodología ACCEDER, la cual se detalla en la Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo (Resolución Exenta N°1280 de ONEMI) o “Guía para la implementación del Plan para la reducción del riesgo de desastre s en centros de trabajo MIPYME  centro de trabajo (Decreto Exento N°2/13 del Ministerio del Trabajo y Previsión Social) ”.","medida":"Mantener un plan de emergencia para cada amenaza que haya sido previamente identificada que contenga la estructura indicada en metodología ACCEDER, la cual se detalla en la Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo (Resolución Exenta N°1280 de ONEMI) o “Guía para la implementación del Plan para la reducción del riesgo de desastre s en centros de trabajo MIPYME  centro de trabajo (Decreto Exento N°2/13 del Ministerio del Trabajo y Previsión Social) ”.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":41,"q":"¿Cada plan de emergencia o respuesta considera en su procedimiento las amenazas de origen natural, origen biológico y origen humano identificadas por la empresa y que pueden afectar al centro de trabajo.?","verificar":"Verificar que cada plan de emergencia incorpore:\n• Amenazas de origen natural: sismo, tsunami, aluvión, inundación por crecidas de cauces de aguas, inundación por anegamiento por aguas lluvias, en cauces secos de ríos, remoción en masa, erupciones volcánicas, marejadas.\n• Amenazas de origen biológico establecidas o reconocidas por la autoridad sanitaria.\n• Amenazas de origen humano: corte de agua, corte de luz, incendio forestal, incendio estructural, asalto/robo, sustancias peligrosas, orden o seguridad pública, entre otras.\n\nTodo centro de trabajo debe considerar al menos las amenazas de sismo, incendio estructural, corte de agua, corte de electricidad, asalto o robo.","medida":"Mantener en cada plan de emergencia o respuesta las amenazas previamente identificadas que pueden afectar al centro de trabajo.\n\nTener presente que todo centro de trabajo debe considerar al menos las amenazas de sismo, incendio estructural, corte de agua, corte de electricidad, asalto o robo.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":42,"q":"¿Cada plan de emergencia o respuesta considera en su procedimiento el tipo de alarma que se activará, según el tipo de amenaza?.","verificar":"Verificar que cada plan de emergencia considera en su procedimiento una o varias alarmas para las diferentes amenazas que pueden afectar el centro de trabajo, las que deben estar claramente identificadas en el plan.","medida":"Mantener en cada plan de emergenca o de respuesta, el tipo de alarma que se activará según el tipo de amenaza.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":43,"q":"¿Cada plan de emergencia o respuesta considera en su procedimiento en caso que en el centro de trabajo laboren trabajadores en situación de discapacidad o de otro idioma diferente al oficial al de nuestro país, los sistemas de alarma de la activación de la emergencia, deben considerar estas situaciones para que alerten a todos los trabajadores que se encuentran en el lugar?.","verificar":"Verificar que cada plan de emergencia el empleador debe considerar los medios adecuados para que todos los trabajadores que laboran en el lugar, sepan que se activó la alarma de emergencia, considerando las dificultades que pudiesen tener los trabajadores en situación de discapacidad y extranjeros, para poder recepcionar esta información.\n\nPuede considerar lo establecido en el documento prácticas inclusivas para la GRD dispuesto en el portal BiblioGRD de SENAPRED. https://bibliogrd.senapred.gob.cl/handle/123456789/4134","medida":"Incorporar en cada plan de emergencia o de respuesta en el caso que trabajadores en situación de discapacidad o de otro idioma diferente al oficial al de nuestro país, los sistemas de alarma de la activación de la emergencia, deben considerar estas situaciones para que alerten a todos los trabajadores que se encuentran en el lugar.\n\nPuede considerar lo establecido en el documento prácticas inclusivas para la GRD dispuesto en el portal BiblioGRD de SENAPRED. https://bibliogrd.senapred.gob.cl/handle/123456789/4134","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":44,"q":"¿Cada plan de emergencia o respuesta considera en su procedimiento el sistema de comunicación?.","verificar":"Verificar que el plan de emergencia o respuesta indique, para cada amenaza, la cadena de comunicación con el mecanismo dentro de la organización, el manejo de la información interna (Listados de asistencia, teléfonos, responsables, listado de recursos para respuesta ante emergencia) y externa (Información sobre el entorno del centro de trabajo, responsables de contactos, otros), a quién se comunica.","medida":"Mantener en cada plan de emergencia o de respuesta, el sistema de comunicación a incorporar dependiendo del tipo de amenaza previamente identificada.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":45,"q":"¿Cada plan de emergencia o respuesta considera en su procedimiento la coordinación que se realiza cuando se activa el plan?.","verificar":"Verificar para cada plan de emergencia o de respuesta establezca una coordinación entre áreas internas del centro de trabajo y externas (Carabineros, Bomberos, Ambulancia, entre otros) durante una situación de emergencia, identificándose el tipo de emergencia, responsable, función y rol (¿qué hacer / cómo hacerlo / con quién hacerlo?).\n\nPuede utilizar de apoyo la “Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo”, (Resolución Exenta N°1280 de ONEMI), o \"Guía para implementación del Plan para la reducción del riesgo de desastres en centros de trabajo MIPYME (Decreto Exento N°2/13 del Ministerio del Trabajo y Previsión Social)”.","medida":"Mantener en cada plan de emergencia o de respuesta, las acciones de coordinación a incorporar dependiendo del tipo de amenaza previamente identificada.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":46,"q":"¿Cada plan de emergencia o respuesta considera en su procedimiento en los centros de trabajo que se encuentran en zonas de amenaza de tsunami, la obligación de evacuar cuando la Autoridad informa “Evacuación Preventiva”?.","verificar":"Verificar que un plan de emergencia o de respuesta incorpore si se encuentra expuesto una acción establecida frente a la probabilidad de generarse un tsunami en las costas de Chile, incluso antes de recibir los reportes oficiales del Servicio Hidrográfico y Oceánico de la Armada (SHOA). Se solicita a la población evacuar hacia la zona de seguridad (30 m.s.n.m.). Este estado será informado a través del SAE; por los organismos del SENAPRED en terreno y por el sistema de sirenas en caso de que la región cuente con ellas, según lo establecido en Protocolo ONEMI- SHOA.","medida":"Mantener en el plan de emergencia o de respuesta frente a amenaza de tsunami, la obligación de evacuar cuando la Autoridad informa “Evacuación Preventiva”.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":47,"q":"¿Se encuentra publicado el plano o croquis de emergencias, donde se visualicen los riesgos y recursos, respecto de las vías de evacuación y salidas de emergencia, extintores, entre otros?.","verificar":"Verificar que en las instalaciones del centro de trabajo se encuentren publicados los mapas del plan de emergencia o respuesta, donde se identifican los riesgos y recursos y se encuentran en lugares visibles para todos los trabajadores.","medida":"Mantener publicados los planos o croquis de emergencia donde se visualicen los riesgos y recursos, respecto de las vías de evacuación y salidas de emergencia, extintores, entre otros.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":48,"q":"¿Se encuentra programado por la empresa ejercitar cada plan de emergencia o de respuesta mediante simulacros o simulaciones?","verificar":"Verificar que el centro de trabajo cuenta con una programación para realizar simulacros y/o simulaciones del plan de emergencia o respuesta, para las diversas amenazas detectadas por la empresa (origen natural, biológico o humano).","medida":"Mantener una programación de simulacros o simulaciones para ejercitar cada plan de emergencia o de respuesta.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":49,"q":"¿El plan de emergencia cuenta con un Programa de revisiones periódicas.?","verificar":"Verificar que cada plan de emergencia o respuesta está actualizado a partir de las observaciones detectadas en los ejercicios de simulacros y/o simulaciones.","medida":"Mantener un programa de revisiones periódicas para cada plan de emergencia o respuesta mediante ejercicios de simulacros y/o simulaciones.","legal":"Artículos 184, 184 bis del Código del Trabajo.","sec":"Plan de emergencia y respuesta"},{"n":50,"q":"¿El centro de trabajo en el cual laboran trabajadores (personas) con situación de discapacidad física, auditiva, visual, mental e intelectual, o trabajadores de movilidad reducida u otros con idioma diferente al oficial al de nuestro país, cuenta con los medios de comunicación para alertar a todos los trabajadores en caso de emergencia?","verificar":"Mantener funcionamiento de alarma, considerando condiciones de autonomía, dignidad, seguridad y diligencia,  permitiendo alertar a todos los trabajadores en caso de una emergencia o desastre.\n\nVerifique que se mantenga accesibilidad para el desplazamiento de vías y zonas de seguridad (garantizar la colaboración para el traslado a estos lugares), con integración a los trabajadores con otros idiomas e inclusión de trabajadores con discapacidad y movilidad reducida.","medida":"Considerar todos los medios adecuados para realizar las adaptaciones de modo que todos los trabajadores que laboran en el lugar, sean comunicados cuando se active la alarma de emergencia, considerando condiciones de autonomía, dignidad, seguridad y diligencia, con accesibilidad de un diseño adecuado para el desplazamiento de vías y zonas de seguridad (garantizar la colaboración para el traslado a estos lugares), con integración a los trabajadores con otros idiomas e inclusión de trabajadores con discapacidad y movilidad reducida.","legal":"Artículos 184, 184 bis del Código del Trabajo en relación con la ley 20.422","sec":"Plan de emergencia y respuesta"},{"n":51,"q":"¿El programa de seguridad y salud confeccionado por la empresa principal cuenta con el plan o planes de emergencia o respuesta para las amenazas identificadas en el centro de trabajo.?","verificar":"Si en el centro de trabajo se labora en régimen de subcontratación y laboran más de cincuenta trabajadores cualquiera sea su dependencia, contratistas y subcontratista, la empresa principal debe implementar un sistema de gestión de la seguridad y salud en el trabajo, en el que debe confeccionar un programa de trabajo de las materias de seguridad y salud que contenga, entre otros, un plan de emergencia o respuesta.\n\nEste plan de emergencia o respuesta debe contar con los contenidos indicados en la “Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo”, (Resolución Exenta N°1280 de ONEMI), o \"Guía para implementación del Plan para la reducción del riesgo de desastres en centros de trabajo MIPYME (Decreto Exento N°2/13 del Ministerio del Trabajo y Previsión Social)”.","medida":"Incorporar en el programa de trabajo del sistema de gestión de seguridad y salud ocupacional, planes de emergencia o de respuesta con los apartados de la metodología ACCEDER.\n\nEste plan de emergencia o respuesta debe contar con los contenidos indicados en la “Guía para la implementación del Plan para la reducción del riesgo de desastres en centros de trabajo”, (Resolución Exenta N°1280 de ONEMI), o \"Guía para implementación del Plan para la reducción del riesgo de desastres en centros de trabajo MIPYME (Decreto Exento N°2/13 del Ministerio del Trabajo y Previsión Social)”.","legal":"Artículos 184, 184 bis del Código del Trabajo, Dto. N°2, de 2023, de Mintrab y Art. 9º Nº 3 del D.S. Nº 76 de 18.01.2007, del Mintrab.","sec":"Subcontratación, locales de uso público y prescripciones"},{"n":52,"q":"¿El plan o planes de emergencia o respuesta del programa de seguridad y salud, confeccionado por la empresa principal fue dado a conocer a todas las empresas presentes en la obra, faena o servicio, a los trabajadores y sus representantes, así como a los Comités Paritarios y Departamentos de Prevención de Riesgo.?","verificar":"Verificar que la empresa principal dio a conocer a las empresas, trabajadores, Comités Paritarios y Departamentos de Prevención de Riesgos, el plan de emergencia o respuesta confeccionado para el centro de trabajo, verificándose que no sea un plan genérico, sino que confeccionado en base a la realidad de la faena en régimen de subcontratación.","medida":"Mantener la empresa principal dio a conocer a las empresas, trabajadores, Comités Paritarios y Departamentos de Prevención de Riesgos, el plan de emergencia o respuesta confeccionado para el centro de trabajo, verificándose que no sea un plan genérico, sino que confeccionado en base a la realidad de la faena en régimen de subcontratación.","legal":"Artículos 184, 184 bis del Código del Trabajo, Dto. N°2, de 2023, de Mintrab y Art. 9º Nº 3 del D.S. Nº 76 de 18.01.2007, del Mintrab.","sec":"Subcontratación, locales de uso público y prescripciones"},{"n":53,"q":"¿La empresa principal considera en sus simulacros o simulaciones a los trabajadores de las empresas contratistas y subcontratistas.?","verificar":"Verificar que, en caso de haberse realizado un simulacro o simulación en el centro de trabajo, fueron considerados los trabajadores de las empresas contratistas y subcontratistas.","medida":"Incorporar a los trabajadores de empresa principal, contratistas y subcontristas bajo regimen de subcontratación, en actividades de ejercitación de simulacros y/o simulaciones.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 6 inciso 1° del D.S. 76, de 2007, del Mintrab.","sec":"Subcontratación, locales de uso público y prescripciones"},{"n":54,"q":"¿La empresa considera en sus planes de emergencia o respuesta las acciones de protección para todos los trabajadores que laboran en el lugar, sean estos dependientes directos suyos o lo sean terceros contratistas que realizan actividades para ella?.","verificar":"Verificar que, en caso de no prestarse servicios de trabajadores sujetos a régimen de subcontratación, según se establece en el artículo 183-A del Código del Trabajo, el empleador está obligado a mantener en los lugares de trabajo las condiciones sanitarias y ambientales necesarias para proteger la vida y salud de los trabajadores que en ellos se desempeñan, sean éstos dependientes directos suyos o sean terceros contratistas que realizan actividades para ella, por cuanto se debe verificar que en el plan de emergencia o respuesta se consideren a todos los trabajadores que laboran en el lugar.","medida":"Mantener en caso de no prestarse servicios de trabajadores sujetos a régimen de subcontratación, según se establece en el artículo 183-A del Código del Trabajo, el empleador está obligado a mantener en los lugares de trabajo las condiciones sanitarias y ambientales necesarias para proteger la vida y salud de los trabajadores que en ellos se desempeñan, sean éstos dependientes directos suyos o sean terceros contratistas que realizan actividades para ella, por cuanto se debe verificar que en el plan de emergencia o respuesta se consideren a todos los trabajadores que laboran en el lugar.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 3 del D.S. 594, de 1999, del Ministerio de Salud.","sec":"Subcontratación, locales de uso público y prescripciones"},{"n":55,"q":"¿Se cuenta en locales de uso público con un Plan de Emergencia y Plan de Evacuación que detalle la coordinación con otras instituciones como carabineros, bomberos, etc., y las acciones a ejecutar ante cualquier eventualidad como incendios, terremotos, asaltos, riñas, etc. que pongan en riesgo la salud de los trabajadores y del público en general, con indicación de los responsables de llevarlas a cabo?","verificar":"Verificar que los locales de uso público, que tienen capacidad de recibir de forma simultánea a 100 o más personas, entre ellos los centros comerciales (malls), cuenten con un plan de emergencia y evacuación coordinado con otras instituciones que detalle a los responsables de llevar a cabo la ejecución del plan.","medida":"Mantenr en locales de uso público, que tienen capacidad de recibir de forma simultánea a 100 o más personas, entre ellos los centros comerciales (malls), un plan de emergencia y evacuación coordinado con otras instituciones que detalle a los responsables de llevar a cabo la ejecución del plan.","legal":"Art. 5 letra j) del D.S. 10, de 2010, del Ministerio de Salud y los artículos 184, 184 bis del Código del Trabajo.","sec":"Subcontratación, locales de uso público y prescripciones"},{"n":56,"q":"¿Se han cumplido las prescripciones de medidas determinadas por el Organismo Administrador del Seguro de Accidentes y Enfermedades Profesionales (Ley N°16.744), relacionadas a gestión del riesgo de desastres.?","verificar":"Verificar que el empleador ha dado cumplimiento a las medidas prescritas por Mutual de Seguridad CChC que tengan relación a materias vinculadas a la gestión del riesgo de desastres, entre ellas, a planes de emergencias.","medida":"Dar cumplimiento en el caso de contar con prescripciones por parte de Mutual de Seguridad CChC relacionadas con materias vinculadas a la gestión del riesgo de desastres, entre ellas, a planes de emergencias.","legal":"Artículos 184, 184 bis del Código del Trabajo y Art. 68, inciso 1º, de la Ley 16.744.","sec":"Subcontratación, locales de uso público y prescripciones"}];
+
+  // section order (matches the thematic grouping applied to the 56 legal questions)
+  var SEC_ORDER = [
+    "Identificación de amenazas y evaluación de riesgos",
+    "Infraestructura, orden y almacenamiento",
+    "Agua potable",
+    "Instalaciones eléctricas, gas y combustibles",
+    "Control de carga combustible y fuentes de calor",
+    "Extinción y detección de incendios",
+    "Vías de evacuación y zonas de seguridad",
+    "Iluminación de emergencia",
+    "Plan de emergencia y respuesta",
+    "Subcontratación, locales de uso público y prescripciones"
+  ];
+
+  var SECTIONS = SEC_ORDER.map(function (name) {
+    return { title: name, items: ITEMS.filter(function (it) { return it.sec === name; }) };
+  }).filter(function (s) { return s.items.length; });
+
+  var TOTAL = ITEMS.length;
+  document.getElementById("cPend").textContent = TOTAL;
+
+  var STORE_KEY = "autoeval-grd-v1";
+  var state = { meta: {}, answers: {}, notes: {}, fix: {} };
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (saved && typeof saved === "object") {
+      state.meta = saved.meta && typeof saved.meta === "object" ? saved.meta : {};
+      state.answers = saved.answers && typeof saved.answers === "object" ? saved.answers : {};
+      state.notes = saved.notes && typeof saved.notes === "object" ? saved.notes : {};
+      state.fix = saved.fix && typeof saved.fix === "object" ? saved.fix : {};
+    }
+  } catch (e) {}
+
+  var firstRender = true;
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+  function key(si, ii) { return si + "-" + ii; }
+
+  function sectionScore(si) {
+    var sec = SECTIONS[si], si_ = 0, no = 0, na = 0, answered = 0;
+    sec.items.forEach(function (it, ii) {
+      var v = state.answers[key(si, ii)];
+      if (!v) return;
+      answered++;
+      if (v === "si") si_++; else if (v === "no") no++; else na++;
+    });
+    var base = si_ + no;
+    return { pct: base > 0 ? Math.round((si_ / base) * 100) : null, answered: answered, total: sec.items.length, no: no };
+  }
+  function overallScore() {
+    var si_ = 0, no = 0, na = 0, pend = 0;
+    SECTIONS.forEach(function (sec, sIdx) {
+      sec.items.forEach(function (it, iIdx) {
+        var v = state.answers[key(sIdx, iIdx)];
+        if (!v) { pend++; return; }
+        if (v === "si") si_++; else if (v === "no") no++; else na++;
+      });
+    });
+    var base = si_ + no;
+    return { pct: base > 0 ? Math.round((si_ / base) * 100) : null, si: si_, no: no, na: na, pend: pend };
+  }
+  function statusOf(pct) {
+    if (pct === null) return { cls: "vacio", label: "Sin iniciar" };
+    if (pct < 60) return { cls: "rojo", label: "No conforme" };
+    if (pct < 85) return { cls: "ambar", label: "Parcial" };
+    return { cls: "verde", label: "Conforme" };
+  }
+  function colorFor(cls) {
+    return cls === "verde" ? "var(--green)" : cls === "ambar" ? "var(--amber)" : cls === "rojo" ? "var(--red)" : "var(--muted)";
+  }
+  var GAUGE_C = 2 * Math.PI * 32;
+
+  function ansText(v) {
+    return v === "si" ? "Respuesta: Sí, cumple"
+      : v === "no" ? "Respuesta: No cumple"
+      : v === "na" ? "Respuesta: No aplica"
+      : "Respuesta: sin responder";
+  }
+
+  function render() {
+    var container = document.getElementById("sections");
+    var chips = document.getElementById("chips");
+
+    var openSecs = {};
+    container.querySelectorAll(".section.open").forEach(function (el) { openSecs[el.id] = true; });
+    if (firstRender) { openSecs["sec-0"] = true; firstRender = false; }
+
+    container.innerHTML = "";
+    chips.innerHTML = "";
+
+    SECTIONS.forEach(function (sec, sIdx) {
+      var sc = sectionScore(sIdx);
+      var stt = statusOf(sc.pct);
+
+      var chip = document.createElement("button");
+      chip.className = "chip";
+      chip.setAttribute("data-state", sc.answered ? stt.cls : "vacio");
+      chip.innerHTML = esc(sec.title) + ' <span class="n">' + sc.answered + "/" + sc.total + "</span>";
+      chip.addEventListener("click", function () { openSection(sIdx); scrollToSection(sIdx); });
+      chips.appendChild(chip);
+
+      var card = document.createElement("div");
+      card.className = "section";
+      card.id = "sec-" + sIdx;
+
+      var head = document.createElement("div");
+      head.className = "section-head";
+      head.innerHTML =
+        '<div class="section-head-row">' +
+          '<div><div class="section-num">' + String(sIdx + 1).padStart(2, "0") + " · " + sc.total + " preguntas</div>" +
+          '<h2 class="section-title">' + esc(sec.title) + "</h2></div>" +
+          '<div class="section-right"><span class="section-pct" style="color:' + colorFor(stt.cls) + '">' + (sc.pct === null ? "—" : sc.pct + "%") + '</span><span class="chevron">▾</span></div>' +
+        "</div>" +
+        '<div class="bar"><i style="width:' + (sc.pct === null ? 0 : sc.pct) + "%; background:" + colorFor(stt.cls) + ';"></i></div>';
+      head.addEventListener("click", function () { toggleSection(sIdx); });
+      card.appendChild(head);
+
+      var itemsWrap = document.createElement("div");
+      itemsWrap.className = "items";
+
+      sec.items.forEach(function (it, iIdx) {
+        var k = key(sIdx, iIdx);
+        var v = state.answers[k];
+        var fx = state.fix[k] || {};
+        var row = document.createElement("div");
+        row.className = "item" + (v === "no" ? " flag-no" : "");
+        row.setAttribute("data-k", k);
+
+        var verificarBlock = it.verificar ? (
+          '<details class="disclosure"><summary>Cómo verificar</summary><div class="body">' + esc(it.verificar) + "</div></details>"
+        ) : "";
+
+        row.innerHTML =
+          '<div class="item-q"><span class="qn">' + esc(String(it.n)).padStart(2, "0") + "</span>" + esc(it.q) + "</div>" +
+          '<div class="legal-note"><b>Requisito legal</b>\n' + esc(it.legal || "—") + "</div>" +
+          verificarBlock +
+          '<div class="toggle" data-si="' + sIdx + '" data-ii="' + iIdx + '">' +
+            '<button data-v="si" class="' + (v === "si" ? "active" : "") + '">Sí</button>' +
+            '<button data-v="no" class="' + (v === "no" ? "active" : "") + '">No</button>' +
+            '<button data-v="na" class="' + (v === "na" ? "active" : "") + '">N/A</button>' +
+          "</div>" +
+          '<div class="print-answer print-only" data-ans="' + (v || "") + '">' + ansText(v) + "</div>" +
+          '<div class="fix">' +
+            '<div class="fix-head">Medida a implementar</div>' +
+            '<div class="fix-body">' +
+              '<div class="fix-text">' + esc(it.medida || "—") + "</div>" +
+              '<div class="fix-grid">' +
+                '<div class="field"><label>Responsable</label><input type="text" data-fix="resp" placeholder="Nombre y cargo"></div>' +
+                '<div class="field"><label>Fecha compromiso</label><input type="date" data-fix="fecha"></div>' +
+              "</div>" +
+            "</div>" +
+          "</div>" +
+          '<div class="note-line"><label>Observación / evidencia</label><textarea placeholder="Anota hallazgo, evidencia revisada, N° de documento..."></textarea></div>';
+
+        itemsWrap.appendChild(row);
+      });
+
+      card.appendChild(itemsWrap);
+      if (openSecs[card.id]) card.classList.add("open");
+      container.appendChild(card);
+    });
+
+    wireItemEvents();
+    updateGlobals();
+  }
+
+  function toggleSection(i) { document.getElementById("sec-" + i).classList.toggle("open"); }
+  function openSection(i) { document.getElementById("sec-" + i).classList.add("open"); }
+  function scrollToSection(i) {
+    var el = document.getElementById("sec-" + i); if (!el) return;
+    var bar = document.querySelector(".topbar");
+    var offset = (bar ? bar.getBoundingClientRect().height : 0) + 8;
+    var y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top: y < 0 ? 0 : y, behavior: "smooth" });
+  }
+
+  function wireItemEvents() {
+    document.querySelectorAll(".toggle button").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var wrap = btn.parentElement;
+        var si = wrap.getAttribute("data-si"), ii = wrap.getAttribute("data-ii");
+        var v = btn.getAttribute("data-v");
+        var k = key(si, ii);
+        if (state.answers[k] === v) { delete state.answers[k]; } else { state.answers[k] = v; }
+        save();
+        render();
+        openSection(Number(si));
+      });
+    });
+    document.querySelectorAll(".item").forEach(function (row) {
+      var k = row.getAttribute("data-k");
+      var fx = state.fix[k] || {};
+      row.querySelectorAll("[data-fix]").forEach(function (inp) {
+        var f = inp.getAttribute("data-fix");
+        inp.value = fx[f] || "";
+        inp.addEventListener("input", function () {
+          var cur = state.fix[k] || {};
+          cur[f] = inp.value;
+          state.fix[k] = cur;
+          save();
+        });
+        inp.addEventListener("click", function (e) { e.stopPropagation(); });
+      });
+      var ta = row.querySelector(".note-line textarea");
+      if (ta) {
+        ta.value = state.notes[k] || "";
+        ta.addEventListener("input", function () { state.notes[k] = ta.value; save(); });
+        ta.addEventListener("click", function (e) { e.stopPropagation(); });
+      }
+    });
+  }
+
+  function updateGlobals() {
+    var o = overallScore();
+    var stt = statusOf(o.pct);
+    document.getElementById("cSi").textContent = o.si;
+    document.getElementById("cNo").textContent = o.no;
+    document.getElementById("cNa").textContent = o.na;
+    document.getElementById("cPend").textContent = o.pend;
+
+    var pctText = o.pct === null ? "—" : o.pct + "%";
+    document.getElementById("gaugePct").textContent = pctText;
+    document.getElementById("bbPct").textContent = pctText;
+
+    var pill = document.getElementById("statusPill");
+    pill.className = "status-pill status-" + stt.cls;
+    document.getElementById("statusText").textContent = stt.label;
+
+    var arc = document.getElementById("gaugeArc");
+    var frac = o.pct === null ? 0 : o.pct / 100;
+    arc.setAttribute("stroke-dashoffset", String(GAUGE_C * (1 - frac)));
+    arc.setAttribute("stroke", colorFor(stt.cls));
+
+    var ps = document.getElementById("printSummary");
+    if (ps) {
+      var m = state.meta || {};
+      ps.innerHTML =
+        "<h2>Autoevaluación GRD — Informe de resultados</h2>" +
+        '<div class="ps-grid">' +
+          "<div><b>Empresa:</b> " + esc(m.empresa || "—") + "</div>" +
+          "<div><b>RUT:</b> " + esc(m.rut || "—") + "</div>" +
+          "<div><b>Centro de trabajo:</b> " + esc(m.centro || "—") + "</div>" +
+          "<div><b>Actividad:</b> " + esc(m.actividad || "—") + "</div>" +
+          "<div><b>N° trabajadores:</b> " + esc(m.trab || "—") + "</div>" +
+          "<div><b>Organismo administrador:</b> " + esc(m.oa || "—") + "</div>" +
+          "<div><b>Evaluador(a):</b> " + esc(m.evaluador || "—") + (m.cargo ? " — " + esc(m.cargo) : "") + "</div>" +
+          "<div><b>Fecha:</b> " + esc(m.fecha || "—") + "</div>" +
+          "<div><b>Correo:</b> " + esc(m.email || "—") + "</div>" +
+        "</div>" +
+        '<div class="ps-score">Cumplimiento: ' + pctText + " · " + esc(stt.label) +
+          " &nbsp;|&nbsp; " + o.si + " cumple · " + o.no + " no cumple · " + o.na + " no aplica · " + o.pend + " pendientes</div>";
+    }
+  }
+
+  // meta fields
+  ["empresa", "rut", "actividad", "centro", "trab", "oa", "fecha", "evaluador", "cargo", "email"].forEach(function (f) {
+    var el = document.getElementById("m-" + f);
+    if (!el) return;
+    el.value = state.meta[f] || "";
+    el.addEventListener("input", function () { state.meta[f] = el.value; save(); updateGlobals(); });
+    el.addEventListener("change", function () { state.meta[f] = el.value; save(); updateGlobals(); });
+  });
+
+  document.getElementById("aboutBtn").addEventListener("click", function () {
+    document.getElementById("about").classList.toggle("open");
+  });
+  document.getElementById("printBtn").addEventListener("click", function () {
+    document.querySelectorAll(".section").forEach(function (s) { s.classList.add("open"); });
+    window.print();
+  });
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (confirm("¿Reiniciar todas las respuestas, medidas y observaciones? Los datos de identificación se conservan. Esta acción no se puede deshacer.")) {
+      state = { meta: state.meta, answers: {}, notes: {}, fix: {} };
+      save(); firstRender = true; render();
+    }
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var emp = (state.meta.empresa || "empresa").replace(/[^\w\-]+/g, "_").slice(0, 40);
+    a.href = url; a.download = "autoevaluacion-grd_" + emp + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  });
+  document.getElementById("importBtn").addEventListener("click", function () {
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var data = JSON.parse(reader.result);
+        if (!data || typeof data !== "object") throw new Error("formato");
+        state = {
+          meta: data.meta && typeof data.meta === "object" ? data.meta : {},
+          answers: data.answers && typeof data.answers === "object" ? data.answers : {},
+          notes: data.notes && typeof data.notes === "object" ? data.notes : {},
+          fix: data.fix && typeof data.fix === "object" ? data.fix : {}
+        };
+        save();
+        ["empresa", "rut", "actividad", "centro", "trab", "oa", "fecha", "evaluador", "cargo", "email"].forEach(function (f) {
+          var el = document.getElementById("m-" + f); if (el) el.value = state.meta[f] || "";
+        });
+        firstRender = true; render();
+        alert("Avance importado.");
+      } catch (err) {
+        alert("No se pudo leer el archivo. Debe ser un JSON exportado por esta misma herramienta.");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("mailBtn").addEventListener("click", function () {
+    var o = overallScore();
+    var stt = statusOf(o.pct);
+    var m = state.meta || {};
+    var NL = "\r\n";
+
+    var head = [
+      "Autoevaluación GRD — Informe de resultados",
+      "",
+      "Empresa: " + (m.empresa || "—") + (m.rut ? "  (RUT " + m.rut + ")" : ""),
+      "Centro de trabajo: " + (m.centro || "—"),
+      "Actividad económica: " + (m.actividad || "—"),
+      "N° de trabajadores: " + (m.trab || "—"),
+      "Organismo administrador: " + (m.oa || "—"),
+      "Evaluador(a): " + (m.evaluador || "—") + (m.cargo ? " — " + m.cargo : ""),
+      "Fecha de la evaluación: " + (m.fecha || "—"),
+      "",
+      "CUMPLIMIENTO: " + (o.pct === null ? "sin iniciar" : o.pct + "% — " + stt.label),
+      o.si + " cumple · " + o.no + " no cumple · " + o.na + " no aplica · " + o.pend + " pendientes",
+      "",
+      "Detalle por sección:"
+    ];
+    SECTIONS.forEach(function (sec, i) {
+      var sc = sectionScore(i);
+      head.push("  " + String(i + 1).padStart(2, "0") + ". " + sec.title + ": " +
+        (sc.pct === null ? "—" : sc.pct + "%") + " (" + sc.answered + "/" + sc.total + ")");
+    });
+
+    var fails = [];
+    SECTIONS.forEach(function (sec, si) {
+      sec.items.forEach(function (it, ii) {
+        var k = key(si, ii);
+        if (state.answers[k] === "no") {
+          var fx = state.fix[k] || {};
+          var extra = [];
+          if (fx.resp) extra.push("responsable: " + fx.resp);
+          if (fx.fecha) extra.push("fecha: " + fx.fecha);
+          var n = state.notes[k];
+          if (n && n.trim()) extra.push("obs.: " + n.trim());
+          fails.push("  - (" + it.n + ") " + it.q + (extra.length ? "  [" + extra.join(" · ") + "]" : ""));
+        }
+      });
+    });
+    var failBlock = fails.length ? ["", "Hallazgos — preguntas marcadas NO CUMPLE (" + fails.length + "):"].concat(fails) : [];
+    var foot = ["", "Generado con la herramienta de Autoevaluación GRD."];
+
+    var subject = "Autoevaluación GRD" + (m.empresa ? " — " + m.empresa : "") + (o.pct === null ? "" : " (" + o.pct + "%)");
+    function build(lines) {
+      return "mailto:" + encodeURIComponent(m.email || "") +
+        "?subject=" + encodeURIComponent(subject) +
+        "&body=" + encodeURIComponent(lines.join(NL));
+    }
+    var href = build(head.concat(failBlock, foot));
+    if (href.length > 1900) {
+      href = build(head.concat(
+        ["", "(El detalle de los hallazgos y las medidas va en el PDF adjunto — usa «Imprimir / PDF».)"], foot
+      ));
+    }
+    if (!m.email) alert("No hay correo cargado en «Identificación». Se abrirá el correo igual para que elijas el destinatario.");
+    window.location.href = href;
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
