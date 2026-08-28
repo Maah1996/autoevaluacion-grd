@@ -268,31 +268,62 @@
   @media (max-width:560px){ .app-pad{ padding-bottom:170px; } }
 
   .print-only { display:none; }
+
+  /* ===== Informe final (Modelo B — Acta de cumplimiento) ===== */
+  #reportView { display:none; }
+  #reportView {
+    color:#1a222e; font-size:12px; line-height:1.5;
+    font-family:"Source Sans 3",ui-sans-serif,system-ui,sans-serif;
+  }
+  #reportView h1,#reportView h2 { font-family:"Libre Franklin",ui-sans-serif,system-ui,sans-serif; }
+  .rv-kicker { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#1c3f66; font-weight:700; }
+  .rv-h1 { font-size:19px; margin:6px 0 2px; }
+  .rv-sub { font-size:11px; color:#727d89; }
+  .rv-rule { height:2px; background:#1c3f66; margin:12px 0 14px; }
+  .rv-meta { display:grid; grid-template-columns:1fr 1fr; gap:0 30px; margin:0 0 12px; }
+  .rv-meta > div { padding:5px 0; border-bottom:1px solid #e7ebf0; }
+  .rv-meta dt { font-size:9px; letter-spacing:.09em; text-transform:uppercase; color:#727d89; font-weight:700; margin:0; }
+  .rv-meta dd { margin:1px 0 0; font-size:12px; }
+  .rv-result { display:flex; gap:22px; align-items:flex-start; justify-content:space-between; margin:6px 0 4px; }
+  .rv-stack { display:flex; height:11px; border:1px solid #c9cfd6; border-radius:3px; overflow:hidden; margin:4px 0 8px; }
+  .rv-stack i { display:block; }
+  .rv-si{background:#1c7146;} .rv-no{background:#a93727;} .rv-na{background:#b9c2cc;} .rv-pend{background:#e7ebf0;}
+  .rv-legend { display:flex; flex-wrap:wrap; gap:5px 16px; font-size:11px; color:#47535f; }
+  .rv-legend span { display:inline-flex; align-items:center; gap:5px; }
+  .rv-dot { width:8px; height:8px; border-radius:2px; display:inline-block; }
+  .rv-badge { flex:none; text-align:center; border:1px solid #c9cfd6; border-radius:7px; padding:9px 16px; min-width:118px; }
+  .rv-badge .p { font-family:"IBM Plex Mono",monospace; font-size:24px; font-weight:600; line-height:1; }
+  .rv-badge .l { font-size:9px; letter-spacing:.11em; text-transform:uppercase; font-weight:700; margin-top:5px; }
+  .rv-badge .b { font-size:9px; color:#727d89; margin-top:5px; line-height:1.35; }
+  .rv-ok{color:#1c7146;} .rv-warn{color:#87600f;} .rv-bad{color:#a93727;}
+  .rv-bgok{background:#e4f1ea;} .rv-bgwarn{background:#f6edd9;} .rv-bgbad{background:#f6e5e2;} .rv-bgvacio{background:#eef1f4;}
+  .rv-clar { font-size:10.5px; color:#727d89; margin:4px 0 10px; }
+  #reportView table { width:100%; border-collapse:collapse; font-size:11.5px; }
+  #reportView th { text-align:left; font-size:9px; letter-spacing:.07em; text-transform:uppercase; color:#727d89; font-weight:700; padding:6px 8px; border-bottom:1px solid #c9cfd6; }
+  #reportView td { padding:6px 8px; border-bottom:1px solid #e7ebf0; vertical-align:top; }
+  #reportView td.rv-n { width:30px; font-family:"IBM Plex Mono",monospace; color:#727d89; }
+  #reportView td.rv-c { text-align:center; white-space:nowrap; width:88px; }
+  tr.rv-grp td { background:#eef2f7; font-weight:700; color:#12314e; font-size:10.5px; padding:6px 8px; border-bottom:1px solid #c9cfd6; }
+  tr.rv-grp .rv-gp { float:right; font-family:"IBM Plex Mono",monospace; font-weight:500; color:#47535f; }
+  .rv-pill { display:inline-block; font-size:9.5px; font-weight:700; padding:2px 8px; border-radius:999px; }
+  .rv-pill.ok{background:#e4f1ea; color:#1c7146;} .rv-pill.bad{background:#f6e5e2; color:#a93727;} .rv-pill.na{background:#eef1f4; color:#47535f;}
+  tr.rv-subrow td { border-bottom:1px solid #e7ebf0; padding-top:0; }
+  .rv-note { font-size:10.5px; color:#47535f; background:#f6e5e2; border-left:2px solid #a93727; padding:6px 9px; border-radius:0 3px 3px 0; }
+  .rv-note.na { background:#eef1f4; border-left-color:#b9c2cc; }
+  .rv-note b { color:#a93727; } .rv-note.na b { color:#47535f; } .rv-note .kv { color:#1a222e; }
+  .rv-tot { margin-top:12px; font-size:11.5px; color:#47535f; }
+  .rv-sign { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:34px; }
+  .rv-sign div { border-top:1px solid #1a222e; padding-top:6px; font-size:10.5px; color:#727d89; text-align:center; }
+  .rv-sign div b { display:block; color:#1a222e; font-size:11.5px; margin-bottom:1px; }
+  .rv-foot { margin-top:20px; padding-top:10px; border-top:1px solid #c9cfd6; font-size:9.5px; color:#727d89; line-height:1.45; }
+
   @media print {
-    .appbar,.crumbs,.a-actions,.chips,.bottombar,.toggle,.about,.disclosure > summary,.page-h .btn,.locked-banner { display:none !important; }
-    .disclosure { display:none !important; }
-    .a-top { position:static; border:0; }
-    .items { display:block !important; }
-    .section { break-inside:avoid; box-shadow:none; border:1px solid #999; }
-    .item { break-inside:avoid; } .item.flag-no { background:#fff; }
-    body { background:#fff; color:#000; } .app-pad { padding-bottom:0; }
-    .print-only { display:block; }
-    .print-answer { display:block; margin-top:9px; font-size:12px; font-weight:700; }
-    .print-answer[data-ans="si"]{color:#1f6f43;} .print-answer[data-ans="no"]{color:#b23b2c;} .print-answer[data-ans="na"],.print-answer[data-ans=""]{color:#555;}
-    .answers-grid { display:block !important; }
-    .item.flag-na .answers-grid { display:none !important; }
-    .na-note { border-color:#999 !important; background:#f7f7f7 !important; color:#000 !important; }
-    .item.flag-na .na-note { display:block !important; }
-    .ans-col { border-color:#999 !important; box-shadow:none !important; margin-top:8px; }
-    .ans-head { background:#f0f0f0 !important; color:#000 !important; }
-    .item:not(.flag-si) .ans-si { display:none !important; }
-    .item:not(.flag-no) .ans-no { display:none !important; }
-    .item.flag-no .fix-grid { display:block !important; }
-    .note-line textarea,.fix-grid .field input { border:0; background:transparent; padding:0; min-height:0; font-size:12px; color:#000; resize:none; }
-    .print-summary { display:block; border:1px solid #999; border-radius:8px; padding:13px 15px; margin:0 0 16px; }
-    .print-summary h2 { margin:0 0 9px; font-size:15px; }
-    .print-summary .ps-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 18px; font-size:12px; }
-    .print-summary .ps-score { margin-top:9px; font-size:12px; font-weight:700; }
+    @page { margin:13mm; }
+    body.report-print { background:#fff; }
+    body.report-print > :not(#reportView) { display:none !important; }
+    body.report-print #reportView { display:block !important; }
+    #reportView tr, #reportView .rv-sign, #reportView .rv-result { break-inside:avoid; }
+    #reportView thead { display:table-header-group; }
   }
 </style>
 </head>
@@ -1075,29 +1106,97 @@
     }).catch(function (e) { alert("No se pudo cerrar: " + e.message); $("at-cerrar").disabled = false; });
   });
 
-  /* ---------- print summary ---------- */
-  function buildPrintSummary() {
-    var host = $("sections");
-    var old = document.getElementById("printSummary"); if (old) old.remove();
-    var e = curEmpresa, o = scoreOf(A.respuestas), st = statusOf(o.pct);
-    var div = document.createElement("div");
-    div.className = "print-summary print-only"; div.id = "printSummary";
-    div.innerHTML = "<h2>Autoevaluación GRD — Informe de resultados</h2>" +
-      '<div class="ps-grid">' +
-        "<div><b>Empresa:</b> " + esc(e.nombre) + "</div><div><b>RUT:</b> " + esc(e.rut || "—") + "</div>" +
-        "<div><b>Centro de trabajo:</b> " + esc(e.direccion || "—") + "</div><div><b>Actividad:</b> " + esc(e.actividad || "—") + "</div>" +
-        "<div><b>N° trabajadores:</b> " + esc(dotDisplay(e)) + "</div><div><b>Organismo administrador:</b> " + esc(e.organismo || "—") + "</div>" +
-        "<div><b>Evaluador(a):</b> " + esc(A.evaluadorNombre || "—") + "</div><div><b>Fecha:</b> " + fmtDate(A.fecha) + "</div>" +
-        "<div><b>Estado:</b> " + (A.estado === "cerrada" ? "Cerrada" : "Borrador") + "</div>" +
-      "</div><div class=\"ps-score\">Cumplimiento: " + (o.pct == null ? "—" : o.pct + "%") + " · " + esc(st.label) +
-        " &nbsp;|&nbsp; " + o.si + " cumple · " + o.no + " no cumple · " + o.na + " N/A · " + o.pend + " pendientes</div>";
-    host.parentNode.insertBefore(div, host);
+  /* ---------- informe final (Modelo B — Acta de cumplimiento) ---------- */
+  function rvCls(cls) { return cls === "verde" ? "ok" : cls === "ambar" ? "warn" : cls === "rojo" ? "bad" : "vacio"; }
+  function buildReport() {
+    if (!A || !curEmpresa) return false;
+    var e = curEmpresa, o = scoreOf(A.respuestas), st = statusOf(o.pct), k = rvCls(st.cls);
+    var aplic = o.si + o.no, h = "";
+    h += '<div class="rv-kicker">Acta de cumplimiento</div>' +
+      '<h1 class="rv-h1">Informe de Autoevaluación de Aspectos Legales GRD</h1>' +
+      '<div class="rv-sub">Centro de trabajo · Gestión del Riesgo de Desastres</div>' +
+      '<div class="rv-rule"></div>';
+
+    var meta = [
+      ["Empresa", e.nombre], ["RUT", e.rut || "—"],
+      ["Actividad económica", e.actividad || "—"], ["Organismo administrador", e.organismo || "—"],
+      ["Centro de trabajo", e.direccion || "—"], ["Dotación", dotDisplay(e)],
+      ["Evaluador(a)", A.evaluadorNombre || "—"], ["Fecha de evaluación", fmtDate(A.fecha)],
+      ["Estado del acta", A.estado === "cerrada" ? "Cerrada" : "Borrador"]
+    ];
+    h += '<dl class="rv-meta">' + meta.map(function (r) {
+      return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>';
+    }).join("") + '</dl>';
+
+    var t = (o.si + o.no + o.na + o.pend) || 1;
+    var seg = function (n, c) { return n > 0 ? '<i class="' + c + '" style="width:' + (n / t * 100).toFixed(2) + '%"></i>' : ""; };
+    h += '<div class="rv-result"><div style="flex:1">' +
+      '<div class="rv-stack">' + seg(o.si, "rv-si") + seg(o.no, "rv-no") + seg(o.na, "rv-na") + seg(o.pend, "rv-pend") + '</div>' +
+      '<div class="rv-legend">' +
+        '<span><i class="rv-dot rv-si"></i>' + o.si + ' cumple</span>' +
+        '<span><i class="rv-dot rv-no"></i>' + o.no + ' no cumple</span>' +
+        '<span><i class="rv-dot rv-na"></i>' + o.na + ' no aplica' + (o.na ? ' · fuera del %' : '') + '</span>' +
+        (o.pend ? '<span><i class="rv-dot rv-pend"></i>' + o.pend + ' sin responder</span>' : '') +
+      '</div></div>' +
+      '<div class="rv-badge rv-bg' + k + '"><div class="p rv-' + k + '">' + (o.pct == null ? "—" : o.pct + "%") + '</div>' +
+        '<div class="l rv-' + k + '">' + esc(st.label) + '</div>' +
+        '<div class="b">' + o.si + ' de ' + aplic + ' preguntas aplicables</div></div>' +
+      '</div>';
+    h += '<p class="rv-clar">El porcentaje se calcula solo sobre las ' + aplic + ' preguntas respondidas Sí o No. ' +
+      'Las ' + o.na + ' preguntas «No aplica» quedan registradas en el acta, pero no suben ni bajan el resultado de la empresa.</p>';
+
+    h += '<table><thead><tr><th class="rv-n">N°</th><th>Pregunta</th><th class="rv-c">Resultado</th></tr></thead><tbody>';
+    SECTIONS.forEach(function (sec, i) {
+      var sc = scoreOf(A.respuestas, sec.items);
+      h += '<tr class="rv-grp"><td colspan="3">' + String(i + 1).padStart(2, "0") + ' · ' + esc(sec.title) +
+        '<span class="rv-gp">' + sc.si + ' cumple · ' + sc.no + ' no · ' + sc.na + ' n/a' + (sc.pct == null ? "" : ' · ' + sc.pct + '%') + '</span></td></tr>';
+      sec.items.forEach(function (it) {
+        var v = A.respuestas[it.n];
+        var pill = v === "si" ? '<span class="rv-pill ok">Cumple</span>'
+          : v === "no" ? '<span class="rv-pill bad">No cumple</span>'
+          : v === "na" ? '<span class="rv-pill na">No aplica</span>'
+          : '<span class="rv-pill na">Sin responder</span>';
+        h += '<tr><td class="rv-n">' + it.n + '</td><td>' + esc(it.q) + '</td><td class="rv-c">' + pill + '</td></tr>';
+        if (v === "no") {
+          var md = A.medidas[it.n] || {};
+          var extra = '<br><span class="kv">Responsable:</span> ' + esc(md.responsable || "Por designar") +
+            ' &nbsp;·&nbsp; <span class="kv">Fecha compromiso:</span> ' + fmtDate(md.fecha);
+          if (A.notas[it.n]) extra += '<br><span class="kv">Observación:</span> ' + esc(A.notas[it.n]);
+          h += '<tr class="rv-subrow"><td></td><td colspan="2"><div class="rv-note"><b>Acción requerida:</b> ' + esc(it.medida || "—") + extra + '</div></td></tr>';
+        } else if (v === "na" && A.notas[it.n]) {
+          h += '<tr class="rv-subrow"><td></td><td colspan="2"><div class="rv-note na"><b>Motivo:</b> ' + esc(A.notas[it.n]) + '</div></td></tr>';
+        }
+      });
+    });
+    h += '</tbody></table>';
+
+    h += '<p class="rv-tot">Totales: ' + o.si + ' cumple · ' + o.no + ' no cumple · ' + o.na + ' no aplica' +
+      (o.pend ? ' · ' + o.pend + ' sin responder' : '') +
+      '. Cumplimiento global = ' + o.si + ' ÷ (' + o.si + ' + ' + o.no + ') = <b class="rv-' + k + '">' +
+      (o.pct == null ? "—" : o.pct + "%") + '</b> (' + esc(st.label) + '). ' +
+      'Las ' + o.na + ' preguntas «No aplica» no entran en este cálculo.</p>';
+    if (A.obs) h += '<p class="rv-tot"><b>Observaciones generales:</b> ' + esc(A.obs) + '</p>';
+
+    h += '<div class="rv-sign"><div><b>' + esc(A.evaluadorNombre || "Evaluador(a)") + '</b>Evaluador(a)</div>' +
+      '<div><b>Representante de la empresa</b>' + esc(e.nombre) + '</div></div>';
+    h += '<div class="rv-foot">Informe generado a partir de la Lista de Autoevaluación de Aspectos Legales asociados a la ' +
+      'Gestión del Riesgo de Desastres (GRD) en Centros de Trabajo (Dirección del Trabajo · SUSESO · SENAPRED · ' +
+      'organismos administradores Ley N° 16.744). Cumplimiento = respuestas «Cumple» ÷ («Cumple» + «No cumple»); ' +
+      '«No aplica» no se contabiliza.</div>';
+
+    $("reportView").innerHTML = h;
+    return true;
   }
   $("printBtn").addEventListener("click", function () {
-    buildPrintSummary();
-    document.querySelectorAll("#sections .section").forEach(function (s) { s.classList.add("open"); });
+    if (!buildReport()) { alert("Abre una auditoría para generar el informe."); return; }
+    document.body.classList.add("report-print");
     window.print();
   });
+  window.addEventListener("beforeprint", function () {
+    if (document.body.classList.contains("report-print")) return;
+    if (buildReport()) document.body.classList.add("report-print");
+  });
+  window.addEventListener("afterprint", function () { document.body.classList.remove("report-print"); });
 
   /* ---------- mail ---------- */
   $("mailBtn").addEventListener("click", function () {
@@ -1211,5 +1310,6 @@
   $("cb-emp");
 })();
 </script>
+<div id="reportView"></div>
 </body>
 </html>
