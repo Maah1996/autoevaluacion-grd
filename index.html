@@ -318,6 +318,42 @@
   .rv-sign div b { display:block; color:#1a222e; font-size:11.5px; margin-bottom:1px; }
   .rv-foot { margin-top:20px; padding-top:10px; border-top:1px solid #c9cfd6; font-size:9.5px; color:#727d89; line-height:1.45; }
 
+  /* ===== Formulario en blanco (Modelo C — formato ancho) ===== */
+  #formView { display:none; }
+  #formView {
+    color:#1a222e; font-size:12px; line-height:1.5;
+    font-family:"Source Sans 3",ui-sans-serif,system-ui,sans-serif;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  #formView h1,#formView h2 { font-family:"Libre Franklin",ui-sans-serif,system-ui,sans-serif; }
+  .fv-kicker { font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#1c3f66; font-weight:600; }
+  .fv-title { font-size:19px; margin:6px 0 2px; }
+  .fv-sub { font-size:11px; color:#727d89; }
+  .fv-rule { height:2px; background:#1c3f66; margin:12px 0 14px; }
+  .fv-fields { display:grid; grid-template-columns:1fr 1fr; gap:11px 26px; margin:0 0 12px; }
+  .fv-fields .fld { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .fv-fields .fld .lb { font-size:9px; color:#727d89; text-transform:uppercase; letter-spacing:.07em; font-weight:700; }
+  .fv-fields .fld .bl { font-size:11px; color:#1a222e; font-weight:600; border-bottom:1px solid #1a222e; min-height:15px; padding-bottom:1px; overflow-wrap:anywhere; word-break:break-word; }
+  .fv-fields .fld.wide { grid-column:1 / -1; }
+  .fv-howto { font-size:10.5px; color:#47535f; background:#e7ebf0; border-radius:5px; padding:7px 10px; margin:2px 0 18px; }
+  .fv-howto b { color:#1a222e; }
+  h2.fv-sec { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#1c3f66; border-bottom:1.5px solid #1c3f66; padding-bottom:4px; margin:22px 0 12px; break-after:avoid; }
+  h2.fv-sec .cnt { float:right; font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:10.5px; color:#727d89; letter-spacing:0; text-transform:none; }
+  .fv-q { margin:0 0 16px; break-inside:avoid; }
+  .fv-wide { display:flex; gap:16px; align-items:flex-start; }
+  .fv-wide .fv-main { flex:1; }
+  .fv-q .fv-n { font-family:"IBM Plex Mono",monospace; color:#727d89; margin-right:6px; }
+  .fv-side { display:flex; flex-direction:column; gap:5px; border:1px solid #c9cfd6; border-radius:4px; padding:7px 9px; width:78px; flex:none; }
+  .fv-opt { display:inline-flex; align-items:center; font-size:10.5px; font-weight:600; }
+  .fv-cbx { display:inline-block; width:13px; height:13px; border:1.5px solid #333; border-radius:2px; vertical-align:-2px; margin-right:6px; }
+  .fv-obs-label { font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:#727d89; font-weight:700; margin:8px 0 3px; }
+  .fv-lines { border:1px solid #c9cfd6; border-radius:3px; padding:0 8px; }
+  .fv-lines .ln { display:block; height:24px; border-bottom:1px solid #b9c2cc; }
+  .fv-lines .ln:last-child { border-bottom:0; }
+  .fv-sign { display:grid; grid-template-columns:1fr 1fr; gap:44px; margin-top:40px; break-inside:avoid; }
+  .fv-sign div { border-top:1px solid #1a222e; padding-top:6px; font-size:10.5px; color:#727d89; text-align:center; }
+  .fv-foot { margin-top:22px; padding-top:10px; border-top:1px solid #c9cfd6; font-size:9.5px; color:#727d89; line-height:1.45; }
+
   @media print {
     @page { margin:13mm; }
     body.report-print { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -326,6 +362,12 @@
     body.report-print #reportView { display:block !important; }
     #reportView tr, #reportView .rv-sign, #reportView .rv-result { break-inside:avoid; }
     #reportView thead { display:table-header-group; }
+
+    body.form-print { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    #formView, #formView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    body.form-print > :not(#formView) { display:none !important; }
+    body.form-print #formView { display:block !important; }
+    #formView .fv-q, #formView .fv-wide, #formView .fv-sign { break-inside:avoid; }
   }
 </style>
 </head>
@@ -480,6 +522,7 @@
           <div class="bb-actions">
             <button class="btn primary" id="mailBtn">Enviar por correo</button>
             <button class="btn" id="printBtn">Imprimir / PDF</button>
+            <button class="btn" id="formBtn">Formulario en blanco</button>
             <button class="btn" id="jsonBtn">Descargar JSON</button>
           </div>
         </div>
@@ -1194,11 +1237,71 @@
     document.body.classList.add("report-print");
     window.print();
   });
+
+  /* ---------- formulario en blanco (Modelo C — formato ancho) ---------- */
+  function fvFld(label, value, wide) {
+    return '<div class="fld' + (wide ? ' wide' : '') + '"><span class="lb">' + esc(label) +
+      '</span><span class="bl">' + (value ? esc(value) : "") + '</span></div>';
+  }
+  function fvLines(n) {
+    var s = '<div class="fv-lines">';
+    for (var i = 0; i < n; i++) s += '<span class="ln"></span>';
+    return s + '</div>';
+  }
+  function buildForm() {
+    if (!curEmpresa) return false;
+    var e = curEmpresa;
+    var ev = (A && A.evaluadorNombre) || "";
+    var fe = (A && A.fecha) ? fmtDate(A.fecha) : "";
+    var side = '<div class="fv-side">' + ["Sí", "No", "N/A"].map(function (o) {
+      return '<span class="fv-opt"><span class="fv-cbx"></span>' + esc(o) + '</span>';
+    }).join("") + '</div>';
+    var h = '<div class="fv-kicker">Formulario de auditoría · Modelo C</div>' +
+      '<h1 class="fv-title">Autoevaluación de Aspectos Legales GRD — Centro de trabajo</h1>' +
+      '<div class="fv-sub">Gestión del Riesgo de Desastres · 56 preguntas / 10 secciones · para completar en terreno</div>' +
+      '<div class="fv-rule"></div>' +
+      '<div class="fv-fields">' +
+        fvFld("Empresa", e.nombre) + fvFld("RUT", e.rut || "") +
+        fvFld("Centro de trabajo / dirección", e.direccion || "", true) +
+        fvFld("Actividad económica", e.actividad || "") + fvFld("Organismo administrador", e.organismo || "") +
+        fvFld("Dotación", dotDisplay(e)) + fvFld("Evaluador(a)", ev) +
+        fvFld("Fecha de la evaluación", fe) + fvFld("N° de hoja", "") +
+      '</div>' +
+      '<div class="fv-howto"><b>Datos de la empresa:</b> tomados de la ficha ingresada en la aplicación. ' +
+      '&nbsp;<b>Cómo completar:</b> marque con una <b>X</b> el cuadro (Sí = cumple · No = no cumple · N/A = no aplica) ' +
+      'y anote en «Observaciones» la evidencia, el hallazgo y —si marcó No— la medida y el responsable. ' +
+      'Use el reverso si necesita más espacio.</div>';
+    SECTIONS.forEach(function (sec, i) {
+      h += '<h2 class="fv-sec">' + String(i + 1).padStart(2, "0") + ' · ' + esc(sec.title) +
+        '<span class="cnt">' + sec.items.length + (sec.items.length === 1 ? ' pregunta' : ' preguntas') + '</span></h2>';
+      sec.items.forEach(function (it) {
+        h += '<div class="fv-q"><div class="fv-wide"><div class="fv-main">' +
+          '<span class="fv-n">' + it.n + '.</span>' + esc(it.q) + '</div>' + side + '</div>' +
+          '<div class="fv-obs-label">Observaciones / evidencia</div>' + fvLines(7) + '</div>';
+      });
+    });
+    h += '<div class="fv-sign"><div>Firma evaluador(a) · nombre y RUT</div>' +
+      '<div>Firma representante de la empresa · nombre y RUT</div></div>' +
+      '<div class="fv-foot">Instrumento: Lista de Autoevaluación de Aspectos Legales asociados a la Gestión del ' +
+      'Riesgo de Desastres (GRD) en Centros de Trabajo — Dirección del Trabajo · SUSESO · SENAPRED · organismos ' +
+      'administradores Ley N° 16.744. Una vez completado, traspasar las respuestas a la aplicación para generar el informe.</div>';
+    $("formView").innerHTML = h;
+    return true;
+  }
+  $("formBtn").addEventListener("click", function () {
+    if (!buildForm()) { alert("Abre una empresa para generar el formulario."); return; }
+    document.body.classList.add("form-print");
+    window.print();
+  });
+
   window.addEventListener("beforeprint", function () {
-    if (document.body.classList.contains("report-print")) return;
+    if (document.body.classList.contains("report-print") || document.body.classList.contains("form-print")) return;
     if (buildReport()) document.body.classList.add("report-print");
   });
-  window.addEventListener("afterprint", function () { document.body.classList.remove("report-print"); });
+  window.addEventListener("afterprint", function () {
+    document.body.classList.remove("report-print");
+    document.body.classList.remove("form-print");
+  });
 
   /* ---------- mail ---------- */
   $("mailBtn").addEventListener("click", function () {
@@ -1313,5 +1416,6 @@
 })();
 </script>
 <div id="reportView"></div>
+<div id="formView"></div>
 </body>
 </html>
