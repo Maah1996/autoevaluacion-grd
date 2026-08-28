@@ -239,6 +239,9 @@
   .fix-grid { display:none; grid-template-columns:1fr; gap:10px; margin-top:11px; }
   .item.flag-no .fix-grid { display:grid; }
   .fix-grid .field input { background:var(--surface); }
+  .na-note { display:none; margin-top:12px; padding:11px 13px; border:1px solid var(--line-strong); border-left:3px solid var(--muted); border-radius:8px; background:var(--surface-3); color:var(--ink-soft); font-size:12.5px; font-weight:600; }
+  .item.flag-na .answers-grid { display:none; }
+  .item.flag-na .na-note { display:block; }
 
   .note-line { margin-top:10px; }
   .note-line label { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
@@ -276,6 +279,9 @@
     .print-answer { display:block; margin-top:9px; font-size:12px; font-weight:700; }
     .print-answer[data-ans="si"]{color:#1f6f43;} .print-answer[data-ans="no"]{color:#b23b2c;} .print-answer[data-ans="na"],.print-answer[data-ans=""]{color:#555;}
     .answers-grid { display:block !important; }
+    .item.flag-na .answers-grid { display:none !important; }
+    .na-note { border-color:#999 !important; background:#f7f7f7 !important; color:#000 !important; }
+    .item.flag-na .na-note { display:block !important; }
     .ans-col { border-color:#999 !important; box-shadow:none !important; margin-top:8px; }
     .ans-head { background:#f0f0f0 !important; color:#000 !important; }
     .item:not(.flag-si) .ans-si { display:none !important; }
@@ -468,7 +474,7 @@
   <div class="wrap"><div class="about" id="about">
     <h3>Cómo se calcula</h3>
     <p>Cada pregunta se responde <b>Sí</b>, <b>No</b> o <b>No aplica</b>. El <b>% de cumplimiento</b> es <b>Sí ÷ (Sí + No)</b> sobre lo respondido; los «No aplica» no se contabilizan. Semáforo: <b style="color:var(--red)">no conforme &lt; 60%</b> · <b style="color:var(--amber)">parcial 60–84%</b> · <b style="color:var(--green)">conforme ≥ 85%</b>.</p>
-    <p>Bajo cada pregunta se muestran, lado a lado, dos paneles del instrumento: <b>Cómo verificar (Sí)</b> —columna «SI»— y <b>Medida a implementar (No)</b> —columna «NO»—. Al marcar <b>No</b> se habilitan, dentro del panel de la derecha, los campos <b>Responsable</b> y <b>Fecha compromiso</b>. En una auditoría nueva, bajo cada pregunta se muestra lo registrado en la <b>última auditoría cerrada</b> de la empresa.</p>
+    <p>Bajo cada pregunta se muestran, lado a lado, dos paneles del instrumento: <b>Cómo verificar (Sí)</b> —columna «SI»— y <b>Medida a implementar (No)</b> —columna «NO»—. Al marcar <b>No</b> se habilitan, dentro del panel de la derecha, los campos <b>Responsable</b> y <b>Fecha compromiso</b>. Al marcar <b>N/A</b> los dos paneles se ocultan y aparece «Esto no aplica a la empresa». En una auditoría nueva, bajo cada pregunta se muestra lo registrado en la <b>última auditoría cerrada</b> de la empresa.</p>
   </div></div>
 </div>
 
@@ -888,7 +894,7 @@
         var v = A.respuestas[it.n];
         var md = A.medidas[it.n] || {};
         var rowEl = document.createElement("div");
-        rowEl.className = "item" + (v === "no" ? " flag-no" : "") + (v === "si" ? " flag-si" : "");
+        rowEl.className = "item" + (v === "no" ? " flag-no" : "") + (v === "si" ? " flag-si" : "") + (v === "na" ? " flag-na" : "");
         rowEl.setAttribute("data-n", it.n);
 
         var prevBlock = "";
@@ -924,6 +930,7 @@
               '<div class="field"><label>Fecha compromiso</label><input type="date" data-fix="fecha"></div></div>' +
             "</div></div>" +
           "</div>" +
+          '<div class="na-note">Esto no aplica a la empresa.</div>' +
           '<div class="note-line"><label>Observación / evidencia</label><textarea placeholder="Hallazgo, evidencia revisada, N° de documento…"></textarea></div>';
         wrap.appendChild(rowEl);
       });
@@ -958,6 +965,7 @@
         var rowEl = btn.closest(".item");
         rowEl.classList.toggle("flag-no", A.respuestas[n] === "no");
         rowEl.classList.toggle("flag-si", A.respuestas[n] === "si");
+        rowEl.classList.toggle("flag-na", A.respuestas[n] === "na");
         rowEl.querySelectorAll(".toggle button").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-v") === A.respuestas[n]); });
         rowEl.querySelector(".print-answer").setAttribute("data-ans", A.respuestas[n] || "");
         rowEl.querySelector(".print-answer").textContent = ansText(A.respuestas[n]);
