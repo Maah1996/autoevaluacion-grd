@@ -318,7 +318,7 @@
   .rv-sign div b { display:block; color:#1a222e; font-size:11.5px; margin-bottom:1px; }
   .rv-foot { margin-top:20px; padding-top:10px; border-top:1px solid #c9cfd6; font-size:9.5px; color:#727d89; line-height:1.45; }
 
-  /* ===== Formulario en blanco (Modelo C — formato ancho) ===== */
+  /* ===== Formulario en blanco (ficha con recuadro: pregunta + Sí/No/N/A + observaciones, todo dentro de un borde) ===== */
   #formView { display:none; }
   #formView {
     color:#1a222e; font-size:12px; line-height:1.5;
@@ -339,14 +339,13 @@
   .fv-howto b { color:#1a222e; }
   h2.fv-sec { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#1c3f66; border-bottom:1.5px solid #1c3f66; padding-bottom:4px; margin:22px 0 12px; break-after:avoid; }
   h2.fv-sec .cnt { float:right; font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:10.5px; color:#727d89; letter-spacing:0; text-transform:none; }
-  .fv-q { margin:0 0 16px; break-inside:avoid; }
-  .fv-wide { display:flex; gap:16px; align-items:flex-start; }
-  .fv-wide .fv-main { flex:1; }
+  .fv-q { border:1px solid #999; border-radius:5px; padding:11px 13px; margin:0 0 12px; break-inside:avoid; }
+  .fv-qt { font-size:12px; line-height:1.5; }
   .fv-q .fv-n { font-family:"IBM Plex Mono",monospace; color:#727d89; margin-right:6px; }
-  .fv-side { display:flex; flex-direction:column; gap:5px; border:1px solid #c9cfd6; border-radius:4px; padding:7px 9px; width:78px; flex:none; }
-  .fv-opt { display:inline-flex; align-items:center; font-size:10.5px; font-weight:600; }
-  .fv-cbx { display:inline-block; width:13px; height:13px; border:1.5px solid #333; border-radius:2px; vertical-align:-2px; margin-right:6px; }
-  .fv-obs-label { font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:#727d89; font-weight:700; margin:8px 0 3px; }
+  .fv-answer { display:flex; flex-wrap:wrap; gap:10px 24px; margin:9px 0 2px; }
+  .fv-opt { display:inline-flex; align-items:center; font-size:11px; font-weight:600; }
+  .fv-cbx { display:inline-block; width:14px; height:14px; border:1.5px solid #333; border-radius:2px; vertical-align:-3px; margin-right:6px; }
+  .fv-obs-label { font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:#727d89; font-weight:700; margin:9px 0 3px; }
   .fv-lines { border:1px solid #c9cfd6; border-radius:3px; padding:0 8px; }
   .fv-lines .ln { display:block; height:24px; border-bottom:1px solid #b9c2cc; }
   .fv-lines .ln:last-child { border-bottom:0; }
@@ -367,7 +366,7 @@
     #formView, #formView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     body.form-print > :not(#formView) { display:none !important; }
     body.form-print #formView { display:block !important; }
-    #formView .fv-q, #formView .fv-wide, #formView .fv-sign { break-inside:avoid; }
+    #formView .fv-q, #formView .fv-sign { break-inside:avoid; }
   }
 </style>
 </head>
@@ -1253,10 +1252,10 @@
     var e = curEmpresa;
     var ev = (A && A.evaluadorNombre) || "";
     var fe = (A && A.fecha) ? fmtDate(A.fecha) : "";
-    var side = '<div class="fv-side">' + ["Sí", "No", "N/A"].map(function (o) {
+    var answer = '<div class="fv-answer">' + ["Sí", "No", "N/A"].map(function (o) {
       return '<span class="fv-opt"><span class="fv-cbx"></span>' + esc(o) + '</span>';
     }).join("") + '</div>';
-    var h = '<div class="fv-kicker">Formulario de auditoría · Modelo C</div>' +
+    var h = '<div class="fv-kicker">Formulario de auditoría · para completar en terreno</div>' +
       '<h1 class="fv-title">Autoevaluación de Aspectos Legales GRD — Centro de trabajo</h1>' +
       '<div class="fv-sub">Gestión del Riesgo de Desastres · 56 preguntas / 10 secciones · para completar en terreno</div>' +
       '<div class="fv-rule"></div>' +
@@ -1275,8 +1274,8 @@
       h += '<h2 class="fv-sec">' + String(i + 1).padStart(2, "0") + ' · ' + esc(sec.title) +
         '<span class="cnt">' + sec.items.length + (sec.items.length === 1 ? ' pregunta' : ' preguntas') + '</span></h2>';
       sec.items.forEach(function (it) {
-        h += '<div class="fv-q"><div class="fv-wide"><div class="fv-main">' +
-          '<span class="fv-n">' + it.n + '.</span>' + esc(it.q) + '</div>' + side + '</div>' +
+        h += '<div class="fv-q"><div class="fv-qt"><span class="fv-n">' + it.n + '.</span>' + esc(it.q) + '</div>' +
+          answer +
           '<div class="fv-obs-label">Observaciones / evidencia</div>' + fvLines(4) + '</div>';
       });
     });
