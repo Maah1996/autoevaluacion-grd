@@ -228,6 +228,14 @@
   .fix-grid { display:grid; grid-template-columns:1fr 180px; gap:10px; margin-top:11px; }
   @media (max-width:520px){ .fix-grid{ grid-template-columns:1fr; } }
   .fix-grid .field input { background:var(--surface); }
+
+  .check { display:none; margin-top:12px; border:1px solid var(--green); border-left-width:3px; border-radius:8px; overflow:hidden; }
+  .item.flag-si .check { display:block; }
+  .item.flag-si .disclosure { display:none; }
+  .check .check-head { background:var(--green-soft); color:var(--green); font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:7px 12px; }
+  .check .check-body { padding:11px 12px; }
+  .check .check-text { font-size:12.5px; color:var(--ink-soft); line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
+
   .note-line { margin-top:10px; }
   .note-line label { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
   .note-line textarea { width:100%; font:inherit; font-size:16px; padding:9px 10px; border-radius:8px; border:1px solid var(--line-strong); background:var(--surface-2); color:var(--ink); resize:vertical; min-height:46px; margin-top:4px; }
@@ -265,6 +273,8 @@
     .print-answer[data-ans="si"]{color:#1f6f43;} .print-answer[data-ans="no"]{color:#b23b2c;} .print-answer[data-ans="na"],.print-answer[data-ans=""]{color:#555;}
     .fix { display:block !important; border-color:#999; } .fix .fix-head { background:#f0f0f0; color:#000; }
     .item:not(.flag-no) .fix { display:none !important; }
+    .check { display:block !important; border-color:#999; } .check .check-head { background:#f0f0f0; color:#000; }
+    .item:not(.flag-si) .check { display:none !important; }
     .note-line textarea,.fix-grid .field input { border:0; background:transparent; padding:0; min-height:0; font-size:12px; color:#000; resize:none; }
     .print-summary { display:block; border:1px solid #999; border-radius:8px; padding:13px 15px; margin:0 0 16px; }
     .print-summary h2 { margin:0 0 9px; font-size:15px; }
@@ -452,7 +462,7 @@
   <div class="wrap"><div class="about" id="about">
     <h3>Cómo se calcula</h3>
     <p>Cada pregunta se responde <b>Sí</b>, <b>No</b> o <b>No aplica</b>. El <b>% de cumplimiento</b> es <b>Sí ÷ (Sí + No)</b> sobre lo respondido; los «No aplica» no se contabilizan. Semáforo: <b style="color:var(--red)">no conforme &lt; 60%</b> · <b style="color:var(--amber)">parcial 60–84%</b> · <b style="color:var(--green)">conforme ≥ 85%</b>.</p>
-    <p>Al marcar <b>No</b> aparece la <b>medida a implementar</b> con espacio para responsable y fecha compromiso. En una auditoría nueva, bajo cada pregunta se muestra lo registrado en la <b>última auditoría cerrada</b> de la empresa.</p>
+    <p>Al marcar <b>Sí</b> se despliega <b>cómo verificar el cumplimiento</b> (orientación de la columna «SI» del instrumento). Al marcar <b>No</b> aparece la <b>medida a implementar</b> con espacio para responsable y fecha compromiso. En una auditoría nueva, bajo cada pregunta se muestra lo registrado en la <b>última auditoría cerrada</b> de la empresa.</p>
   </div></div>
 </div>
 
@@ -872,7 +882,7 @@
         var v = A.respuestas[it.n];
         var md = A.medidas[it.n] || {};
         var rowEl = document.createElement("div");
-        rowEl.className = "item" + (v === "no" ? " flag-no" : "");
+        rowEl.className = "item" + (v === "no" ? " flag-no" : "") + (v === "si" ? " flag-si" : "");
         rowEl.setAttribute("data-n", it.n);
 
         var prevBlock = "";
@@ -900,6 +910,8 @@
             '<button data-v="no" class="' + (v === "no" ? "active" : "") + '">No</button>' +
             '<button data-v="na" class="' + (v === "na" ? "active" : "") + '">N/A</button></div>' +
           '<div class="print-answer print-only" data-ans="' + (v || "") + '">' + ansText(v) + "</div>" +
+          (it.verificar ? '<div class="check"><div class="check-head">Cómo verificar el cumplimiento</div><div class="check-body">' +
+            '<div class="check-text">' + esc(it.verificar) + "</div></div></div>" : "") +
           '<div class="fix"><div class="fix-head">Medida a implementar</div><div class="fix-body">' +
             '<div class="fix-text">' + esc(it.medida || "—") + "</div>" +
             '<div class="fix-grid"><div class="field"><label>Responsable</label><input type="text" data-fix="responsable" placeholder="Nombre y cargo"></div>' +
@@ -937,6 +949,7 @@
         if (A.respuestas[n] === val) delete A.respuestas[n]; else A.respuestas[n] = val;
         var rowEl = btn.closest(".item");
         rowEl.classList.toggle("flag-no", A.respuestas[n] === "no");
+        rowEl.classList.toggle("flag-si", A.respuestas[n] === "si");
         rowEl.querySelectorAll(".toggle button").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-v") === A.respuestas[n]); });
         rowEl.querySelector(".print-answer").setAttribute("data-ans", A.respuestas[n] || "");
         rowEl.querySelector(".print-answer").textContent = ansText(A.respuestas[n]);
