@@ -274,6 +274,7 @@
   #reportView {
     color:#1a222e; font-size:12px; line-height:1.5;
     font-family:"Source Sans 3",ui-sans-serif,system-ui,sans-serif;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
   }
   #reportView h1,#reportView h2 { font-family:"Libre Franklin",ui-sans-serif,system-ui,sans-serif; }
   .rv-kicker { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#1c3f66; font-weight:700; }
@@ -319,7 +320,8 @@
 
   @media print {
     @page { margin:13mm; }
-    body.report-print { background:#fff; }
+    body.report-print { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    #reportView, #reportView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     body.report-print > :not(#reportView) { display:none !important; }
     body.report-print #reportView { display:block !important; }
     #reportView tr, #reportView .rv-sign, #reportView .rv-result { break-inside:avoid; }
