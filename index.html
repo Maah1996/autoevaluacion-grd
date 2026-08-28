@@ -220,21 +220,21 @@
   .toggle button.active[data-v="no"]{background:var(--red-soft);border-color:var(--red);color:var(--red);}
   .toggle button.active[data-v="na"]{background:var(--surface-3);border-color:var(--muted);color:var(--ink-soft);}
 
-  .fix { display:none; margin-top:12px; border:1px solid var(--red); border-left-width:3px; border-radius:8px; overflow:hidden; }
-  .item.flag-no .fix { display:block; }
-  .fix .fix-head { background:var(--red-soft); color:var(--red); font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:7px 12px; }
-  .fix .fix-body { padding:11px 12px; }
-  .fix .fix-text { font-size:12.5px; color:var(--ink-soft); line-height:1.55; white-space:pre-wrap; }
-  .fix-grid { display:grid; grid-template-columns:1fr 180px; gap:10px; margin-top:11px; }
-  @media (max-width:520px){ .fix-grid{ grid-template-columns:1fr; } }
+  .answers-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; align-items:start; }
+  @media (max-width:560px){ .answers-grid { grid-template-columns:1fr; } }
+  .ans-col { border:1px solid var(--line-strong); border-left-width:3px; border-radius:8px; overflow:hidden; }
+  .ans-col.ans-si { border-color:var(--green); }
+  .ans-col.ans-no { border-color:var(--red); }
+  .ans-head { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:7px 12px; }
+  .ans-si .ans-head { background:var(--green-soft); color:var(--green); }
+  .ans-no .ans-head { background:var(--red-soft); color:var(--red); }
+  .ans-body { padding:11px 12px; }
+  .ans-text { font-size:12.5px; color:var(--ink-soft); line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
+  .item.flag-si .ans-si { box-shadow:inset 0 0 0 2px var(--green); }
+  .item.flag-no .ans-no { box-shadow:inset 0 0 0 2px var(--red); }
+  .fix-grid { display:none; grid-template-columns:1fr; gap:10px; margin-top:11px; }
+  .item.flag-no .fix-grid { display:grid; }
   .fix-grid .field input { background:var(--surface); }
-
-  .check { display:none; margin-top:12px; border:1px solid var(--green); border-left-width:3px; border-radius:8px; overflow:hidden; }
-  .item.flag-si .check { display:block; }
-  .item.flag-si .disclosure { display:none; }
-  .check .check-head { background:var(--green-soft); color:var(--green); font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:7px 12px; }
-  .check .check-body { padding:11px 12px; }
-  .check .check-text { font-size:12.5px; color:var(--ink-soft); line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
 
   .note-line { margin-top:10px; }
   .note-line label { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
@@ -271,10 +271,12 @@
     .print-only { display:block; }
     .print-answer { display:block; margin-top:9px; font-size:12px; font-weight:700; }
     .print-answer[data-ans="si"]{color:#1f6f43;} .print-answer[data-ans="no"]{color:#b23b2c;} .print-answer[data-ans="na"],.print-answer[data-ans=""]{color:#555;}
-    .fix { display:block !important; border-color:#999; } .fix .fix-head { background:#f0f0f0; color:#000; }
-    .item:not(.flag-no) .fix { display:none !important; }
-    .check { display:block !important; border-color:#999; } .check .check-head { background:#f0f0f0; color:#000; }
-    .item:not(.flag-si) .check { display:none !important; }
+    .answers-grid { display:block !important; }
+    .ans-col { border-color:#999 !important; box-shadow:none !important; margin-top:8px; }
+    .ans-head { background:#f0f0f0 !important; color:#000 !important; }
+    .item:not(.flag-si) .ans-si { display:none !important; }
+    .item:not(.flag-no) .ans-no { display:none !important; }
+    .item.flag-no .fix-grid { display:block !important; }
     .note-line textarea,.fix-grid .field input { border:0; background:transparent; padding:0; min-height:0; font-size:12px; color:#000; resize:none; }
     .print-summary { display:block; border:1px solid #999; border-radius:8px; padding:13px 15px; margin:0 0 16px; }
     .print-summary h2 { margin:0 0 9px; font-size:15px; }
@@ -462,7 +464,7 @@
   <div class="wrap"><div class="about" id="about">
     <h3>Cómo se calcula</h3>
     <p>Cada pregunta se responde <b>Sí</b>, <b>No</b> o <b>No aplica</b>. El <b>% de cumplimiento</b> es <b>Sí ÷ (Sí + No)</b> sobre lo respondido; los «No aplica» no se contabilizan. Semáforo: <b style="color:var(--red)">no conforme &lt; 60%</b> · <b style="color:var(--amber)">parcial 60–84%</b> · <b style="color:var(--green)">conforme ≥ 85%</b>.</p>
-    <p>Al marcar <b>Sí</b> se despliega <b>cómo verificar el cumplimiento</b> (orientación de la columna «SI» del instrumento). Al marcar <b>No</b> aparece la <b>medida a implementar</b> con espacio para responsable y fecha compromiso. En una auditoría nueva, bajo cada pregunta se muestra lo registrado en la <b>última auditoría cerrada</b> de la empresa.</p>
+    <p>Bajo cada pregunta se muestran, lado a lado, dos paneles del instrumento: <b>Cómo verificar (Sí)</b> —columna «SI»— y <b>Medida a implementar (No)</b> —columna «NO»—. Al marcar <b>No</b> se habilitan, dentro del panel de la derecha, los campos <b>Responsable</b> y <b>Fecha compromiso</b>. En una auditoría nueva, bajo cada pregunta se muestra lo registrado en la <b>última auditoría cerrada</b> de la empresa.</p>
   </div></div>
 </div>
 
@@ -904,18 +906,20 @@
           '<div class="item-q"><span class="qn">' + esc(String(it.n)).padStart(2, "0") + "</span>" + esc(it.q) + "</div>" +
           '<div class="legal-note"><b>Requisito legal</b>\n' + esc(it.legal || "—") + "</div>" +
           prevBlock +
-          (it.verificar ? '<details class="disclosure"><summary>Cómo verificar</summary><div class="body">' + esc(it.verificar) + "</div></details>" : "") +
           '<div class="toggle" data-n="' + it.n + '">' +
             '<button data-v="si" class="' + (v === "si" ? "active" : "") + '">Sí</button>' +
             '<button data-v="no" class="' + (v === "no" ? "active" : "") + '">No</button>' +
             '<button data-v="na" class="' + (v === "na" ? "active" : "") + '">N/A</button></div>' +
           '<div class="print-answer print-only" data-ans="' + (v || "") + '">' + ansText(v) + "</div>" +
-          (it.verificar ? '<div class="check"><div class="check-head">Cómo verificar el cumplimiento</div><div class="check-body">' +
-            '<div class="check-text">' + esc(it.verificar) + "</div></div></div>" : "") +
-          '<div class="fix"><div class="fix-head">Medida a implementar</div><div class="fix-body">' +
-            '<div class="fix-text">' + esc(it.medida || "—") + "</div>" +
-            '<div class="fix-grid"><div class="field"><label>Responsable</label><input type="text" data-fix="responsable" placeholder="Nombre y cargo"></div>' +
-            '<div class="field"><label>Fecha compromiso</label><input type="date" data-fix="fecha"></div></div></div></div>' +
+          '<div class="answers-grid">' +
+            '<div class="ans-col ans-si"><div class="ans-head">Cómo verificar (Sí)</div><div class="ans-body">' +
+              '<div class="ans-text">' + esc(it.verificar || "—") + "</div></div></div>" +
+            '<div class="ans-col ans-no"><div class="ans-head">Medida a implementar (No)</div><div class="ans-body">' +
+              '<div class="ans-text">' + esc(it.medida || "—") + "</div>" +
+              '<div class="fix-grid"><div class="field"><label>Responsable</label><input type="text" data-fix="responsable" placeholder="Nombre y cargo"></div>' +
+              '<div class="field"><label>Fecha compromiso</label><input type="date" data-fix="fecha"></div></div>' +
+            "</div></div>" +
+          "</div>" +
           '<div class="note-line"><label>Observación / evidencia</label><textarea placeholder="Hallazgo, evidencia revisada, N° de documento…"></textarea></div>';
         wrap.appendChild(rowEl);
       });
