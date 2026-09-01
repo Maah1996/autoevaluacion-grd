@@ -353,6 +353,51 @@
   .fv-sign div { border-top:1px solid #1a222e; padding-top:6px; font-size:10.5px; color:#727d89; text-align:center; }
   .fv-foot { margin-top:22px; padding-top:10px; border-top:1px solid #c9cfd6; font-size:9.5px; color:#727d89; line-height:1.45; }
 
+  /* ===== Plan de brechas (Paso 2) ===== */
+  .bp-readgrid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px 18px; font-size:13px; margin:0 0 4px; }
+  .bp-readgrid div { color:var(--ink-soft); }
+  .bp-readgrid b { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; display:block; }
+  @media (max-width:700px){ .bp-readgrid{ grid-template-columns:1fr; } }
+  .form-grid.thirds { grid-template-columns:1fr 1fr 1fr; }
+  @media (max-width:700px){ .form-grid.thirds{ grid-template-columns:1fr; } }
+
+  .brecha-card { background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--red); border-radius:var(--radius); box-shadow:var(--shadow); padding:15px 16px; margin:12px 0; }
+  .brecha-card.is-manual { border-left-color:var(--navy); }
+  .brecha-card.is-stale { border-left-color:var(--amber); }
+  .bc-head { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:11px; }
+  .bc-tag { font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; background:var(--red-soft); color:var(--red); padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .brecha-card.is-manual .bc-tag { background:var(--navy-soft); color:var(--navy-ink); }
+  .bc-sec { font-size:12.5px; color:var(--muted); }
+  .bc-del { margin-left:auto; padding:5px 10px; font-size:12px; }
+  .bc-stale-note { width:100%; font-size:11.5px; color:var(--amber); background:var(--amber-soft); border:1px solid var(--line); border-radius:7px; padding:6px 9px; }
+  .brecha-card .field { margin-bottom:10px; }
+  .brecha-card .field textarea { width:100%; font:inherit; font-size:16px; padding:9px 10px; border-radius:8px; border:1px solid var(--line-strong); background:var(--surface-2); color:var(--ink); resize:vertical; min-height:64px; }
+  .brecha-card .form-grid { margin-top:2px; }
+  .bp-empty { text-align:center; color:var(--muted); font-size:13.5px; padding:26px 16px; background:var(--surface); border:1px dashed var(--line-strong); border-radius:var(--radius); }
+
+  /* impresión — Plan de brechas (réplica formato Mutual, horizontal) */
+  #brechasReportView { display:none; color:#1a222e; font-size:9.5px; line-height:1.4; font-family:"Source Sans 3",ui-sans-serif,system-ui,sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #brechasReportView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .bpr-h1 { font-size:14px; margin:0 0 8px; font-family:"Libre Franklin",ui-sans-serif,system-ui,sans-serif; color:#1a222e; }
+  #brechasReportView table { width:100%; border-collapse:collapse; margin:0 0 10px; }
+  #brechasReportView td, #brechasReportView th { border:1px solid #7f9a86; padding:4px 6px; vertical-align:top; text-align:left; }
+  .bpr-band td, .bpr-band th { background:#1f7a3d; color:#fff; font-weight:700; text-align:center; letter-spacing:.04em; text-transform:uppercase; font-size:11px; padding:5px 6px; border:1px solid #1f7a3d; }
+  .bpr-ant td { font-size:9.5px; }
+  .bpr-ant .k { background:#eaf3ec; font-weight:700; color:#26482f; white-space:nowrap; width:1%; }
+  .bpr-ant .tbox { text-align:center; font-weight:700; color:#26482f; }
+  #brechasReportView thead th { background:#eaf3ec; font-weight:700; color:#26482f; font-size:8.5px; line-height:1.25; text-align:center; }
+  #brechasReportView td.bpr-req { width:8%; font-family:"IBM Plex Mono",monospace; text-align:center; }
+  #brechasReportView td.bpr-med { width:27%; }
+  #brechasReportView td.bpr-dt { width:9%; white-space:nowrap; text-align:center; }
+  #brechasReportView td.bpr-rs { width:11%; }
+  #brechasReportView td.bpr-obs { width:14%; }
+  .bpr-tot { margin-top:8px; font-size:9px; color:#47535f; }
+  .bpr-sign { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:24px; }
+  .bpr-sign div { border-top:1px solid #1a222e; padding-top:5px; font-size:9px; color:#5b6b60; text-align:center; }
+  .bpr-sign div b { display:block; color:#1a222e; font-size:10px; margin-bottom:1px; }
+  .bpr-foot { margin-top:12px; padding-top:8px; border-top:1px solid #7f9a86; font-size:8px; color:#5b6b60; line-height:1.4; }
+  @page brechas { size:A4 landscape; margin:11mm; }
+
   @media print {
     @page { margin:13mm; }
     body.report-print { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -367,6 +412,13 @@
     body.form-print > :not(#formView) { display:none !important; }
     body.form-print #formView { display:block !important; }
     #formView .fv-q, #formView .fv-sign { break-inside:avoid; }
+
+    body.brechas-print { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    #brechasReportView, #brechasReportView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    body.brechas-print > :not(#brechasReportView) { display:none !important; }
+    body.brechas-print #brechasReportView { display:block !important; page:brechas; }
+    body.brechas-print #brechasReportView tr, body.brechas-print #brechasReportView .bpr-sign { break-inside:avoid; }
+    body.brechas-print #brechasReportView thead { display:table-header-group; }
   }
 </style>
 </head>
@@ -480,6 +532,7 @@
             </div>
             <div class="a-actions">
               <button class="btn" id="at-volver">← Volver</button>
+              <button class="btn" id="at-brechas">Plan de brechas →</button>
               <button class="btn primary" id="at-cerrar">Cerrar auditoría</button>
             </div>
           </div>
@@ -519,10 +572,77 @@
         <div class="bottombar-inner">
           <div><div class="bb-pct num" id="bbPct">—</div><div class="bb-label">Cumplimiento</div></div>
           <div class="bb-actions">
-            <button class="btn primary" id="mailBtn">Enviar por correo</button>
+            <button class="btn" id="mailBtn">Enviar por correo</button>
             <button class="btn" id="printBtn">Imprimir / PDF</button>
             <button class="btn" id="formBtn">Formulario en blanco</button>
             <button class="btn" id="jsonBtn">Descargar JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLAN DE BRECHAS (Paso 2) -->
+    <div class="view" id="brechasView">
+      <div class="a-top">
+        <div class="a-top-inner">
+          <div class="a-title-row">
+            <div>
+              <h3 class="a-title" id="bt-empresa">—</h3>
+              <div class="a-sub" id="bt-sub">—</div>
+            </div>
+            <div class="a-actions">
+              <button class="btn" id="bt-volver">← Volver a la auditoría</button>
+            </div>
+          </div>
+          <div class="counts" id="bt-counts" style="margin-top:10px"></div>
+          <div class="saveflag" id="bp-saveflag"></div>
+        </div>
+      </div>
+
+      <div class="wrap">
+        <div class="meta-card">
+          <h3>Antecedentes generales</h3>
+          <div class="bp-readgrid" id="bp-empresa-datos"></div>
+          <div class="form-grid thirds" style="margin-top:12px">
+            <div class="field"><label>Tipo de actividad</label>
+              <select id="ba-tipo"><option value="">—</option><option value="Presencial">Presencial</option><option value="Vía remota">Vía remota</option><option value="Zoom">Zoom</option></select>
+            </div>
+            <div class="field"><label>Fecha de la actividad</label><input id="ba-fecha" type="date"></div>
+            <div class="field"><label>N° adherente</label><input id="ba-adh" type="text"></div>
+            <div class="field"><label>Hora inicio</label><input id="ba-hini" type="time"></div>
+            <div class="field"><label>Hora término</label><input id="ba-hfin" type="time"></div>
+            <div class="field"><label>Teléfono</label><input id="ba-tel" type="text"></div>
+            <div class="field"><label>Comuna / centro de trabajo</label><input id="ba-comuna" type="text"></div>
+            <div class="field"><label>Fecha de elaboración</label><input id="ba-felab" type="date"></div>
+            <div class="field"><label>Fecha de aprobación</label><input id="ba-fapr" type="date"></div>
+            <div class="field"><label>Responsable de elaboración</label><input id="ba-relab" type="text"></div>
+            <div class="field"><label>Responsable de aprobación</label><input id="ba-rapr" type="text"></div>
+          </div>
+        </div>
+
+        <details class="disclosure" style="margin:14px 0 6px">
+          <summary>Criterios para priorizar las medidas de control</summary>
+          <div class="body">Afectación a los trabajadores — variable principal de priorización: considere las potenciales consecuencias sobre la vida o salud de los trabajadores.
+Compromiso estructural de las instalaciones del centro de trabajo: alteraciones, daños o afectaciones estructurales que pudiese sufrir el centro de trabajo.
+Continuidad de funcionamiento del negocio: interrupciones que pueda sufrir el centro de trabajo producto de un evento disruptivo.
+Factibilidad de adopción: si la medida es de fácil, rápida y económica adopción, considere su ejecución en el corto plazo.</div>
+        </details>
+
+        <div class="page-h" style="margin:16px 0 6px">
+          <h2 style="font-size:16px">Brechas detectadas</h2>
+          <button class="btn primary" id="bp-add">＋ Agregar brecha manual</button>
+        </div>
+        <div id="bp-rows"></div>
+
+        <footer class="credits">Plan de brechas construido a partir de las preguntas marcadas «No cumple» en la Autoevaluación de Aspectos Legales GRD (Dirección del Trabajo · SUSESO · SENAPRED · organismos administradores Ley N°16.744).</footer>
+      </div>
+
+      <div class="bottombar" id="brechasBottombar">
+        <div class="bottombar-inner">
+          <div><div class="bb-pct num" id="bp-count">0</div><div class="bb-label">Brechas</div></div>
+          <div class="bb-actions">
+            <button class="btn primary" id="brechasPrintBtn">Imprimir / PDF</button>
+            <button class="btn" id="brechasJsonBtn">Descargar JSON</button>
           </div>
         </div>
       </div>
@@ -728,6 +848,7 @@
     clearSubs();
     document.querySelectorAll(".view").forEach(function (v) { v.classList.toggle("active", v.id === view); });
     $("bottombar").classList.toggle("show", view === "auditoriaView");
+    $("brechasBottombar").classList.toggle("show", view === "brechasView");
     window.scrollTo(0, 0);
     if (view === "empresasView") renderEmpresas();
     else if (view === "usuariosView") renderUsuarios();
@@ -737,10 +858,12 @@
     var c = $("crumbs"), h = ['<a id="cb-emp">Empresas</a>'];
     if (VIEW === "empresaView" && curEmpresa) h.push(" / " + esc(curEmpresa.nombre));
     if (VIEW === "auditoriaView" && curEmpresa) h.push(' / <a id="cb-emp2">' + esc(curEmpresa.nombre) + "</a> / Auditoría " + fmtDate(A && A.fecha));
+    if (VIEW === "brechasView" && curEmpresa) h.push(' / <a id="cb-emp2">' + esc(curEmpresa.nombre) + '</a> / <a id="cb-aud2">Auditoría ' + fmtDate(A && A.fecha) + "</a> / Plan de brechas");
     if (VIEW === "usuariosView") h.push(" / Usuarios");
     c.innerHTML = h.join("");
     if ($("cb-emp")) $("cb-emp").onclick = function () { nav("empresasView"); };
     if ($("cb-emp2")) $("cb-emp2").onclick = function () { openEmpresa(curEmpresa.id); };
+    if ($("cb-aud2")) $("cb-aud2").onclick = function () { openAuditoria(curEmpresa.id, A.id); };
   }
   $("nav-usuarios").addEventListener("click", function () { nav("usuariosView"); });
 
@@ -872,13 +995,18 @@
       var st = statusOf(a.pct);
       var estado = a.estado === "cerrada" ? '<span class="badge b-cerrada">Cerrada</span>' : '<span class="badge b-borrador">Borrador</span>';
       var pctB = '<span class="badge b-' + st.cls + '">' + (a.pct == null ? "—" : a.pct + "%") + "</span>";
+      var nBr = a.brechas && a.brechas.filas ? Object.keys(a.brechas.filas).length : 0;
+      var brBtn = '<button class="btn ghost aud-brechas" data-id="' + a.id + '" style="padding:6px 10px;font-size:12px">Plan de brechas' + (nBr ? " · " + nBr : "") + "</button>";
       return '<div class="list-row" data-id="' + a.id + '"><div class="grow"><div class="t">Auditoría ' + fmtDate(a.fecha) +
         '</div><div class="m">' + esc(a.evaluadorNombre || "—") + " · " + st.label +
         (a.contadores ? " · " + (a.contadores.no || 0) + " no cumple · " + (a.contadores.pend || 0) + " pendientes" : "") +
-        '</div></div><div style="display:flex;gap:7px;align-items:center">' + pctB + estado + "</div></div>";
+        '</div></div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end">' + brBtn + pctB + estado + "</div></div>";
     }).join("");
     $("aud-list").querySelectorAll(".list-row").forEach(function (r) {
       r.onclick = function () { openAuditoria(curEmpresa.id, r.getAttribute("data-id")); };
+    });
+    $("aud-list").querySelectorAll(".aud-brechas").forEach(function (b) {
+      b.onclick = function (ev) { ev.stopPropagation(); openBrechasFor(curEmpresa.id, b.getAttribute("data-id")); };
     });
   }
 
@@ -1294,12 +1422,14 @@
   });
 
   window.addEventListener("beforeprint", function () {
-    if (document.body.classList.contains("report-print") || document.body.classList.contains("form-print")) return;
+    if (document.body.classList.contains("report-print") || document.body.classList.contains("form-print") || document.body.classList.contains("brechas-print")) return;
+    if (VIEW === "brechasView") { if (buildBrechas()) document.body.classList.add("brechas-print"); return; }
     if (buildReport()) document.body.classList.add("report-print");
   });
   window.addEventListener("afterprint", function () {
     document.body.classList.remove("report-print");
     document.body.classList.remove("form-print");
+    document.body.classList.remove("brechas-print");
   });
 
   /* ---------- mail ---------- */
@@ -1361,6 +1491,301 @@
   });
 
   /* ==================================================
+     PLAN DE BRECHAS (Paso 2)
+  ================================================== */
+  var BA_FIELDS = {
+    "ba-tipo": "tipoActividad", "ba-fecha": "fecha", "ba-adh": "nAdherente",
+    "ba-hini": "horaInicio", "ba-hfin": "horaTermino", "ba-tel": "telefono", "ba-comuna": "comuna",
+    "ba-felab": "fechaElaboracion", "ba-fapr": "fechaAprobacion", "ba-relab": "respElaboracion", "ba-rapr": "respAprobacion"
+  };
+  var brechasSaveTimer = null;
+
+  function itemByN(n) {
+    for (var i = 0; i < ITEMS.length; i++) { if (String(ITEMS[i].n) === String(n)) return ITEMS[i]; }
+    return null;
+  }
+  function ensureBrechas() {
+    A.brechas = A.brechas || {};
+    A.brechas.antecedentes = A.brechas.antecedentes || {};
+    A.brechas.filas = A.brechas.filas || {};
+    A.brechas.manualIds = A.brechas.manualIds || [];
+    return A.brechas;
+  }
+  function seedBrechasFromAudit() {
+    var B = ensureBrechas();
+    ITEMS.forEach(function (it) {
+      if (A.respuestas[it.n] !== "no") return;
+      var id = "q" + it.n;
+      if (B.filas[id]) return;
+      var md = A.medidas[it.n] || {};
+      B.filas[id] = {
+        origen: "checklist", n: it.n,
+        requisito: "N° " + it.n + " · " + it.sec,
+        medida: it.medida || "",
+        prioridad: "", plazoImpl: md.fecha || "", respImpl: md.responsable || "",
+        plazoVerif: "", respVerif: "", obs: A.notas[it.n] || ""
+      };
+    });
+  }
+  function brechasRowIds() {
+    var B = ensureBrechas();
+    var qIds = Object.keys(B.filas).filter(function (k) { return B.filas[k].origen !== "manual"; })
+      .sort(function (a, b) { return (B.filas[a].n || 0) - (B.filas[b].n || 0); });
+    var mIds = B.manualIds.filter(function (k) { return B.filas[k]; });
+    return qIds.concat(mIds);
+  }
+
+  function openBrechas() {
+    if (!A || !curEmpresa) return;
+    clearTimeout(saveTimer); doSave();
+    nav("brechasView");
+    renderBrechas();
+  }
+  function openBrechasFor(empresaId, audId) {
+    clearSubs();
+    var ref = db.collection("empresas").doc(empresaId).collection("auditorias").doc(audId);
+    ref.get().then(function (snap) {
+      if (!snap.exists) { alert("Auditoría no encontrada."); return; }
+      curAudRef = ref;
+      A = Object.assign({ id: audId }, snap.data());
+      A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
+      PREV = null;
+      nav("brechasView");
+      renderBrechas();
+    }).catch(function (e) { alert(e.message); });
+  }
+
+  function renderBrechas() {
+    var e = curEmpresa, B = ensureBrechas();
+    seedBrechasFromAudit();
+
+    if (!B.antecedentes.fechaElaboracion) B.antecedentes.fechaElaboracion = todayISO();
+    if (!B.antecedentes.respElaboracion) B.antecedentes.respElaboracion = A.evaluadorNombre || "";
+    if (!B.antecedentes.fecha) B.antecedentes.fecha = A.fecha || todayISO();
+
+    $("bt-empresa").textContent = e.nombre;
+    $("bt-sub").textContent = "Plan de brechas · Auditoría " + fmtDate(A.fecha) + " · " + (A.evaluadorNombre || "—") +
+      (A.estado === "cerrada" ? "  ·  auditoría cerrada" : "");
+    $("bp-empresa-datos").innerHTML =
+      "<div><b>Razón social</b>" + esc(e.nombre || "—") + "</div>" +
+      "<div><b>RUT</b>" + esc(e.rut || "—") + "</div>" +
+      "<div><b>Actividad</b>" + esc(e.actividad || "—") + "</div>" +
+      "<div><b>Dirección / centro de trabajo</b>" + esc(e.direccion || "—") + "</div>" +
+      "<div><b>Dotación</b>" + esc(dotDisplay(e)) + "</div>" +
+      "<div><b>Organismo administrador</b>" + esc(e.organismo || "—") + "</div>";
+
+    Object.keys(BA_FIELDS).forEach(function (id) { $(id).value = B.antecedentes[BA_FIELDS[id]] || ""; });
+
+    var ids = brechasRowIds();
+    var host = $("bp-rows");
+    if (!ids.length) {
+      host.innerHTML = '<div class="bp-empty">No hay preguntas marcadas «No cumple» en esta auditoría. Puedes agregar brechas manuales con el botón de arriba.</div>';
+    } else {
+      host.innerHTML = ids.map(function (id) {
+        var f = B.filas[id], it = f.n ? itemByN(f.n) : null;
+        var isManual = f.origen === "manual";
+        var stale = !isManual && A.respuestas[f.n] !== "no";
+        var cls = "brecha-card" + (isManual ? " is-manual" : stale ? " is-stale" : "");
+        var tag = isManual ? "Manual" : "N° " + f.n;
+        var sec = isManual ? "Brecha agregada manualmente" : (it ? esc(it.sec) : "");
+        var del = (isManual || stale)
+          ? '<button class="btn ghost bc-del" data-id="' + id + '">Quitar del plan</button>' : "";
+        var staleNote = stale
+          ? '<div class="bc-stale-note">La pregunta N° ' + f.n + ' ya no está marcada como «No cumple» en la auditoría. Revisa si corresponde quitarla del plan.</div>' : "";
+        return '<div class="' + cls + '" data-id="' + id + '">' +
+          '<div class="bc-head"><span class="bc-tag">' + esc(tag) + '</span><span class="bc-sec">' + sec + '</span>' + del + staleNote + '</div>' +
+          '<div class="field"><label>Requisito a abordar</label><input type="text" data-f="requisito" value="' + esc(f.requisito || "") + '"></div>' +
+          '<div class="field"><label>Medida (según Informe de Autoevaluación Legal)</label><textarea data-f="medida">' + esc(f.medida || "") + '</textarea></div>' +
+          '<div class="form-grid thirds">' +
+            '<div class="field"><label>Prioridad</label><select data-f="prioridad">' +
+              ["", "alta", "media", "baja"].map(function (p) {
+                var lbl = p ? p.charAt(0).toUpperCase() + p.slice(1) : "—";
+                return '<option value="' + p + '"' + (f.prioridad === p ? " selected" : "") + ">" + lbl + "</option>";
+              }).join("") + "</select></div>" +
+            '<div class="field"><label>Plazo implementación</label><input type="date" data-f="plazoImpl" value="' + esc(f.plazoImpl || "") + '"></div>' +
+            '<div class="field"><label>Responsable implementación</label><input type="text" data-f="respImpl" value="' + esc(f.respImpl || "") + '"></div>' +
+            '<div class="field"><label>Plazo verificación</label><input type="date" data-f="plazoVerif" value="' + esc(f.plazoVerif || "") + '"></div>' +
+            '<div class="field"><label>Responsable verificación</label><input type="text" data-f="respVerif" value="' + esc(f.respVerif || "") + '"></div>' +
+          "</div>" +
+          '<div class="note-line"><label>Observaciones</label><textarea data-f="obs">' + esc(f.obs || "") + "</textarea></div>" +
+        "</div>";
+      }).join("");
+    }
+
+    wireBrechasEvents();
+    updateBrechasCounts();
+    renderCrumbs();
+  }
+
+  function updateBrechasCounts() {
+    var B = ensureBrechas(), ids = brechasRowIds();
+    var conPlazo = 0, sinResp = 0;
+    ids.forEach(function (id) {
+      var f = B.filas[id];
+      if (f.plazoImpl) conPlazo++;
+      if (!f.respImpl) sinResp++;
+    });
+    $("bp-count").textContent = ids.length;
+    $("bt-counts").innerHTML =
+      "<span><b>" + ids.length + "</b> brechas</span>" +
+      "<span><b>" + conPlazo + "</b> con plazo de implementación</span>" +
+      "<span><b>" + sinResp + "</b> sin responsable</span>";
+  }
+
+  function wireBrechasEvents() {
+    var B = ensureBrechas();
+    Object.keys(BA_FIELDS).forEach(function (id) {
+      $(id).oninput = $(id).onchange = function () {
+        B.antecedentes[BA_FIELDS[id]] = $(id).value;
+        queueSaveBrechas();
+      };
+    });
+    $("bp-rows").querySelectorAll(".brecha-card").forEach(function (card) {
+      var id = card.getAttribute("data-id");
+      card.querySelectorAll("[data-f]").forEach(function (inp) {
+        var f = inp.getAttribute("data-f");
+        var handler = function () {
+          if (!B.filas[id]) return;
+          B.filas[id][f] = inp.value;
+          if (f === "plazoImpl" || f === "respImpl") updateBrechasCounts();
+          queueSaveBrechas();
+        };
+        inp.oninput = handler; inp.onchange = handler;
+      });
+      var del = card.querySelector(".bc-del");
+      if (del) del.onclick = function () {
+        if (!confirm("¿Quitar esta brecha del plan?")) return;
+        delete B.filas[id];
+        B.manualIds = B.manualIds.filter(function (k) { return k !== id; });
+        queueSaveBrechas(); renderBrechas();
+      };
+    });
+  }
+
+  function queueSaveBrechas() {
+    $("bp-saveflag").textContent = "Guardando…";
+    clearTimeout(brechasSaveTimer);
+    brechasSaveTimer = setTimeout(doSaveBrechas, 900);
+  }
+  function doSaveBrechas() {
+    if (!curAudRef || !A) return;
+    ensureBrechas();
+    curAudRef.update({ brechas: A.brechas }).then(function () {
+      var d = new Date();
+      $("bp-saveflag").textContent = "Guardado " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    }).catch(function (e) { $("bp-saveflag").textContent = "Sin guardar (se reintenta): " + e.message; });
+  }
+
+  $("at-brechas").addEventListener("click", openBrechas);
+  $("bt-volver").addEventListener("click", function () {
+    clearTimeout(brechasSaveTimer); doSaveBrechas();
+    openAuditoria(curEmpresa.id, A.id);
+  });
+  $("bp-add").addEventListener("click", function () {
+    var B = ensureBrechas();
+    var id = "m" + Date.now();
+    B.filas[id] = { origen: "manual", requisito: "", medida: "", prioridad: "", plazoImpl: "", respImpl: "", plazoVerif: "", respVerif: "", obs: "" };
+    B.manualIds.push(id);
+    queueSaveBrechas(); renderBrechas();
+    var card = $("bp-rows").querySelector('.brecha-card[data-id="' + id + '"]');
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  $("brechasJsonBtn").addEventListener("click", function () {
+    var data = { empresa: curEmpresa, auditoria: { id: A.id, fecha: A.fecha }, planDeBrechas: A.brechas };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = "plan-brechas-grd_" + (curEmpresa.nombre || "empresa").replace(/[^\w\-]+/g, "_").slice(0, 40) + "_" + A.fecha + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  });
+  $("brechasPrintBtn").addEventListener("click", function () {
+    if (!buildBrechas()) { alert("Abre un plan de brechas para imprimir."); return; }
+    document.body.classList.add("brechas-print");
+    window.print();
+  });
+
+  function bcell(v) { return esc(v == null || v === "" ? "" : v); }
+  function bdate(v) { return v ? fmtDate(v) : ""; }
+  function buildBrechas() {
+    if (!A || !curEmpresa) return false;
+    var e = curEmpresa, B = ensureBrechas(), an = B.antecedentes || {};
+    var ids = brechasRowIds();
+
+    var h = '<h1 class="bpr-h1">PLAN DE BRECHAS DE LA AUTOEVALUACIÓN LEGAL GRD</h1>';
+
+    // ---- Antecedentes generales (grilla con bordes, banda verde) ----
+    h += '<table class="bpr-ant">' +
+      '<tr class="bpr-band"><td colspan="6">Antecedentes generales</td></tr>' +
+      '<tr><td class="k">Fecha</td><td>' + bdate(an.fecha) + '</td>' +
+        '<td class="k">Hora inicio</td><td>' + bcell(an.horaInicio) + '</td>' +
+        '<td class="k">Hora término</td><td>' + bcell(an.horaTermino) + '</td></tr>' +
+      '<tr><td class="k">Tipo de actividad</td><td class="tbox">' + bcell(an.tipoActividad) + '</td>' +
+        '<td class="k">N° adherente</td><td>' + bcell(an.nAdherente) + '</td>' +
+        '<td class="k">Teléfono</td><td>' + bcell(an.telefono) + '</td></tr>' +
+      '<tr><td class="k">Razón social</td><td colspan="3">' + bcell(e.nombre) + '</td>' +
+        '<td class="k">RUT</td><td>' + bcell(e.rut) + '</td></tr>' +
+      '<tr><td class="k">Dirección / centro de trabajo</td><td colspan="3">' + bcell(e.direccion) + '</td>' +
+        '<td class="k">Comuna / centro de trabajo</td><td>' + bcell(an.comuna) + '</td></tr>' +
+      '<tr><td class="k">Actividad económica</td><td>' + bcell(e.actividad) + '</td>' +
+        '<td class="k">Organismo administrador</td><td>' + bcell(e.organismo) + '</td>' +
+        '<td class="k">Dotación</td><td>' + esc(dotDisplay(e)) + '</td></tr>' +
+      '<tr><td class="k">Fecha de elaboración</td><td>' + bdate(an.fechaElaboracion) + '</td>' +
+        '<td class="k">Responsable de elaboración</td><td colspan="3">' + bcell(an.respElaboracion) + '</td></tr>' +
+      '<tr><td class="k">Fecha de aprobación</td><td>' + bdate(an.fechaAprobacion) + '</td>' +
+        '<td class="k">Responsable de aprobación</td><td colspan="3">' + bcell(an.respAprobacion) + '</td></tr>' +
+      '<tr><td class="k">Auditoría base</td><td colspan="5">' + fmtDate(A.fecha) +
+        (A.pct == null ? "" : " · " + A.pct + "% de cumplimiento") +
+        " · Evaluador(a): " + esc(A.evaluadorNombre || "—") + '</td></tr>' +
+      '</table>';
+
+    // ---- Plan de brechas (tabla, banda verda + 7 columnas del modelo) ----
+    h += '<table><thead>' +
+      '<tr class="bpr-band"><th colspan="7">Plan de brechas</th></tr>' +
+      '<tr>' +
+        '<th>Indique requisito a abordar</th>' +
+        '<th>Medida (basada en Informe de Autoevaluación Legal)</th>' +
+        '<th>Plazo para implementación de la medida</th>' +
+        '<th>Responsable de implementación de la medida</th>' +
+        '<th>Plazo de verificación para implementación de la medida</th>' +
+        '<th>Responsable de verificación de implementación de la medida</th>' +
+        '<th>Observaciones</th>' +
+      '</tr></thead><tbody>';
+    if (!ids.length) {
+      h += '<tr><td colspan="7" style="text-align:center;color:#5b6b60">Sin brechas registradas.</td></tr>';
+    } else {
+      ids.forEach(function (id) {
+        var f = B.filas[id];
+        h += "<tr>" +
+          '<td class="bpr-req">' + bcell(f.requisito) + "</td>" +
+          '<td class="bpr-med">' + bcell(f.medida) + "</td>" +
+          '<td class="bpr-dt">' + bdate(f.plazoImpl) + "</td>" +
+          '<td class="bpr-rs">' + bcell(f.respImpl) + "</td>" +
+          '<td class="bpr-dt">' + bdate(f.plazoVerif) + "</td>" +
+          '<td class="bpr-rs">' + bcell(f.respVerif) + "</td>" +
+          '<td class="bpr-obs">' + bcell(f.obs) + "</td>" +
+        "</tr>";
+      });
+    }
+    h += "</tbody></table>";
+
+    if (ids.length) {
+      var conPlazo = ids.filter(function (id) { return B.filas[id].plazoImpl; }).length;
+      var sinResp = ids.filter(function (id) { return !B.filas[id].respImpl; }).length;
+      h += '<p class="bpr-tot">Totales: ' + ids.length + " brecha(s) · " + conPlazo +
+        " con plazo de implementación · " + sinResp + " sin responsable asignado.</p>";
+    }
+
+    h += '<div class="bpr-sign"><div><b>' + esc(an.respElaboracion || "") + "</b>Responsable de elaboración</div>" +
+      "<div><b>" + esc(an.respAprobacion || "") + "</b>Responsable de aprobación</div></div>";
+    h += '<div class="bpr-foot">Plan de brechas (Paso 2) construido a partir de las preguntas marcadas «No cumple» en la Lista de Autoevaluación de ' +
+      "Aspectos Legales asociados a la Gestión del Riesgo de Desastres (GRD) en Centros de Trabajo — Dirección del Trabajo · SUSESO · SENAPRED · " +
+      "organismos administradores Ley N° 16.744.</div>";
+
+    $("brechasReportView").innerHTML = h;
+    return true;
+  }
+
+  /* ==================================================
      USUARIOS (admin)
   ================================================== */
   function renderUsuarios() {
@@ -1416,5 +1841,6 @@
 </script>
 <div id="reportView"></div>
 <div id="formView"></div>
+<div id="brechasReportView"></div>
 </body>
 </html>

@@ -45,8 +45,14 @@ service cloud.firestore {
       match /auditorias/{audId} {
         allow read: if isActive();
         allow create: if isActive();
-        // una auditoría cerrada queda congelada; solo el admin podría reabrirla
-        allow update: if isActive() && (resource.data.estado != 'cerrada' || isAdmin());
+        // una auditoría cerrada queda congelada; solo el admin podría reabrirla.
+        // excepción: el Plan de brechas (Paso 2) se elabora después del cierre,
+        // por lo que se permite modificar únicamente el campo 'brechas'.
+        allow update: if isActive() && (
+          resource.data.estado != 'cerrada'
+          || isAdmin()
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['brechas'])
+        );
         allow delete: if isAdmin();
       }
     }
