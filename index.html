@@ -374,7 +374,7 @@
   table.ant-grid input, table.ant-grid select {
     width:100%; font:inherit; font-size:13px; color:#1a222e; background:#fff;
     border:1px solid #b9c9bd; border-radius:6px; padding:6px 7px; }
-  table.bt-grid textarea { resize:vertical; min-height:72px; line-height:1.4; }
+  table.bt-grid textarea { resize:none; min-height:44px; overflow:hidden; line-height:1.45; box-sizing:border-box; }
   table.bt-grid input[type=date], table.ant-grid input[type=date], table.ant-grid input[type=time] { min-height:34px; }
   table.bt-grid input:focus, table.bt-grid select:focus, table.bt-grid textarea:focus,
   table.ant-grid input:focus, table.ant-grid select:focus { outline:2px solid #1f7a3d; outline-offset:1px; }
@@ -1490,6 +1490,17 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     "ba-felab": "fechaElaboracion", "ba-fapr": "fechaAprobacion", "ba-relab": "respElaboracion", "ba-rapr": "respAprobacion"
   };
   var brechasSaveTimer = null;
+  var brechasResizeBound = false;
+
+  function autosizeTA(el) {
+    if (!el || el.tagName !== "TEXTAREA") return;
+    el.style.height = "auto";
+    el.style.height = Math.max(el.scrollHeight, 44) + "px";
+  }
+  function autosizeAllBrechas() {
+    var host = $("bp-rows");
+    if (host) host.querySelectorAll("textarea").forEach(autosizeTA);
+  }
 
   function itemByN(n) {
     for (var i = 0; i < ITEMS.length; i++) { if (String(ITEMS[i].n) === String(n)) return ITEMS[i]; }
@@ -1663,11 +1674,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         var handler = function () {
           if (!B.filas[id]) return;
           B.filas[id][f] = inp.value;
+          if (inp.tagName === "TEXTAREA") autosizeTA(inp);
           if (f === "plazoImpl" || f === "respImpl") updateBrechasCounts();
           queueSaveBrechas();
         };
         inp.oninput = handler; inp.onchange = handler;
       });
+      rowEl.querySelectorAll("textarea[data-f]").forEach(autosizeTA);
       var del = rowEl.querySelector(".bt-reqcell-del");
       if (del) del.onclick = function () {
         if (!confirm("¿Quitar esta brecha del plan?")) return;
@@ -1676,6 +1689,15 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         queueSaveBrechas(); renderBrechas();
       };
     });
+    if (!brechasResizeBound) {
+      brechasResizeBound = true;
+      var rt;
+      window.addEventListener("resize", function () {
+        clearTimeout(rt);
+        rt = setTimeout(function () { if (VIEW === "brechasView") autosizeAllBrechas(); }, 150);
+      });
+    }
+    if (window.requestAnimationFrame) requestAnimationFrame(autosizeAllBrechas);
   }
 
   function queueSaveBrechas() {
