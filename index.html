@@ -759,7 +759,89 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   var ME = null;                 // {uid,email,nombre,rol}
   var VIEW = "empresasView";
   var curEmpresa = null;         // {id, ...data}
-  var curAudRef = null, A = null, PREV = null, saveTimer = null, unsubs = [];
+  var curAudRef = null, A = null, PREV = null, unsubs = [];
+
+  // Cada trabajo captura el documento y una copia de los datos al editar.
+  var auditWrites = { pending: null, inFlight: null, timer: null };
+  var brechasWrites = { pending: null, inFlight: null, timer: null };
+  var leaving = false;
+  function writeFlag(job, text) {
+    if (curAudRef && job.ref.path === curAudRef.path) $(job.flag).textContent = text;
+  }
+  function enqueueWrite(channel, payload, flag) {
+    var job = { ref: curAudRef, data: JSON.parse(JSON.stringify(payload)), flag: flag };
+    channel.pending = job;
+    writeFlag(job, "Cambios pendientes de guardar…");
+    clearTimeout(channel.timer);
+    channel.timer = setTimeout(function () { saveChannel(channel).catch(function () {}); }, 900);
+  }
+  function saveChannel(channel) {
+    clearTimeout(channel.timer); channel.timer = null;
+    if (channel.inFlight) return channel.inFlight;
+    channel.inFlight = Promise.resolve().then(async function () {
+      while (channel.pending) {
+        var job = channel.pending;
+        writeFlag(job, "Guardando…");
+        try {
+          var payload = Object.assign({}, job.data);
+          if (job.flag === "saveflag") payload.actualizado = FV.serverTimestamp();
+          await job.ref.update(payload);
+          if (channel.pending === job) {
+            channel.pending = null;
+            var d = new Date();
+            writeFlag(job, "Guardado " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2));
+          }
+        } catch (e) {
+          writeFlag(job, "Sin guardar. Reintenta al salir o vuelve a editar. " + e.message);
+          throw e;
+        }
+      }
+    }).finally(function () { channel.inFlight = null; });
+    return channel.inFlight;
+  }
+  function hasPendingWrites() {
+    return !!(auditWrites.pending || auditWrites.inFlight || brechasWrites.pending || brechasWrites.inFlight);
+  }
+  function resetWriteState() {
+    [auditWrites, brechasWrites].forEach(function (channel) {
+      clearTimeout(channel.timer); channel.pending = null;
+    });
+    auditWrites = { pending: null, inFlight: null, timer: null };
+    brechasWrites = { pending: null, inFlight: null, timer: null };
+    curAudRef = null; A = null; PREV = null; curEmpresa = null;
+  }
+  function flushPendingWrites() {
+    return Promise.all([saveChannel(auditWrites), saveChannel(brechasWrites)]);
+  }
+  async function runAfterSave(action) {
+    if (leaving) return false;
+    leaving = true;
+    var uid = ME && ME.uid, timer;
+    $("app").inert = true;
+    try {
+      await Promise.race([
+        flushPendingWrites(),
+        new Promise(function (_, reject) {
+          timer = setTimeout(function () { reject(new Error("El guardado no ha sido confirmado. Revisa la conexión y vuelve a intentar.")); }, 15000);
+        })
+      ]);
+      clearTimeout(timer);
+      if (!ME || ME.uid !== uid) return false;
+      await action();
+      return true;
+    } catch (e) {
+      alert("No se completó la acción. Los cambios pendientes se conservan en esta pantalla. " + e.message);
+      return false;
+    } finally {
+      clearTimeout(timer);
+      $("app").inert = false;
+      leaving = false;
+    }
+  }
+  window.addEventListener("beforeunload", function (event) {
+    if (hasPendingWrites() || leaving) { event.preventDefault(); event.returnValue = ""; }
+  });
+
   function clearSubs() { unsubs.forEach(function (u) { try { u(); } catch (e) {} }); unsubs = []; }
 
   /* ==================================================
@@ -809,7 +891,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
 
   auth.onAuthStateChanged(function (user) {
     clearSubs();
-    if (!user) { ME = null; $("app").style.display = "none"; $("loginView").style.display = "grid"; return; }
+    if (!user) { resetWriteState(); ME = null; $("app").style.display = "none"; $("loginView").style.display = "grid"; return; }
     db.collection("usuarios").doc(user.uid).get().then(function (snap) {
       if (snap.exists && snap.data().activo) {
         ME = Object.assign({ uid: user.uid }, snap.data());
@@ -828,7 +910,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     }).catch(function (e) { loginMsg("Error cargando tu perfil: " + e.message, "err"); auth.signOut(); });
   });
 
-  $("btn-logout").addEventListener("click", function () { auth.signOut(); });
+  $("btn-logout").addEventListener("click", function () { return runAfterSave(function () { return auth.signOut(); }); });
 
   function startApp() {
     $("loginView").style.display = "none";
@@ -836,13 +918,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("who-name").textContent = ME.nombre || "—";
     $("who-email").textContent = ME.email || "";
     $("nav-usuarios").style.display = ME.rol === "admin" ? "" : "none";
-    nav("empresasView");
+    navNow("empresasView");
   }
 
   /* ==================================================
      ROUTER
   ================================================== */
-  function nav(view) {
+  function nav(view) { return runAfterSave(function () { navNow(view); }); }
+  function navNow(view) {
     VIEW = view;
     clearSubs();
     document.querySelectorAll(".view").forEach(function (v) { v.classList.toggle("active", v.id === view); });
@@ -939,12 +1022,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   /* ==================================================
      EMPRESA (detalle + historial)
   ================================================== */
-  function openEmpresa(id) {
+  function openEmpresa(id) { return runAfterSave(function () { return openEmpresaNow(id); }); }
+  function openEmpresaNow(id) {
     clearSubs();
-    db.collection("empresas").doc(id).get().then(function (snap) {
-      if (!snap.exists) { alert("Empresa no encontrada."); nav("empresasView"); return; }
+    return db.collection("empresas").doc(id).get().then(function (snap) {
+      if (!snap.exists) { alert("Empresa no encontrada."); navNow("empresasView"); return; }
       curEmpresa = Object.assign({ id: id }, snap.data());
-      nav("empresaView");
+      navNow("empresaView");
       paintEmpresaHeader();
       var u = db.collection("empresas").doc(id).collection("auditorias").onSnapshot(function (qs) {
         var auds = qs.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
@@ -1064,21 +1148,23 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     return candidates[0] || null;
   }
   var firstRenderSecs = true;
-  function openAuditoria(empresaId, audId) {
+  function openAuditoria(empresaId, audId) { return runAfterSave(function () { return openAuditoriaNow(empresaId, audId); }); }
+  function openAuditoriaNow(empresaId, audId) {
     clearSubs();
-    curAudRef = db.collection("empresas").doc(empresaId).collection("auditorias").doc(audId);
-    Promise.all([
-      curAudRef.get(),
+    var ref = db.collection("empresas").doc(empresaId).collection("auditorias").doc(audId);
+    return Promise.all([
+      ref.get(),
       db.collection("empresas").doc(empresaId).collection("auditorias").get()
     ]).then(function (res) {
-      if (!res[0].exists) { alert("Auditoría no encontrada."); openEmpresa(empresaId); return; }
-      A = Object.assign({ id: audId }, res[0].data());
+      if (!res[0].exists) { alert("Auditoría no encontrada."); return openEmpresaNow(empresaId); }
+      curAudRef = ref;
+      A = Object.assign({}, res[0].data(), { id: audId });
       A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
       // última auditoría cerrada anterior (para mostrar "novedades")
       var audits = res[1].docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
       PREV = previousClosedAudit(Object.assign({}, A, { id: audId }), audits);
       firstRenderSecs = true;
-      nav("auditoriaView");
+      navNow("auditoriaView");
       renderAuditoria();
     }).catch(function (e) { alert(e.message); });
   }
@@ -1270,30 +1356,20 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
 
   function queueSave() {
-    if (isLocked()) return;
-    $("saveflag").textContent = "Guardando…";
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(doSave, 900);
-  }
-  function doSave() {
-    if (!curAudRef || isLocked()) return;
-    var s = computeSummary();
-    // Reemplazar los mapas completos: una respuesta desmarcada debe desaparecer.
-    curAudRef.update({
+    if (!curAudRef || !A || isLocked()) return;
+    var summary = computeSummary();
+    enqueueWrite(auditWrites, {
       respuestas: A.respuestas, medidas: A.medidas, notas: A.notas, obs: A.obs || "",
-      pct: s.pct, contadores: s.contadores, actualizado: FV.serverTimestamp()
-    }).then(function () {
-      var d = new Date();
-      $("saveflag").textContent = "Guardado " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
-    }).catch(function (e) { $("saveflag").textContent = "Sin guardar (se reintenta): " + e.message; });
+      pct: summary.pct, contadores: summary.contadores
+    }, "saveflag");
   }
 
   $("at-volver").addEventListener("click", function () {
-    clearTimeout(saveTimer); doSave();
     openEmpresa(curEmpresa.id);
   });
 
-  $("at-cerrar").addEventListener("click", function () {
+  $("at-cerrar").addEventListener("click", function () { return runAfterSave(closeAuditoria); });
+  function closeAuditoria() {
     if (isLocked()) return;
     var o = scoreOf(A.respuestas);
     if (o.pend > 0 && !confirm("Quedan " + o.pend + " preguntas sin responder. ¿Cerrar igual la auditoría? No se podrá editar después.")) return;
@@ -1301,7 +1377,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var s = computeSummary();
     $("at-cerrar").disabled = true;
     // Reemplazar los mapas completos: una respuesta desmarcada debe desaparecer.
-    curAudRef.update({
+    return curAudRef.update({
       respuestas: A.respuestas, medidas: A.medidas, notas: A.notas, obs: A.obs || "",
       pct: s.pct, contadores: s.contadores, estado: "cerrada",
       cerrada: FV.serverTimestamp(), actualizado: FV.serverTimestamp()
@@ -1314,7 +1390,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       A.estado = "cerrada";
       renderAuditoria();
     }).catch(function (e) { alert("No se pudo cerrar: " + e.message); $("at-cerrar").disabled = false; });
-  });
+  }
 
   /* ---------- informe final (Modelo B — Acta de cumplimiento) ---------- */
   function rvCls(cls) { return cls === "verde" ? "ok" : cls === "ambar" ? "warn" : cls === "rojo" ? "bad" : "vacio"; }
@@ -1537,7 +1613,6 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     "ba-hini": "horaInicio", "ba-hfin": "horaTermino", "ba-tel": "telefono", "ba-comuna": "comuna",
     "ba-felab": "fechaElaboracion", "ba-fapr": "fechaAprobacion", "ba-relab": "respElaboracion", "ba-rapr": "respAprobacion"
   };
-  var brechasSaveTimer = null;
   var brechasResizeBound = false;
 
   function autosizeTA(el) {
@@ -1591,27 +1666,29 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     return qIds.concat(mIds);
   }
 
-  function openBrechas() {
+  function openBrechas() { return runAfterSave(function () { return openBrechasNow(); }); }
+  function openBrechasNow() {
     if (!A || !curEmpresa) return;
-    clearTimeout(saveTimer); doSave();
-    nav("brechasView");
+    navNow("brechasView");
     renderBrechas();
   }
-  function openBrechasFor(empresaId, audId) {
+  function openBrechasFor(empresaId, audId) { return runAfterSave(function () { return openBrechasForNow(empresaId, audId); }); }
+  function openBrechasForNow(empresaId, audId) {
     clearSubs();
     var ref = db.collection("empresas").doc(empresaId).collection("auditorias").doc(audId);
-    ref.get().then(function (snap) {
+    return ref.get().then(function (snap) {
       if (!snap.exists) { alert("Auditoría no encontrada."); return; }
       curAudRef = ref;
       A = Object.assign({ id: audId }, snap.data());
       A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
       PREV = null;
-      nav("brechasView");
+      navNow("brechasView");
       renderBrechas();
     }).catch(function (e) { alert(e.message); });
   }
 
   function renderBrechas() {
+    var beforeSeed = JSON.stringify(A.brechas || null);
     var e = curEmpresa, B = ensureBrechas();
     seedBrechasFromAudit();
 
@@ -1686,6 +1763,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     }
     $("bp-rows").innerHTML = head + body + "</tbody></table></div>";
 
+    if (JSON.stringify(A.brechas) !== beforeSeed) queueSaveBrechas();
     wireBrechasEvents();
     updateBrechasCounts();
     renderCrumbs();
@@ -1749,22 +1827,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
 
   function queueSaveBrechas() {
-    $("bp-saveflag").textContent = "Guardando…";
-    clearTimeout(brechasSaveTimer);
-    brechasSaveTimer = setTimeout(doSaveBrechas, 900);
-  }
-  function doSaveBrechas() {
     if (!curAudRef || !A) return;
     ensureBrechas();
-    curAudRef.update({ brechas: A.brechas }).then(function () {
-      var d = new Date();
-      $("bp-saveflag").textContent = "Guardado " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
-    }).catch(function (e) { $("bp-saveflag").textContent = "Sin guardar (se reintenta): " + e.message; });
+    enqueueWrite(brechasWrites, { brechas: A.brechas }, "bp-saveflag");
   }
 
   $("at-brechas").addEventListener("click", openBrechas);
   $("bt-volver").addEventListener("click", function () {
-    clearTimeout(brechasSaveTimer); doSaveBrechas();
     openAuditoria(curEmpresa.id, A.id);
   });
   $("bp-add").addEventListener("click", function () {
