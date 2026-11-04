@@ -49,16 +49,25 @@ service cloud.firestore {
 
       // ---- auditorías de la empresa ----
       match /auditorias/{audId} {
+        function planValido() {
+          let plan = request.resource.data.get('brechas', null);
+          return plan is map
+            && plan.get('filas', null) is map
+            && plan.get('antecedentes', {}) is map
+            && plan.get('manualIds', []) is list;
+        }
         allow read: if isActive();
-        allow create: if isActive();
-        // una auditoría cerrada queda congelada; solo el admin podría reabrirla.
-        // excepción: el Plan de brechas (Paso 2) se elabora después del cierre,
-        // por lo que se permite modificar únicamente el campo 'brechas'.
-        allow update: if isActive() && (
-          resource.data.estado != 'cerrada'
-          || isAdmin()
-          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['brechas'])
-        );
+        allow create: if isActive()
+          && (!('brechas' in request.resource.data) || planValido());
+
+        function cambioPermitido() {
+          let campos = request.resource.data.diff(resource.data).affectedKeys();
+          return (!campos.hasAny(['brechas']) || planValido())
+            && (resource.data.estado != 'cerrada'
+                || isAdmin()
+                || campos.hasOnly(['brechas']));
+        }
+        allow update: if isActive() && cambioPermitido();
         allow delete: if isAdmin();
       }
     }
