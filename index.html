@@ -1375,21 +1375,29 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (o.pend > 0 && !confirm("Quedan " + o.pend + " preguntas sin responder. ¿Cerrar igual la auditoría? No se podrá editar después.")) return;
     if (o.pend === 0 && !confirm("¿Cerrar la auditoría? Quedará como registro de solo lectura.")) return;
     var s = computeSummary();
+    var audit = A, auditRef = curAudRef;
+    var companyRef = db.collection("empresas").doc(curEmpresa.id);
+    var batch = db.batch();
+    var data = JSON.parse(JSON.stringify({
+      respuestas: audit.respuestas, medidas: audit.medidas, notas: audit.notas, obs: audit.obs || "",
+      pct: s.pct, contadores: s.contadores, estado: "cerrada"
+    }));
+    data.cerrada = FV.serverTimestamp();
+    data.actualizado = FV.serverTimestamp();
+    // Ambos documentos deben existir. Firestore confirma todo el lote o nada.
+    batch.update(auditRef, data);
+    batch.update(companyRef, {
+      ultimaAuditoria: { id: audit.id, fecha: audit.fecha, pct: s.pct, hallazgos: s.contadores.no, contadores: s.contadores },
+      actualizado: FV.serverTimestamp()
+    });
     $("at-cerrar").disabled = true;
-    // Reemplazar los mapas completos: una respuesta desmarcada debe desaparecer.
-    return curAudRef.update({
-      respuestas: A.respuestas, medidas: A.medidas, notas: A.notas, obs: A.obs || "",
-      pct: s.pct, contadores: s.contadores, estado: "cerrada",
-      cerrada: FV.serverTimestamp(), actualizado: FV.serverTimestamp()
-    }).then(function () {
-      return db.collection("empresas").doc(curEmpresa.id).set({
-        ultimaAuditoria: { id: A.id, fecha: A.fecha, pct: s.pct, hallazgos: s.contadores.no, contadores: s.contadores },
-        actualizado: FV.serverTimestamp()
-      }, { merge: true });
-    }).then(function () {
-      A.estado = "cerrada";
-      renderAuditoria();
-    }).catch(function (e) { alert("No se pudo cerrar: " + e.message); $("at-cerrar").disabled = false; });
+    return batch.commit().then(function () {
+      audit.estado = "cerrada";
+      if (A === audit && curAudRef === auditRef) renderAuditoria();
+    }).catch(function (e) {
+      if (A === audit && curAudRef === auditRef) $("at-cerrar").disabled = false;
+      throw e; // La salida protegida informa el fallo y conserva la pantalla.
+    });
   }
 
   /* ---------- informe final (Modelo B — Acta de cumplimiento) ---------- */
