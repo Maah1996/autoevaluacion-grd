@@ -723,8 +723,16 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var m = String(iso).slice(0, 10).split("-");
     return m.length === 3 ? m[2] + "-" + m[1] + "-" + m[0] : iso;
   }
-  function statusOf(pct) {
-    if (pct === null || pct === undefined) return { cls: "vacio", label: "Sin iniciar" };
+  function statusOf(pct, counts) {
+    // Sin contadores no se puede certificar que una evaluación esté completa.
+    if (!counts || !["si", "no", "na", "pend"].every(function (key) {
+      return Number.isInteger(counts[key]) && counts[key] >= 0;
+    })) return { cls: "vacio", label: "Evaluación por verificar" };
+    var answered = counts.si + counts.no + counts.na;
+    if (!answered) return { cls: "vacio", label: "Sin iniciar" };
+    if (counts.pend > 0) return { cls: "ambar", label: "Evaluación incompleta" };
+    if (counts.si + counts.no === 0) return { cls: "vacio", label: "Sin requisitos aplicables" };
+    if (!Number.isFinite(pct) || pct < 0 || pct > 100) return { cls: "vacio", label: "Evaluación por verificar" };
     if (pct < 60) return { cls: "rojo", label: "No conforme" };
     if (pct < 85) return { cls: "ambar", label: "Parcial" };
     return { cls: "verde", label: "Conforme" };
@@ -740,8 +748,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var si = 0, no = 0, na = 0, pend = 0;
     (itemList || ITEMS).forEach(function (it) {
       var v = resp ? resp[it.n] : null;
-      if (!v) { pend++; return; }
-      if (v === "si") si++; else if (v === "no") no++; else na++;
+      if (v === "si") si++; else if (v === "no") no++;
+      else if (v === "na") na++; else pend++;
     });
     var base = si + no;
     return { pct: base > 0 ? Math.round((si / base) * 100) : null, si: si, no: no, na: na, pend: pend };
@@ -877,7 +885,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (!rows.length) { $("empresa-list").innerHTML = '<div class="empty">' + (q ? "Sin resultados." : "Aún no hay empresas. Crea la primera.") + "</div>"; return; }
     $("empresa-list").innerHTML = rows.map(function (e) {
       var ua = e.ultimaAuditoria;
-      var st = ua ? statusOf(ua.pct) : { cls: "vacio", label: "Sin auditorías" };
+      var st = ua ? statusOf(ua.pct, ua.contadores) : { cls: "vacio", label: "Sin auditorías" };
       var right = ua
         ? '<span class="badge b-' + st.cls + '">' + (ua.pct == null ? "—" : ua.pct + "%") + "</span>"
         : '<span class="badge b-vacio">nueva</span>';
@@ -983,14 +991,15 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   function paintAudList(auds) {
     if (!auds.length) { $("aud-list").innerHTML = '<div class="empty">Sin auditorías. Crea la primera con «＋ Nueva auditoría».</div>'; return; }
     $("aud-list").innerHTML = auds.map(function (a) {
-      var st = statusOf(a.pct);
+      var sc = scoreOf(a.respuestas);
+      var st = statusOf(sc.pct, sc);
       var estado = a.estado === "cerrada" ? '<span class="badge b-cerrada">Cerrada</span>' : '<span class="badge b-borrador">Borrador</span>';
-      var pctB = '<span class="badge b-' + st.cls + '">' + (a.pct == null ? "—" : a.pct + "%") + "</span>";
+      var pctB = '<span class="badge b-' + st.cls + '">' + (sc.pct == null ? "—" : sc.pct + "%") + "</span>";
       var nBr = a.brechas && a.brechas.filas ? Object.keys(a.brechas.filas).length : 0;
       var brBtn = '<button class="btn ghost aud-brechas" data-id="' + a.id + '" style="padding:6px 10px;font-size:12px">Plan de brechas' + (nBr ? " · " + nBr : "") + "</button>";
       return '<div class="list-row" data-id="' + a.id + '"><div class="grow"><div class="t">Auditoría ' + fmtDate(a.fecha) +
         '</div><div class="m">' + esc(a.evaluadorNombre || "—") + " · " + st.label +
-        (a.contadores ? " · " + (a.contadores.no || 0) + " no cumple · " + (a.contadores.pend || 0) + " pendientes" : "") +
+        (" · " + sc.no + " no cumple · " + sc.pend + " pendientes") +
         '</div></div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end">' + brBtn + pctB + estado + "</div></div>";
     }).join("");
     $("aud-list").querySelectorAll(".list-row").forEach(function (r) {
@@ -1063,7 +1072,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     SECTIONS.forEach(function (sec, sIdx) {
       var sc = scoreOf(A.respuestas, sec.items);
       var answered = sec.items.length - sc.pend;
-      var st = statusOf(sc.pct);
+      var st = statusOf(sc.pct, sc);
 
       var chip = document.createElement("button");
       chip.className = "chip";
@@ -1192,7 +1201,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     SECTIONS.forEach(function (sec, sIdx) {
       var sc = scoreOf(A.respuestas, sec.items);
       var answered = sec.items.length - sc.pend;
-      var st = statusOf(sc.pct);
+      var st = statusOf(sc.pct, sc);
       var card = $("sec-" + sIdx);
       card.querySelector(".section-pct").style.color = colorFor(st.cls);
       card.querySelector(".section-pct").textContent = sc.pct == null ? "—" : sc.pct + "%";
@@ -1208,7 +1217,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   var GAUGE_C = 2 * Math.PI * 27;
   function updateGauge() {
     var o = scoreOf(A.respuestas);
-    var st = statusOf(o.pct);
+    var st = statusOf(o.pct, o);
     $("cSi").textContent = o.si; $("cNo").textContent = o.no; $("cNa").textContent = o.na; $("cPend").textContent = o.pend;
     var t = o.pct == null ? "—" : o.pct + "%";
     $("gaugePct").textContent = t; $("bbPct").textContent = t;
@@ -1262,7 +1271,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       cerrada: FV.serverTimestamp(), actualizado: FV.serverTimestamp()
     }).then(function () {
       return db.collection("empresas").doc(curEmpresa.id).set({
-        ultimaAuditoria: { id: A.id, fecha: A.fecha, pct: s.pct, hallazgos: s.contadores.no },
+        ultimaAuditoria: { id: A.id, fecha: A.fecha, pct: s.pct, hallazgos: s.contadores.no, contadores: s.contadores },
         actualizado: FV.serverTimestamp()
       }, { merge: true });
     }).then(function () {
@@ -1275,7 +1284,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   function rvCls(cls) { return cls === "verde" ? "ok" : cls === "ambar" ? "warn" : cls === "rojo" ? "bad" : "vacio"; }
   function buildReport() {
     if (!A || !curEmpresa) return false;
-    var e = curEmpresa, o = scoreOf(A.respuestas), st = statusOf(o.pct), k = rvCls(st.cls);
+    var e = curEmpresa, o = scoreOf(A.respuestas), st = statusOf(o.pct, o), k = rvCls(st.cls);
     var aplic = o.si + o.no, h = "";
     h += '<div class="rv-kicker">Acta de cumplimiento</div>' +
       '<h1 class="rv-h1">Informe de Autoevaluación de Aspectos Legales GRD</h1>' +
@@ -1308,6 +1317,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         '<div class="b">' + o.si + ' de ' + aplic + ' preguntas aplicables</div></div>' +
       '</div>';
     h += '<p class="rv-clar">El porcentaje se calcula solo sobre las ' + aplic + ' preguntas respondidas Sí o No. ' +
+      (o.pend ? 'Resultado provisional: quedan ' + o.pend + ' preguntas pendientes; la evaluación está incompleta. ' : '') +
       'Las ' + o.na + ' preguntas «No aplica» quedan registradas en el acta, pero no suben ni bajan el resultado de la empresa.</p>';
 
     h += '<table><thead><tr><th class="rv-n">N°</th><th>Pregunta</th><th class="rv-c">Resultado</th></tr></thead><tbody>';
@@ -1427,7 +1437,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
 
   /* ---------- mail ---------- */
   $("mailBtn").addEventListener("click", function () {
-    var e = curEmpresa, o = scoreOf(A.respuestas), st = statusOf(o.pct), NL = "\r\n";
+    var e = curEmpresa, o = scoreOf(A.respuestas), st = statusOf(o.pct, o), NL = "\r\n";
     var L = [
       "Autoevaluación GRD — Informe de resultados", "",
       "Empresa: " + e.nombre + (e.rut ? "  (RUT " + e.rut + ")" : ""),
@@ -1438,7 +1448,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       "Evaluador(a): " + (A.evaluadorNombre || "—"),
       "Fecha de la evaluación: " + fmtDate(A.fecha),
       "Estado: " + (A.estado === "cerrada" ? "Cerrada" : "Borrador"), "",
-      "CUMPLIMIENTO: " + (o.pct == null ? "sin iniciar" : o.pct + "% — " + st.label),
+      "CUMPLIMIENTO: " + (o.pct == null ? "—" : o.pct + "%") + " — " + st.label,
       o.si + " cumple · " + o.no + " no cumple · " + o.na + " N/A · " + o.pend + " pendientes", "",
       "Detalle por sección:"
     ];
