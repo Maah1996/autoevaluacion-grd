@@ -1025,6 +1025,44 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   /* ==================================================
      AUDITORÍA
   ================================================== */
+  // Orden histórico: fecha de evaluación y, dentro del día, creación en servidor.
+  function validAuditDate(value) {
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    var date = new Date(value + "T00:00:00Z");
+    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  }
+  function auditCreatedTime(audit) {
+    var t = audit && audit.creado;
+    if (!t || !Number.isSafeInteger(t.seconds) || !Number.isInteger(t.nanoseconds) ||
+        t.nanoseconds < 0 || t.nanoseconds >= 1000000000) return null;
+    return t;
+  }
+  function compareAuditCreation(a, b) {
+    return a.seconds === b.seconds ? a.nanoseconds - b.nanoseconds : a.seconds - b.seconds;
+  }
+  function previousClosedAudit(current, audits) {
+    if (!current || !validAuditDate(current.fecha)) return null;
+    var currentTime = auditCreatedTime(current);
+    var candidates = audits.filter(function (audit) {
+      if (audit.id === current.id || audit.estado !== "cerrada" || !validAuditDate(audit.fecha)) return false;
+      if (audit.fecha < current.fecha) return true;
+      if (audit.fecha > current.fecha) return false;
+      var time = auditCreatedTime(audit);
+      // Una hora ausente o idéntica no demuestra que el registro sea anterior.
+      return !!(time && currentTime && compareAuditCreation(time, currentTime) < 0);
+    });
+    candidates.sort(function (a, b) {
+      if (a.fecha !== b.fecha) return a.fecha < b.fecha ? 1 : -1;
+      var at = auditCreatedTime(a), bt = auditCreatedTime(b);
+      if (at && bt) {
+        var order = compareAuditCreation(bt, at);
+        if (order) return order;
+      } else if (at || bt) return at ? -1 : 1;
+      // Desempate estable entre antecedentes ya válidos; el ID no prueba antigüedad.
+      return String(a.id).localeCompare(String(b.id));
+    });
+    return candidates[0] || null;
+  }
   var firstRenderSecs = true;
   function openAuditoria(empresaId, audId) {
     clearSubs();
@@ -1037,10 +1075,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       A = Object.assign({ id: audId }, res[0].data());
       A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
       // última auditoría cerrada anterior (para mostrar "novedades")
-      var prevs = res[1].docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); })
-        .filter(function (d) { return d.id !== audId && d.estado === "cerrada"; })
-        .sort(function (a, b) { return (b.fecha || "").localeCompare(a.fecha || ""); });
-      PREV = prevs[0] || null;
+      var audits = res[1].docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
+      PREV = previousClosedAudit(Object.assign({}, A, { id: audId }), audits);
       firstRenderSecs = true;
       nav("auditoriaView");
       renderAuditoria();
