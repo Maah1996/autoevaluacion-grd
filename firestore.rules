@@ -34,11 +34,17 @@ service cloud.firestore {
 
     // ---- empresas ----
     match /empresas/{empresaId} {
+      function nombreValido() {
+        let nombre = request.resource.data.get('nombre', null);
+        return nombre is string && nombre.trim().size() > 0;
+      }
       allow read: if isActive();
-      allow create: if isActive()
-        && request.resource.data.nombre is string
-        && request.resource.data.nombre.size() > 0;
-      allow update: if isActive();
+      allow create: if isActive() && nombreValido();
+      // Permite cerrar auditorías antiguas cuando solo se actualiza el resumen.
+      allow update: if isActive() && (
+        nombreValido()
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ultimaAuditoria', 'actualizado'])
+      );
       allow delete: if isAdmin();
 
       // ---- auditorías de la empresa ----
