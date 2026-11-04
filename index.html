@@ -1233,10 +1233,11 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   function doSave() {
     if (!curAudRef || isLocked()) return;
     var s = computeSummary();
-    curAudRef.set({
+    // Reemplazar los mapas completos: una respuesta desmarcada debe desaparecer.
+    curAudRef.update({
       respuestas: A.respuestas, medidas: A.medidas, notas: A.notas, obs: A.obs || "",
       pct: s.pct, contadores: s.contadores, actualizado: FV.serverTimestamp()
-    }, { merge: true }).then(function () {
+    }).then(function () {
       var d = new Date();
       $("saveflag").textContent = "Guardado " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
     }).catch(function (e) { $("saveflag").textContent = "Sin guardar (se reintenta): " + e.message; });
@@ -1254,11 +1255,12 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (o.pend === 0 && !confirm("¿Cerrar la auditoría? Quedará como registro de solo lectura.")) return;
     var s = computeSummary();
     $("at-cerrar").disabled = true;
-    curAudRef.set({
+    // Reemplazar los mapas completos: una respuesta desmarcada debe desaparecer.
+    curAudRef.update({
       respuestas: A.respuestas, medidas: A.medidas, notas: A.notas, obs: A.obs || "",
       pct: s.pct, contadores: s.contadores, estado: "cerrada",
       cerrada: FV.serverTimestamp(), actualizado: FV.serverTimestamp()
-    }, { merge: true }).then(function () {
+    }).then(function () {
       return db.collection("empresas").doc(curEmpresa.id).set({
         ultimaAuditoria: { id: A.id, fecha: A.fecha, pct: s.pct, hallazgos: s.contadores.no },
         actualizado: FV.serverTimestamp()
