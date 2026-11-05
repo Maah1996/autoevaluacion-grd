@@ -381,7 +381,7 @@
   table.bt-grid textarea { resize:none; min-height:44px; overflow:hidden; line-height:1.45; box-sizing:border-box; }
   .brecha-expand { display:block; min-height:44px; padding:6px 0; border:0; background:transparent; color:var(--navy-ink); font:inherit; font-size:13px; text-decoration:underline; cursor:pointer; }
   .brecha-expand[hidden] { display:none; }
-  #bp-rows .correction-note { box-sizing:border-box; overflow:hidden; line-height:1.45; }
+  #bp-rows .correction-note { box-sizing:border-box; overflow:hidden; line-height:1.45; display:-webkit-box; -webkit-box-orient:vertical; }
   table.bt-grid input[type=date], table.ant-grid input[type=date], table.ant-grid input[type=time] { min-height:34px; }
   table.bt-grid input:focus, table.bt-grid select:focus, table.bt-grid textarea:focus,
   table.ant-grid input:focus, table.ant-grid select:focus { outline:2px solid #1f7a3d; outline-offset:1px; }
@@ -1896,11 +1896,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var borders = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
     var limit = 6 * parseFloat(style.lineHeight) + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + borders;
     el.style.height = "auto";
+    el.style.webkitLineClamp = "unset";
     var fullHeight = el.scrollHeight + borders;
     var expanded = button.getAttribute("aria-expanded") === "true";
     button.hidden = fullHeight <= limit + 1;
     if (button.hidden) { expanded = false; button.setAttribute("aria-expanded", "false"); }
     button.textContent = expanded ? "Mostrar menos" : "Ver completo";
+    if (el.tagName !== "TEXTAREA") el.style.webkitLineClamp = expanded ? "unset" : "6";
     el.style.height = Math.max(44, expanded ? fullHeight : Math.min(fullHeight, limit)) + "px";
     // El texto completo sigue disponible al editar con teclado o mediante desplazamiento.
     el.style.overflowY = el.tagName === "TEXTAREA" && !expanded && !button.hidden ? "auto" : "hidden";
