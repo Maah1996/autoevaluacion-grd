@@ -105,7 +105,7 @@
   #nav-refresh { display:none; }
   @media screen and (max-width:1100px), screen and (pointer:coarse) and (max-width:1400px) {
     .appbar-inner { flex-wrap:wrap; }
-    .a-top { position:static; }
+    #auditoriaView .a-top { position:static; }
     #nav-refresh:not([hidden]) { display:inline-flex; align-items:center; min-height:44px; }
   }
   .crumbs { max-width:var(--shell); margin:0 auto; padding:8px 18px 0; font-size:12.5px; color:var(--muted); }
@@ -476,6 +476,20 @@
   #correccionesView summary { padding:12px 0; cursor:pointer; }
   .correction-note { padding:12px; margin:12px 0; background:var(--green-soft); color:var(--ink); white-space:pre-wrap; }
   @media(max-width:600px) { #correccionesView .co-grid { grid-template-columns:1fr; gap:0; } }
+  #brechasView table.bt-grid, #brechasView table.ant-grid { font-size:16px; }
+  #brechasView table input, #brechasView table select, #brechasView table textarea { font-size:16px; min-height:44px; }
+  #brechasView table.bt-grid thead .bt-cols th, #brechasView table.ant-grid td.k { font-size:14px; }
+  #brechasView .bt-field-label, #brechasView .brecha-expand { font-size:16px; }
+  #brechasView .a-sub { font-size:14px; }
+  #brechasView .counts, #brechasView .btn { font-size:15px; }
+  .brechas-filter { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:14px 0; font-size:16px; }
+  .brechas-filter select { min-height:44px; width:220px; max-width:100%; font:inherit; padding:8px 12px; border:1px solid var(--line-strong); border-radius:8px; background:var(--surface); color:var(--ink); }
+  #bp-total { font-weight:600; white-space:nowrap; }
+  #bp-rows tr[hidden] { display:none !important; }
+  @media(max-width:560px) {
+    .brechas-filter label { flex-basis:100%; }
+    .brechas-filter select { width:auto; flex:1; min-width:140px; }
+  }
 </style>
 </head>
 <body>
@@ -712,8 +726,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         </details>
 
         <div class="page-h" style="margin:16px 0 6px">
-          <h2 style="font-size:16px">Brechas detectadas</h2>
+          <h2>Brechas detectadas</h2>
           <button class="btn primary" id="bp-add">＋ Agregar brecha manual</button>
+        </div>
+        <div class="brechas-filter">
+          <label for="bp-filter">Mostrar brecha</label>
+          <select id="bp-filter"><option value="">Total brechas</option></select>
+          <span id="bp-total" role="status">Total obs. = 0</span>
         </div>
         <div id="bp-rows"></div>
 
@@ -1944,7 +1963,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   var brechasResizeBound = false;
 
   function autosizeTA(el) {
-    if (!el) return;
+    if (!el || !el.getClientRects().length) return;
     var button = el.nextElementSibling;
     if (!button || !button.classList.contains("brecha-expand")) {
       button = document.createElement("button");
@@ -2114,7 +2133,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
           '<td class="bt-obs"><textarea data-f="obs">' + esc(f.obs || "") + "</textarea>" +
           (correctionText(A, f.n) ? '<div class="correction-note">' + esc(correctionText(A, f.n)) + "</div>" : "") + "</td>" +
         "</tr>";
-        if (stale) tr += '<tr class="bt-stalemsg"><td colspan="7">La pregunta N° ' + f.n + ' ya no está marcada como «No cumple» en la auditoría.</td></tr>';
+        if (stale) tr += '<tr class="bt-stalemsg" data-for="' + id + '"><td colspan="7">La pregunta N° ' + f.n + ' ya no está marcada como «No cumple» en la auditoría.</td></tr>';
         return tr;
       }).join("");
     }
@@ -2128,6 +2147,17 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
 
   function updateBrechasCounts() {
     var B = ensureBrechas(), ids = brechasRowIds();
+    var filter = $("bp-filter");
+    var selected = filter.dataset.audit === curAudRef.path ? filter.value : "";
+    filter.dataset.audit = curAudRef.path;
+    filter.innerHTML = '<option value="">Total brechas</option>' + ids.map(function (id) {
+      var f = B.filas[id];
+      return '<option value="' + esc(id) + '">' + esc(f.requisito || (f.n ? String(f.n) : "Brecha manual")) + "</option>";
+    }).join("");
+    filter.value = ids.includes(selected) ? selected : "";
+    filter.disabled = !ids.length;
+    $("bp-total").textContent = "Total obs. = " + ids.length;
+    filterBrechas();
     var conPlazo = 0, sinResp = 0;
     ids.forEach(function (id) {
       var f = B.filas[id];
@@ -2140,6 +2170,15 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       "<span><b>" + conPlazo + "</b> con plazo de implementación</span>" +
       "<span><b>" + sinResp + "</b> sin responsable</span>";
   }
+
+  function filterBrechas() {
+    var selected = $("bp-filter").value;
+    $("bp-rows").querySelectorAll("tr[data-id], tr[data-for]").forEach(function (row) {
+      row.hidden = !!selected && (row.getAttribute("data-id") || row.getAttribute("data-for")) !== selected;
+    });
+    autosizeAllBrechas();
+  }
+  $("bp-filter").addEventListener("change", filterBrechas);
 
   function wireBrechasEvents() {
     var B = ensureBrechas();
@@ -2169,7 +2208,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
           if (!B.filas[id]) return;
           B.filas[id][f] = inp.value;
           if (inp.tagName === "TEXTAREA") autosizeTA(inp);
-          if (f === "plazoImpl" || f === "respImpl") updateBrechasCounts();
+          if (f === "plazoImpl" || f === "respImpl" || f === "requisito") updateBrechasCounts();
           queueSaveBrechas();
         };
         inp.oninput = handler; inp.onchange = handler;
@@ -2210,6 +2249,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     B.filas[id] = { origen: "manual", requisito: "", medida: "", plazoImpl: "", respImpl: "", plazoVerif: "", respVerif: "", obs: "" };
     B.manualIds.push(id);
     queueSaveBrechas(); renderBrechas();
+    $("bp-filter").value = id;
+    filterBrechas();
     var rowEl = $("bp-rows").querySelector('tr[data-id="' + id + '"]');
     if (rowEl) rowEl.scrollIntoView({ behavior: "smooth", block: "center" });
   });
