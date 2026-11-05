@@ -77,6 +77,10 @@
     border:1px solid var(--line-strong); background:var(--surface-2); color:var(--ink);
   }
   .login-card input:focus { outline:2px solid var(--navy); outline-offset:1px; }
+  .password-field { position:relative; }
+  .password-field input { padding-right:48px; min-height:44px; }
+  .password-field button { position:absolute; right:0; top:0; bottom:0; width:44px; display:grid; place-items:center; border:0; background:transparent; color:var(--navy); cursor:pointer; }
+  .password-field button[aria-pressed="false"] .eye-slash { display:none; }
   .login-card .btn-primary {
     width:100%; margin-top:16px; padding:11px; border:0; border-radius:9px;
     background:var(--navy); color:#fff; font-weight:600; font-size:14px; cursor:pointer;
@@ -443,7 +447,15 @@
     <label for="li-email">Correo</label>
     <input id="li-email" type="email" autocomplete="email" inputmode="email">
     <label for="li-pass">Contraseña</label>
-    <input id="li-pass" type="password" autocomplete="current-password">
+    <div class="password-field">
+      <input id="li-pass" type="password" autocomplete="current-password">
+      <button id="li-eye" type="button" aria-label="Mostrar contraseña" aria-controls="li-pass" aria-pressed="false">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>
+          <path class="eye-slash" d="M3 3l18 18"/>
+        </svg>
+      </button>
+    </div>
     <button class="btn-primary" id="li-btn">Ingresar</button>
 
     <div class="linkrow">
@@ -856,6 +868,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       .catch(function (e) { loginMsg(authError(e), "err"); });
   });
   $("li-pass").addEventListener("keydown", function (e) { if (e.key === "Enter") $("li-btn").click(); });
+  function showLoginPassword(visible) {
+    $("li-pass").type = visible ? "text" : "password";
+    $("li-eye").setAttribute("aria-pressed", String(visible));
+  }
+  $("li-eye").addEventListener("click", function () {
+    showLoginPassword($("li-pass").type === "password");
+  });
   $("li-forgot").addEventListener("click", function () {
     var em = $("li-email").value.trim();
     if (!em) { loginMsg("Escribe tu correo primero.", "err"); return; }
@@ -890,6 +909,10 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
 
   auth.onAuthStateChanged(function (user) {
+    if (user) {
+      showLoginPassword(false);
+      $("li-pass").value = "";
+    }
     clearSubs();
     if (!user) { resetWriteState(); ME = null; $("app").style.display = "none"; $("loginView").style.display = "grid"; return; }
     db.collection("usuarios").doc(user.uid).get().then(function (snap) {
