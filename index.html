@@ -385,8 +385,12 @@
     width:100%; font:inherit; font-size:13px; color:#1a222e; background:#fff;
     border:1px solid #b9c9bd; border-radius:6px; padding:6px 7px; }
   table.bt-grid textarea { resize:none; min-height:44px; overflow:hidden; line-height:1.45; box-sizing:border-box; }
-  .brecha-expand { display:block; min-height:44px; padding:6px 0; border:0; background:transparent; color:var(--navy-ink); font:inherit; font-size:13px; text-decoration:underline; cursor:pointer; }
-  .brecha-expand[hidden] { display:none; }
+  .brecha-controls { display:flex; gap:6px; margin-top:6px; }
+  .brecha-controls[hidden] { display:none; }
+  .brecha-controls button { width:44px; height:44px; flex:none; padding:0; border:0; border-radius:4px; color:#fff; font:600 24px/1 sans-serif; cursor:pointer; }
+  .brecha-controls .brecha-open { background:#1f6f43; }
+  .brecha-controls .brecha-close { background:#a52b26; }
+  .brecha-controls button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .bt-field-label { display:none; }
   @media screen and (max-width:1100px), screen and (pointer:coarse) and (max-width:1400px) {
     #brechasView .bt-scroll { overflow:visible; border:0; }
@@ -406,7 +410,6 @@
     #brechasView table input, #brechasView table select, #brechasView table textarea { box-sizing:border-box; min-width:0; max-width:100%; min-height:44px; font-size:16px; }
     #brechasView input[type=date], #brechasView input[type=time] { appearance:none; -webkit-appearance:none; width:100%; }
     #brechasView input::-webkit-date-and-time-value { text-align:left; min-height:1.5em; }
-    #brechasView .brecha-expand { font-size:16px; }
   }
   @media screen and (max-width:560px) {
     #brechasView table.bt-grid tr[data-id] { grid-template-columns:minmax(0,1fr); }
@@ -479,7 +482,7 @@
   #brechasView table.bt-grid, #brechasView table.ant-grid { font-size:16px; }
   #brechasView table input, #brechasView table select, #brechasView table textarea { font-size:16px; min-height:44px; }
   #brechasView table.bt-grid thead .bt-cols th, #brechasView table.ant-grid td.k { font-size:14px; }
-  #brechasView .bt-field-label, #brechasView .brecha-expand { font-size:16px; }
+  #brechasView .bt-field-label { font-size:16px; }
   #brechasView .a-sub { font-size:14px; }
   #brechasView .counts, #brechasView .btn { font-size:15px; }
   .brechas-filter { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:14px 0; font-size:16px; }
@@ -1964,21 +1967,28 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
 
   function autosizeTA(el) {
     if (!el || !el.getClientRects().length) return;
-    var button = el.nextElementSibling;
-    if (!button || !button.classList.contains("brecha-expand")) {
-      button = document.createElement("button");
-      button.type = "button";
-      button.className = "brecha-expand";
-      button.setAttribute("aria-expanded", "false");
+    var controls = el.nextElementSibling;
+    if (!controls || !controls.classList.contains("brecha-controls")) {
+      controls = document.createElement("div");
+      controls.className = "brecha-controls";
+      controls.dataset.expanded = "false";
       el.id = "brecha-text-" + el.closest("tr").getAttribute("data-id") + "-" + (el.getAttribute("data-f") || "seguimiento");
-      button.setAttribute("aria-controls", el.id);
-      el.after(button);
-      button.onclick = function () {
-        var expanded = button.getAttribute("aria-expanded") !== "true";
-        button.setAttribute("aria-expanded", String(expanded));
-        autosizeTA(el);
-        if (!expanded) { el.scrollTop = 0; el.scrollIntoView({ block: "nearest" }); }
-      };
+      [{ cls: "brecha-open", text: "+", label: "Mostrar texto completo", expanded: true },
+        { cls: "brecha-close", text: "−", label: "Mostrar solo seis líneas", expanded: false }].forEach(function (action) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = action.cls;
+        button.textContent = action.text;
+        button.setAttribute("aria-label", action.label);
+        button.setAttribute("aria-controls", el.id);
+        button.onclick = function () {
+          controls.dataset.expanded = String(action.expanded);
+          autosizeTA(el);
+          if (!action.expanded) { el.scrollTop = 0; el.scrollIntoView({ block: "nearest" }); }
+        };
+        controls.appendChild(button);
+      });
+      el.after(controls);
     }
     var style = getComputedStyle(el);
     var borders = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
@@ -1986,14 +1996,16 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     el.style.height = "auto";
     el.style.webkitLineClamp = "unset";
     var fullHeight = el.scrollHeight + borders;
-    var expanded = button.getAttribute("aria-expanded") === "true";
-    button.hidden = fullHeight <= limit + 1;
-    if (button.hidden) { expanded = false; button.setAttribute("aria-expanded", "false"); }
-    button.textContent = expanded ? "Mostrar menos" : "Ver completo";
+    var expanded = controls.dataset.expanded === "true";
+    controls.hidden = fullHeight <= limit + 1;
+    if (controls.hidden) { expanded = false; controls.dataset.expanded = "false"; }
+    controls.querySelectorAll("button").forEach(function (button) {
+      button.setAttribute("aria-expanded", String(expanded));
+    });
     if (el.tagName !== "TEXTAREA") el.style.webkitLineClamp = expanded ? "unset" : "6";
     el.style.height = Math.max(44, expanded ? fullHeight : Math.min(fullHeight, limit)) + "px";
     // El texto completo sigue disponible al editar con teclado o mediante desplazamiento.
-    el.style.overflowY = el.tagName === "TEXTAREA" && !expanded && !button.hidden ? "auto" : "hidden";
+    el.style.overflowY = el.tagName === "TEXTAREA" && !expanded && !controls.hidden ? "auto" : "hidden";
   }
   function autosizeAllBrechas() {
     var host = $("bp-rows");
