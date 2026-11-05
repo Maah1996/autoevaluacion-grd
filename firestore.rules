@@ -83,7 +83,7 @@ service cloud.firestore {
           let old = previous.get(n, {'version': 0, 'historial': {}});
           let entry = next[n];
           let data = entry.actual;
-          return resource.data.estado == 'cerrada'
+          return resource.data.estado in ['borrador', 'cerrada']
             && n is string && n.matches('^([1-9]|[1-4][0-9]|5[0-6])$')
             && resource.data.respuestas.get(n, '') == 'no'
             && next is map && next.diff(previous).affectedKeys().hasOnly([n])
