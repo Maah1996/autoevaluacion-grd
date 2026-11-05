@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Lista de autoevaluación de aspectos legales asociados a la Gestión del Riesgo de Desastres en centros de trabajo. Estándar, aplicable a cualquier empresa.">
 <meta name="theme-color" content="#1f3a63">
@@ -158,6 +161,12 @@
   .a-sub { font-size:12px; color:var(--muted); margin-top:2px; }
   .a-actions { display:flex; gap:7px; flex:none; flex-wrap:wrap; justify-content:flex-end; }
   @media(max-width:700px) { .a-title-row { flex-wrap:wrap; } .a-title-row > div { min-width:0; max-width:100%; } .a-actions { justify-content:flex-start; } }
+  .result-shortcut { width:34px; height:34px; padding:0; border:1px solid; border-radius:5px; font:700 15px/1 sans-serif; cursor:pointer; }
+  .result-a { background:#dcefe3; color:#125b32; border-color:#32824b; }
+  .result-b { background:#fff0b8; color:#654900; border-color:#b99526; }
+  .result-shortcut:disabled { opacity:.4; cursor:default; }
+  .result-shortcut:focus-visible { outline:2px solid var(--navy); outline-offset:3px; }
+  @media(pointer:coarse) { .result-shortcut { width:40px; height:40px; } }
   .a-actions .btn { padding:7px 11px; font-size:12px; }
   .gauge-row { display:flex; align-items:center; gap:16px; margin-top:10px; }
   .gauge { flex:none; width:66px; height:66px; position:relative; }
@@ -683,7 +692,7 @@
         <div class="meta-card">
           <label for="co-empresa">Empresa y fecha de auditoría</label>
           <select id="co-empresa"></select>
-          <div class="a-actions" style="margin-top:12px;justify-content:flex-start"><button class="btn" id="co-volver" disabled>← Auditoría</button><button class="btn" id="co-brechas" disabled>Plan de brechas →</button></div>
+          <div class="a-actions" style="margin-top:12px;justify-content:flex-start"><button class="result-shortcut result-a" id="co-volver" type="button" title="Ver auditoría seleccionada" aria-label="Ver auditoría seleccionada" disabled>A</button><button class="result-shortcut result-b" id="co-brechas" type="button" title="Ver plan de brechas de la auditoría seleccionada" aria-label="Ver plan de brechas de la auditoría seleccionada" disabled>B</button></div>
           <label class="co-filter"><input id="co-resueltos" type="checkbox"> Ver también los resueltos</label>
           <label for="co-hallazgo">Hallazgo y auditoría de origen</label>
           <select id="co-hallazgo"></select>
@@ -935,7 +944,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     });
     auditWrites = { pending: null, inFlight: null, timer: null };
     brechasWrites = { pending: null, inFlight: null, timer: null };
-    curAudRef = null; A = null; PREV = null; curEmpresa = null;
+    curAudRef = null; A = null; PREV = null; curEmpresa = null; seguimientoIndex = null;
   }
   function flushPendingWrites() {
     return Promise.all([saveChannel(auditWrites), saveChannel(brechasWrites)]);
@@ -1063,9 +1072,12 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("nav-usuarios").style.display = ME.rol === "admin" ? "" : "none";
     $("nav-refresh").hidden = ME.rol !== "admin";
     navNow("empresasView");
+    $("app").style.display = "block"; $("app").inert = true;
+    $("sessionLoading").style.minHeight = "0"; $("sessionLoading").style.padding = "10px";
+    $("sessionLoading").textContent = "Recuperando la pantalla seleccionada…";
     try { await restoreAfterRefresh(); }
     catch (error) { alert("No se pudo recuperar la pantalla: " + error.message); }
-    finally { $("sessionLoading").style.display = "none"; $("app").style.display = "block"; }
+    finally { $("sessionLoading").style.display = "none"; $("app").style.display = "block"; $("app").inert = false; }
   }
 
   $("nav-refresh").addEventListener("click", function () {
@@ -1292,7 +1304,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       creado: FV.serverTimestamp(), actualizado: FV.serverTimestamp()
     };
     db.collection("empresas").doc(curEmpresa.id).collection("auditorias").add(payload)
-      .then(function (ref) { openAuditoria(curEmpresa.id, ref.id); })
+      .then(function (ref) { seguimientoIndex = null; openAuditoria(curEmpresa.id, ref.id); })
       .catch(function (e) { alert("No se pudo crear la auditoría: " + e.message); });
   });
 
@@ -1400,7 +1412,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("co-detalle-historial").hidden = true;
     $("co-original").textContent = message;
     $("co-contexto").textContent = curEmpresa ? curEmpresa.nombre : "";
-    $("co-volver").textContent = "← Auditoría";
+    $("co-volver").textContent = "A";
     $("co-volver").disabled = $("co-brechas").disabled = true;
     $("co-mensaje").textContent = "";
   }
@@ -1433,7 +1445,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         A = selectedAudit;
         curAudRef = db.collection("empresas").doc(curEmpresa.id).collection("auditorias").doc(A.id);
         $("co-contexto").textContent = curEmpresa.nombre + " · Auditoría " + fmtDate(A.fecha);
-        $("co-volver").textContent = "← Auditoría";
+        $("co-volver").textContent = "A";
       $("co-volver").disabled = $("co-brechas").disabled = false;
       }
       return;
@@ -1490,7 +1502,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var selected = correctionAudits.find(function (audit) { return audit.id === key.slice(0, separator); });
     activateCorrection(selected, key.slice(separator + 1));
   }
-  var seguimientoLoad = 0;
+  var seguimientoLoad = 0, seguimientoIndex = null;
   async function openSeguimientoNow(companyId, auditId, n) {
     var loadId = ++seguimientoLoad, uid = ME.uid;
     navNow("correccionesView");
@@ -1513,6 +1525,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       $("co-empresa").disabled = false;
     }
     async function loadList() {
+      if (seguimientoIndex && seguimientoIndex.uid === uid && Date.now() - seguimientoIndex.time < 30000 && (!companyId || seguimientoIndex.html.includes(esc(JSON.stringify([companyId,auditId]))))) {
+        var selectedValue = $("co-empresa").value;
+        $("co-empresa").innerHTML = seguimientoIndex.html;
+        $("co-empresa").value = selectedValue;
+        $("co-empresa").disabled = false;
+        if (!companyId) clearCorrectionSelection("Selecciona empresa y fecha de auditoría.");
+        return;
+      }
       var companies = await db.collection("empresas").orderBy("nombre").get({ source: "server" });
       var groups = await Promise.all(companies.docs.map(async function (doc) {
         if (selectedCompany && doc.id === selectedCompany.id) return options(selectedCompany, selectedAudits);
@@ -1524,6 +1544,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       if (!ME || ME.uid !== uid || loadId !== seguimientoLoad || VIEW !== "correccionesView") return;
       var current = $("co-empresa").value;
       $("co-empresa").innerHTML = '<option value="">Selecciona empresa y fecha de auditoría</option>' + groups.join("");
+      seguimientoIndex = { uid:uid, time:Date.now(), html:$("co-empresa").innerHTML };
       $("co-empresa").value = current;
       $("co-empresa").disabled = false;
       if (!companyId) clearCorrectionSelection("Selecciona empresa y fecha de auditoría.");
@@ -1541,7 +1562,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var n = correctionItem(), entry = (A.seguimiento || {})[n];
     $("co-form").dataset.item = $("co-hallazgo").value;
     $("co-contexto").textContent = curEmpresa.nombre + " · Auditoría " + fmtDate(A.fecha) + " · " + (A.evaluadorNombre || "");
-    $("co-volver").textContent = "← Auditoría";
+    $("co-volver").textContent = "A";
       $("co-volver").disabled = $("co-brechas").disabled = false;
     $("co-form").hidden = false;
     $("co-detalle-historial").hidden = false;
