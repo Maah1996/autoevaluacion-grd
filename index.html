@@ -478,6 +478,8 @@
   #correccionesView [hidden] { display:none; }
   #co-original, #co-historial p { padding:12px; background:var(--surface-2); white-space:pre-wrap; }
   #co-guardar { margin-top:20px; min-height:44px; }
+  #correccionesView .co-selectors { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:16px; }
+  @media(max-width:600px) { #correccionesView .co-selectors { grid-template-columns:minmax(0,1fr); gap:0; } }
   #correccionesView .co-filter { display:flex; align-items:center; gap:8px; }
   #correccionesView .co-filter input { width:20px; min-height:20px; height:20px; flex:none; }
   #correccionesView details { margin-top:20px; }
@@ -679,8 +681,10 @@
           <button class="btn" id="co-volver">← Volver a la auditoría</button>
         </div>
         <div class="meta-card">
-          <label for="co-empresa">Empresa</label>
-          <select id="co-empresa"></select>
+          <div class="co-selectors">
+            <div><label for="co-empresa">Empresa</label><select id="co-empresa"></select></div>
+            <div><label for="co-auditoria">Fecha de auditoría</label><select id="co-auditoria" disabled><option value="">Selecciona una empresa</option></select></div>
+          </div>
           <label class="co-filter"><input id="co-resueltos" type="checkbox"> Ver también los resueltos</label>
           <label for="co-hallazgo">Hallazgo y auditoría de origen</label>
           <select id="co-hallazgo"></select>
@@ -1070,7 +1074,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     }
     return runAfterSave(function () {
       sessionStorage.setItem("grd-refresh", JSON.stringify({
-        uid: ME.uid, view: VIEW, empresa: curEmpresa && curEmpresa.id, auditoria: A && A.id,
+        uid: ME.uid, view: VIEW, empresa: curEmpresa && curEmpresa.id, auditoria: VIEW === "correccionesView" ? $("co-auditoria").value : A && A.id,
         hallazgo: VIEW === "correccionesView" ? correctionItem() : ""
       }));
       var url = new URL(window.location.href);
@@ -1396,6 +1400,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   function updateCorrectionOptions(selectedKey) {
     var options = [];
     correctionAudits.forEach(function (audit, index) {
+      if (audit.id !== $("co-auditoria").value) return;
       ITEMS.forEach(function (item) {
         if ((audit.respuestas || {})[item.n] !== "no") return;
         var c = correctionOf(audit, item.n), solved = c && c.estado === "verificada";
@@ -1415,7 +1420,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
   async function loadCorrectionFinding(key) {
     if (!key) {
-      clearCorrectionSelection("No hay hallazgos pendientes en las auditorías cerradas. Puedes activar «Ver también los resueltos».");
+      clearCorrectionSelection("No hay hallazgos pendientes en esta auditoría cerrada. Puedes activar «Ver también los resueltos».");
       return;
     }
     var split = key.lastIndexOf(":"), auditId = key.slice(0, split), n = key.slice(split + 1);
@@ -1432,9 +1437,19 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     curAudRef = db.collection("empresas").doc(curEmpresa.id).collection("auditorias").doc(A.id);
     renderCorrections(n);
   }
+  function updateCorrectionAuditOptions(selected) {
+    $("co-auditoria").innerHTML = correctionAudits.map(function (audit, index) {
+      return '<option value="' + esc(audit.id) + '">' + esc((audit.fecha ? fmtDate(audit.fecha) : "Sin fecha") +
+        " · Auditoría " + (index + 1) + (index === 0 ? " · Última cerrada" : "")) + '</option>';
+    }).join("") || '<option value="">Sin auditorías cerradas</option>';
+    $("co-auditoria").disabled = !correctionAudits.length;
+    if (selected && correctionAudits.some(function (audit) { return audit.id === selected; })) $("co-auditoria").value = selected;
+    $("co-auditoria").dataset.previous = $("co-auditoria").value;
+  }
   async function loadCorrectionCompany(companyId, auditId, n) {
     if (!companyId) {
       curEmpresa = null; correctionAudits = [];
+      updateCorrectionAuditOptions();
       updateCorrectionOptions();
       clearCorrectionSelection("Selecciona una empresa para consultar sus hallazgos.");
       return;
@@ -1451,13 +1466,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       return (b.fecha || "").localeCompare(a.fecha || "") || b.id.localeCompare(a.id);
     });
     $("co-empresa").value = companyId;
+    updateCorrectionAuditOptions(auditId);
     $("co-resueltos").checked = !!auditId;
     updateCorrectionOptions(auditId && n ? auditId + ":" + n : "");
     if (auditId && !n) {
       var option = Array.from($("co-hallazgo").options).find(function (o) { return o.value.startsWith(auditId + ":"); });
       if (!option) {
         $("co-hallazgo").selectedIndex = -1;
-        clearCorrectionSelection("La auditoría de origen no tiene hallazgos. Puedes seleccionar uno de otra auditoría de esta empresa.");
+        clearCorrectionSelection("La auditoría de origen no tiene hallazgos. Puedes elegir otra fecha de auditoría de esta empresa.");
         return;
       }
       $("co-hallazgo").value = option.value;
@@ -1532,6 +1548,17 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var previous = curEmpresa && curEmpresa.id || "", selected = $("co-empresa").value;
     var done = await runAfterSave(function () { return loadCorrectionCompany(selected); });
     if (!done) $("co-empresa").value = previous;
+  });
+  $("co-auditoria").addEventListener("change", async function () {
+    var previous = $("co-auditoria").dataset.previous, key = $("co-form").dataset.item;
+    var done = await runAfterSave(function () {
+      updateCorrectionOptions();
+      return loadCorrectionFinding($("co-hallazgo").value);
+    });
+    if (!done) {
+      $("co-auditoria").value = previous;
+      updateCorrectionOptions(key);
+    } else $("co-auditoria").dataset.previous = $("co-auditoria").value;
   });
   $("co-hallazgo").addEventListener("change", async function () {
     var previous = $("co-form").dataset.item, selected = $("co-hallazgo").value;
