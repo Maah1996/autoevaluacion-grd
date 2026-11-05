@@ -157,6 +157,7 @@
   .a-title { font-size:16px; font-weight:700; color:var(--navy-ink); margin:0; }
   .a-sub { font-size:12px; color:var(--muted); margin-top:2px; }
   .a-actions { display:flex; gap:7px; flex:none; flex-wrap:wrap; justify-content:flex-end; }
+  @media(max-width:700px) { .a-title-row { flex-wrap:wrap; } .a-title-row > div { min-width:0; max-width:100%; } .a-actions { justify-content:flex-start; } }
   .a-actions .btn { padding:7px 11px; font-size:12px; }
   .gauge-row { display:flex; align-items:center; gap:16px; margin-top:10px; }
   .gauge { flex:none; width:66px; height:66px; position:relative; }
@@ -622,7 +623,7 @@
             <div class="a-actions">
               <button class="btn" id="at-volver">← Volver</button>
               <button class="btn" id="at-brechas">Plan de brechas →</button>
-              <button class="btn" id="at-correcciones" style="display:none">Registrar correcciones</button>
+              <button class="btn" id="at-correcciones">Seguimiento →</button>
               <button class="btn primary" id="at-cerrar">Cerrar auditoría</button>
             </div>
           </div>
@@ -677,7 +678,7 @@
       <div class="wrap">
         <div class="a-title-row">
           <div><h3>Seguimiento de correcciones</h3><p id="co-contexto" class="a-sub"></p></div>
-          <button class="btn" id="co-volver">← Volver a la auditoría</button>
+          <div class="a-actions"><button class="btn" id="co-volver" disabled>← Auditoría</button><button class="btn" id="co-brechas" disabled>Plan de brechas →</button></div>
         </div>
         <div class="meta-card">
           <label for="co-empresa">Empresa y fecha de auditoría</label>
@@ -719,7 +720,8 @@
               <div class="a-sub" id="bt-sub">—</div>
             </div>
             <div class="a-actions">
-              <button class="btn" id="bt-volver">← Volver a la auditoría</button>
+              <button class="btn" id="bt-volver">← Auditoría</button>
+              <button class="btn" id="bt-seguimiento">Seguimiento →</button>
             </div>
           </div>
           <div class="counts" id="bt-counts" style="margin-top:10px"></div>
@@ -1392,7 +1394,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("co-detalle-historial").hidden = true;
     $("co-original").textContent = message;
     $("co-contexto").textContent = curEmpresa ? curEmpresa.nombre : "";
-    $("co-volver").textContent = "← Volver a empresas";
+    $("co-volver").textContent = "← Auditoría";
+    $("co-volver").disabled = $("co-brechas").disabled = true;
     $("co-mensaje").textContent = "";
   }
   function updateCorrectionOptions(selectedKey) {
@@ -1424,7 +1427,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         A = selectedAudit;
         curAudRef = db.collection("empresas").doc(curEmpresa.id).collection("auditorias").doc(A.id);
         $("co-contexto").textContent = curEmpresa.nombre + " · Auditoría " + fmtDate(A.fecha);
-        $("co-volver").textContent = "← Ver auditoría de origen";
+        $("co-volver").textContent = "← Auditoría";
+      $("co-volver").disabled = $("co-brechas").disabled = false;
       }
       return;
     }
@@ -1445,8 +1449,9 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       $("co-form").hidden = true; $("co-form").dataset.item = $("co-hallazgo").value;
       $("co-detalle-historial").hidden = true; correctionDirty = false;
       $("co-contexto").textContent = curEmpresa.nombre + " · Auditoría " + fmtDate(A.fecha) + " · Borrador";
-      $("co-original").textContent = ((A.notas || {})[n] || itemByN(n).q) + " — Auditoría en borrador: completa o corrige este hallazgo desde «Ver auditoría de origen». El registro de soluciones verificadas se habilita al cerrar la auditoría.";
-      $("co-volver").textContent = "← Ver auditoría de origen";
+      $("co-original").textContent = ((A.notas || {})[n] || itemByN(n).q) + " — Auditoría en borrador: completa o corrige este hallazgo desde «Auditoría». El registro de soluciones verificadas se habilita al cerrar la auditoría.";
+      $("co-volver").textContent = "← Auditoría";
+      $("co-volver").disabled = $("co-brechas").disabled = false;
       return;
     }
     renderCorrections(n);
@@ -1516,7 +1521,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var n = correctionItem(), entry = (A.seguimiento || {})[n];
     $("co-form").dataset.item = $("co-hallazgo").value;
     $("co-contexto").textContent = curEmpresa.nombre + " · Auditoría " + fmtDate(A.fecha) + " · " + (A.evaluadorNombre || "");
-    $("co-volver").textContent = "← Ver auditoría de origen";
+    $("co-volver").textContent = "← Auditoría";
+      $("co-volver").disabled = $("co-brechas").disabled = false;
     $("co-form").hidden = false;
     $("co-detalle-historial").hidden = false;
     var c = entry && entry.actual || {};
@@ -1579,11 +1585,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   $("co-form").addEventListener("input", function () { correctionDirty = true; });
   $("co-estado").addEventListener("change", correctionVerification);
   $("co-volver").addEventListener("click", function () {
-    if (correctionSaving) return;
-    if (correctionDirty && !confirm("¿Descartar los cambios de esta corrección?")) return;
-    correctionDirty = false;
-    if (A && curEmpresa) openAuditoria(curEmpresa.id, A.id);
-    else nav("empresasView");
+    if (A && curEmpresa) return openAuditoria(curEmpresa.id, A.id);
+  });
+  $("co-brechas").addEventListener("click", function () {
+    if (A && curEmpresa) return openBrechasFor(curEmpresa.id, A.id);
+  });
+  $("bt-seguimiento").addEventListener("click", function () {
+    if (A && curEmpresa) return runAfterSave(function () { return openSeguimientoNow(curEmpresa.id, A.id); });
   });
   $("co-form").addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -1663,7 +1671,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("auditoriaView").classList.toggle("locked", isLocked());
     $("at-cerrar").style.display = isLocked() ? "none" : "";
     $("at-cerrar").disabled = false;
-    $("at-correcciones").style.display = isLocked() ? "" : "none";
+    $("at-correcciones").style.display = "";
 
     var container = $("sections"), chips = $("chips");
     var openSecs = {};
