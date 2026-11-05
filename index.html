@@ -381,6 +381,30 @@
   table.bt-grid textarea { resize:none; min-height:44px; overflow:hidden; line-height:1.45; box-sizing:border-box; }
   .brecha-expand { display:block; min-height:44px; padding:6px 0; border:0; background:transparent; color:var(--navy-ink); font:inherit; font-size:13px; text-decoration:underline; cursor:pointer; }
   .brecha-expand[hidden] { display:none; }
+  .bt-field-label { display:none; }
+  @media screen and (max-width:1100px), screen and (pointer:coarse) and (max-width:1400px) {
+    #brechasView .bt-scroll { overflow:visible; border:0; }
+    #brechasView table.bt-grid, #brechasView table.ant-grid { display:block; width:100%; min-width:0; background:transparent; }
+    #brechasView table.bt-grid thead { display:none; }
+    #brechasView table.bt-grid tbody, #brechasView table.ant-grid tbody { display:block; }
+    #brechasView table.bt-grid tr[data-id] { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; background:#fff; border:1px solid #7f9a86; border-radius:8px; padding:16px; margin:0 0 16px; }
+    #brechasView table.bt-grid tr[data-id] td { display:block; width:auto; min-width:0; border:0; padding:0; text-align:left; }
+    #brechasView table.bt-grid tr[data-id] td.bt-dt, #brechasView table.bt-grid tr[data-id] td.bt-rs { display:flex; flex-direction:column; }
+    #brechasView table.bt-grid td.bt-dt input, #brechasView table.bt-grid td.bt-rs input { margin-top:auto; }
+    #brechasView .a-top { position:static; }
+    #brechasView table.bt-grid td.bt-med, #brechasView table.bt-grid td.bt-obs, #brechasView table.bt-grid td.bt-req { grid-column:1/-1; }
+    #brechasView .bt-field-label { display:block; font-family:"Source Sans 3",sans-serif; font-size:14px; font-weight:600; color:#26482f; margin-bottom:6px; }
+    #brechasView table.ant-grid tr { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr); background:#fff; }
+    #brechasView table.ant-grid td { display:block; min-width:0; width:auto; white-space:normal; overflow-wrap:anywhere; }
+    #brechasView table.ant-grid .ant-band { display:block; }
+    #brechasView table input, #brechasView table select, #brechasView table textarea { box-sizing:border-box; min-width:0; max-width:100%; min-height:44px; font-size:16px; }
+    #brechasView input[type=date], #brechasView input[type=time] { appearance:none; -webkit-appearance:none; width:100%; }
+    #brechasView input::-webkit-date-and-time-value { text-align:left; min-height:1.5em; }
+    #brechasView .brecha-expand { font-size:16px; }
+  }
+  @media screen and (max-width:560px) {
+    #brechasView table.bt-grid tr[data-id] { grid-template-columns:minmax(0,1fr); }
+  }
   #bp-rows .correction-note { box-sizing:border-box; overflow:hidden; line-height:1.45; display:-webkit-box; -webkit-box-orient:vertical; }
   table.bt-grid input[type=date], table.ant-grid input[type=date], table.ant-grid input[type=time] { min-height:34px; }
   table.bt-grid input:focus, table.bt-grid select:focus, table.bt-grid textarea:focus,
@@ -2083,6 +2107,17 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     });
     $("bp-rows").querySelectorAll("tr[data-id]").forEach(function (rowEl) {
       var id = rowEl.getAttribute("data-id");
+      var headings = $("bp-rows").querySelectorAll(".bt-cols th");
+      rowEl.querySelectorAll("td").forEach(function (cell, index) {
+        var field = cell.querySelector("[data-f]");
+        if (!field || cell.querySelector(".bt-field-label")) return;
+        var label = document.createElement("span");
+        label.className = "bt-field-label";
+        label.textContent = headings[index].textContent;
+        label.setAttribute("aria-hidden", "true");
+        cell.prepend(label);
+        field.setAttribute("aria-label", label.textContent);
+      });
       rowEl.querySelectorAll("[data-f]").forEach(function (inp) {
         var f = inp.getAttribute("data-f");
         var handler = function () {
