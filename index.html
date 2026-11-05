@@ -379,6 +379,9 @@
     width:100%; font:inherit; font-size:13px; color:#1a222e; background:#fff;
     border:1px solid #b9c9bd; border-radius:6px; padding:6px 7px; }
   table.bt-grid textarea { resize:none; min-height:44px; overflow:hidden; line-height:1.45; box-sizing:border-box; }
+  .brecha-expand { display:block; min-height:44px; padding:6px 0; border:0; background:transparent; color:var(--navy-ink); font:inherit; font-size:13px; text-decoration:underline; cursor:pointer; }
+  .brecha-expand[hidden] { display:none; }
+  #bp-rows .correction-note { box-sizing:border-box; overflow:hidden; line-height:1.45; }
   table.bt-grid input[type=date], table.ant-grid input[type=date], table.ant-grid input[type=time] { min-height:34px; }
   table.bt-grid input:focus, table.bt-grid select:focus, table.bt-grid textarea:focus,
   table.ant-grid input:focus, table.ant-grid select:focus { outline:2px solid #1f7a3d; outline-offset:1px; }
@@ -1872,13 +1875,39 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   var brechasResizeBound = false;
 
   function autosizeTA(el) {
-    if (!el || el.tagName !== "TEXTAREA") return;
+    if (!el) return;
+    var button = el.nextElementSibling;
+    if (!button || !button.classList.contains("brecha-expand")) {
+      button = document.createElement("button");
+      button.type = "button";
+      button.className = "brecha-expand";
+      button.setAttribute("aria-expanded", "false");
+      el.id = "brecha-text-" + el.closest("tr").getAttribute("data-id") + "-" + (el.getAttribute("data-f") || "seguimiento");
+      button.setAttribute("aria-controls", el.id);
+      el.after(button);
+      button.onclick = function () {
+        var expanded = button.getAttribute("aria-expanded") !== "true";
+        button.setAttribute("aria-expanded", String(expanded));
+        autosizeTA(el);
+        if (!expanded) { el.scrollTop = 0; el.scrollIntoView({ block: "nearest" }); }
+      };
+    }
+    var style = getComputedStyle(el);
+    var borders = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+    var limit = 6 * parseFloat(style.lineHeight) + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + borders;
     el.style.height = "auto";
-    el.style.height = Math.max(el.scrollHeight, 44) + "px";
+    var fullHeight = el.scrollHeight + borders;
+    var expanded = button.getAttribute("aria-expanded") === "true";
+    button.hidden = fullHeight <= limit + 1;
+    if (button.hidden) { expanded = false; button.setAttribute("aria-expanded", "false"); }
+    button.textContent = expanded ? "Mostrar menos" : "Ver completo";
+    el.style.height = Math.max(44, expanded ? fullHeight : Math.min(fullHeight, limit)) + "px";
+    // El texto completo sigue disponible al editar con teclado o mediante desplazamiento.
+    el.style.overflowY = el.tagName === "TEXTAREA" && !expanded && !button.hidden ? "auto" : "hidden";
   }
   function autosizeAllBrechas() {
     var host = $("bp-rows");
-    if (host) host.querySelectorAll("textarea").forEach(autosizeTA);
+    if (host) host.querySelectorAll("textarea, .correction-note").forEach(autosizeTA);
   }
 
   function itemByN(n) {
@@ -2063,7 +2092,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         };
         inp.oninput = handler; inp.onchange = handler;
       });
-      rowEl.querySelectorAll("textarea[data-f]").forEach(autosizeTA);
+      rowEl.querySelectorAll("textarea[data-f], .correction-note").forEach(autosizeTA);
       var del = rowEl.querySelector(".bt-reqcell-del");
       if (del) del.onclick = function () {
         if (!confirm("¿Quitar esta brecha del plan?")) return;
