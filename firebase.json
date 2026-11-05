@@ -5,6 +5,14 @@
   "hosting": {
     "site": "prev-riegos",
     "public": ".",
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }
+        ]
+      }
+    ],
     "ignore": [
       "!(index.html)",
       "*/**/*",
