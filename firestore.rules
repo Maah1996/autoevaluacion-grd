@@ -57,7 +57,11 @@ service cloud.firestore {
             && plan.get('manualIds', []) is list;
         }
         allow read: if isActive();
+        // La evaluación se crea en blanco. Las respuestas se guardan al editar.
         allow create: if isActive()
+          && request.resource.data.estado == 'borrador'
+          && request.resource.data.respuestas is map
+          && request.resource.data.respuestas.size() == 0
           && (!('brechas' in request.resource.data) || planValido());
 
         function cambioPermitido() {
