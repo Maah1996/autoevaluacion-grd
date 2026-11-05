@@ -478,6 +478,8 @@
   #correccionesView [hidden] { display:none; }
   #co-original, #co-historial p { padding:12px; background:var(--surface-2); white-space:pre-wrap; }
   #co-guardar { margin-top:20px; min-height:44px; }
+  #correccionesView .co-filter { display:flex; align-items:center; gap:8px; }
+  #correccionesView .co-filter input { width:20px; min-height:20px; height:20px; flex:none; }
   #correccionesView details { margin-top:20px; }
   #correccionesView summary { padding:12px 0; cursor:pointer; }
   .correction-note { padding:12px; margin:12px 0; background:var(--green-soft); color:var(--ink); white-space:pre-wrap; }
@@ -543,6 +545,7 @@
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
       <strong style="font-family:'Libre Franklin';font-size:14.5px;color:var(--navy-ink)">Autoevaluación GRD</strong>
       <button class="lnk" id="nav-usuarios" style="display:none">Usuarios</button>
+      <button class="lnk" id="nav-seguimiento" type="button">Seguimiento</button>
       <button class="lnk" id="nav-refresh" type="button" hidden>Actualizar</button>
       <div class="who"><b id="who-name">—</b><span id="who-email">—</span></div>
       <button class="lnk" id="btn-logout">Salir</button>
@@ -672,11 +675,14 @@
     <div class="view" id="correccionesView">
       <div class="wrap">
         <div class="a-title-row">
-          <div><h3>Registrar correcciones</h3><p id="co-contexto" class="a-sub"></p></div>
+          <div><h3>Seguimiento de correcciones</h3><p id="co-contexto" class="a-sub"></p></div>
           <button class="btn" id="co-volver">← Volver a la auditoría</button>
         </div>
         <div class="meta-card">
-          <label for="co-hallazgo">Hallazgo de esta auditoría</label>
+          <label for="co-empresa">Empresa</label>
+          <select id="co-empresa"></select>
+          <label class="co-filter"><input id="co-resueltos" type="checkbox"> Ver también los resueltos</label>
+          <label for="co-hallazgo">Hallazgo y auditoría de origen</label>
           <select id="co-hallazgo"></select>
           <p id="co-original"></p>
           <form id="co-form">
@@ -1053,7 +1059,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("nav-usuarios").style.display = ME.rol === "admin" ? "" : "none";
     $("nav-refresh").hidden = ME.rol !== "admin";
     navNow("empresasView");
-    restoreAfterRefresh();
+    restoreAfterRefresh().catch(function (error) { alert("No se pudo recuperar la pantalla: " + error.message); });
   }
 
   $("nav-refresh").addEventListener("click", function () {
@@ -1064,7 +1070,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     }
     return runAfterSave(function () {
       sessionStorage.setItem("grd-refresh", JSON.stringify({
-        uid: ME.uid, view: VIEW, empresa: curEmpresa && curEmpresa.id, auditoria: A && A.id
+        uid: ME.uid, view: VIEW, empresa: curEmpresa && curEmpresa.id, auditoria: A && A.id,
+        hallazgo: VIEW === "correccionesView" ? correctionItem() : ""
       }));
       var url = new URL(window.location.href);
       url.searchParams.set("v", String(Date.now()));
@@ -1079,16 +1086,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     } catch (e) { return; }
     if (!saved || saved.uid !== ME.uid || ME.rol !== "admin") return;
     if (saved.view === "usuariosView") { navNow(saved.view); return; }
+    if (saved.view === "correccionesView") return openSeguimientoNow(saved.empresa, saved.auditoria, saved.hallazgo);
     if (!saved.empresa || !["empresaView", "auditoriaView", "brechasView", "correccionesView"].includes(saved.view)) return;
     await openEmpresaNow(saved.empresa);
     if (!curEmpresa || curEmpresa.id !== saved.empresa || !saved.auditoria) return;
     if (saved.view === "brechasView") return openBrechasForNow(saved.empresa, saved.auditoria);
-    if (saved.view === "auditoriaView" || saved.view === "correccionesView") {
+    if (saved.view === "auditoriaView") {
       await openAuditoriaNow(saved.empresa, saved.auditoria);
-      if (saved.view === "correccionesView" && A && A.id === saved.auditoria && isLocked()) {
-        navNow("correccionesView");
-        renderCorrections();
-      }
     }
   }
 
@@ -1113,12 +1117,16 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (VIEW === "auditoriaView" && curEmpresa) h.push(' / <a id="cb-emp2">' + esc(curEmpresa.nombre) + "</a> / Auditoría " + fmtDate(A && A.fecha));
     if (VIEW === "brechasView" && curEmpresa) h.push(' / <a id="cb-emp2">' + esc(curEmpresa.nombre) + '</a> / <a id="cb-aud2">Auditoría ' + fmtDate(A && A.fecha) + "</a> / Plan de brechas");
     if (VIEW === "usuariosView") h.push(" / Usuarios");
+    if (VIEW === "correccionesView") h.push(" / Seguimiento de correcciones");
     c.innerHTML = h.join("");
     if ($("cb-emp")) $("cb-emp").onclick = function () { nav("empresasView"); };
     if ($("cb-emp2")) $("cb-emp2").onclick = function () { openEmpresa(curEmpresa.id); };
     if ($("cb-aud2")) $("cb-aud2").onclick = function () { openAuditoria(curEmpresa.id, A.id); };
   }
   $("nav-usuarios").addEventListener("click", function () { nav("usuariosView"); });
+  $("nav-seguimiento").addEventListener("click", function () {
+    return runAfterSave(function () { return openSeguimientoNow(); });
+  });
 
   /* ==================================================
      EMPRESAS
@@ -1370,14 +1378,121 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
 
   var correctionVersion = 0, correctionDirty = false, correctionSaving = false;
+  var correctionAudits = [];
+  function correctionItem() {
+    var key = $("co-hallazgo").value;
+    return key ? key.slice(key.lastIndexOf(":") + 1) : "";
+  }
+  function clearCorrectionSelection(message) {
+    A = null; curAudRef = null; correctionDirty = false; correctionVersion = 0;
+    $("co-form").hidden = true;
+    $("co-form").dataset.item = "";
+    $("co-detalle-historial").hidden = true;
+    $("co-original").textContent = message;
+    $("co-contexto").textContent = curEmpresa ? curEmpresa.nombre : "";
+    $("co-volver").textContent = "← Volver a empresas";
+    $("co-mensaje").textContent = "";
+  }
+  function updateCorrectionOptions(selectedKey) {
+    var options = [];
+    correctionAudits.forEach(function (audit, index) {
+      ITEMS.forEach(function (item) {
+        if ((audit.respuestas || {})[item.n] !== "no") return;
+        var c = correctionOf(audit, item.n), solved = c && c.estado === "verificada";
+        if (solved && !$("co-resueltos").checked) return;
+        var description = (audit.notas || {})[item.n] || item.q;
+        var label = fmtDate(audit.fecha) + " · Auditoría " + (index + 1) + " · Brecha " + item.n +
+          " · " + description.slice(0, 110) + (description.length > 110 ? "…" : "") +
+          (solved ? " — Resuelta" : c ? " — Corrección informada" : " — Pendiente");
+        options.push('<option value="' + esc(audit.id + ":" + item.n) + '">' + esc(label) + "</option>");
+      });
+    });
+    $("co-hallazgo").innerHTML = options.join("") || '<option value="">Sin hallazgos para mostrar</option>';
+    $("co-hallazgo").disabled = !options.length;
+    if (selectedKey && Array.from($("co-hallazgo").options).some(function (option) { return option.value === selectedKey; })) {
+      $("co-hallazgo").value = selectedKey;
+    }
+  }
+  async function loadCorrectionFinding(key) {
+    if (!key) {
+      clearCorrectionSelection("No hay hallazgos pendientes en las auditorías cerradas. Puedes activar «Ver también los resueltos».");
+      return;
+    }
+    var split = key.lastIndexOf(":"), auditId = key.slice(0, split), n = key.slice(split + 1);
+    var ref = db.collection("empresas").doc(curEmpresa.id).collection("auditorias").doc(auditId);
+    var snap = await ref.get({ source: "server" });
+    if (!snap.exists || snap.data().estado !== "cerrada" || (snap.data().respuestas || {})[n] !== "no") {
+      throw new Error("Este hallazgo cambió. Selecciona nuevamente la empresa para actualizar la lista.");
+    }
+    activateCorrection(Object.assign({ id: snap.id }, snap.data()), n);
+  }
+  function activateCorrection(audit, n) {
+    A = audit;
+    A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
+    curAudRef = db.collection("empresas").doc(curEmpresa.id).collection("auditorias").doc(A.id);
+    renderCorrections(n);
+  }
+  async function loadCorrectionCompany(companyId, auditId, n) {
+    if (!companyId) {
+      curEmpresa = null; correctionAudits = [];
+      updateCorrectionOptions();
+      clearCorrectionSelection("Selecciona una empresa para consultar sus hallazgos.");
+      return;
+    }
+    var ref = db.collection("empresas").doc(companyId);
+    var results = await Promise.all([
+      ref.get({ source: "server" }),
+      ref.collection("auditorias").where("estado", "==", "cerrada").get({ source: "server" })
+    ]);
+    if (!results[0].exists) throw new Error("Empresa no encontrada.");
+    curEmpresa = Object.assign({ id: companyId }, results[0].data());
+    correctionAudits = results[1].docs.map(function (doc) { return Object.assign({ id: doc.id }, doc.data()); });
+    correctionAudits.sort(function (a, b) {
+      return (b.fecha || "").localeCompare(a.fecha || "") || b.id.localeCompare(a.id);
+    });
+    $("co-empresa").value = companyId;
+    $("co-resueltos").checked = !!auditId;
+    updateCorrectionOptions(auditId && n ? auditId + ":" + n : "");
+    if (auditId && !n) {
+      var option = Array.from($("co-hallazgo").options).find(function (o) { return o.value.startsWith(auditId + ":"); });
+      if (!option) {
+        $("co-hallazgo").selectedIndex = -1;
+        clearCorrectionSelection("La auditoría de origen no tiene hallazgos. Puedes seleccionar uno de otra auditoría de esta empresa.");
+        return;
+      }
+      $("co-hallazgo").value = option.value;
+    }
+    clearCorrectionSelection("Selecciona un hallazgo.");
+    var key = $("co-hallazgo").value;
+    if (!key) return loadCorrectionFinding("");
+    var separator = key.lastIndexOf(":");
+    var selected = correctionAudits.find(function (audit) { return audit.id === key.slice(0, separator); });
+    activateCorrection(selected, key.slice(separator + 1));
+  }
+  async function openSeguimientoNow(companyId, auditId, n) {
+    var companies = await db.collection("empresas").orderBy("nombre").get({ source: "server" });
+    $("co-empresa").innerHTML = '<option value="">Selecciona una empresa</option>' +
+      companies.docs.map(function (doc) {
+        var company = doc.data();
+        return '<option value="' + esc(doc.id) + '">' + esc(company.nombre + (company.rut ? " · " + company.rut : "")) + "</option>";
+      }).join("");
+    $("co-resueltos").checked = false;
+    navNow("correccionesView");
+    clearCorrectionSelection("Cargando hallazgos…");
+    await loadCorrectionCompany(companyId, auditId, n);
+  }
   function correctionVerification() {
     var verified = $("co-estado").value === "verificada";
     $("co-verificacion").hidden = !verified;
     $("co-fecha-verificacion").required = verified;
   }
   function fillCorrection() {
-    var n = $("co-hallazgo").value, entry = (A.seguimiento || {})[n];
-    $("co-form").dataset.item = n;
+    var n = correctionItem(), entry = (A.seguimiento || {})[n];
+    $("co-form").dataset.item = $("co-hallazgo").value;
+    $("co-contexto").textContent = curEmpresa.nombre + " · Auditoría " + fmtDate(A.fecha) + " · " + (A.evaluadorNombre || "");
+    $("co-volver").textContent = "← Ver auditoría de origen";
+    $("co-form").hidden = false;
+    $("co-detalle-historial").hidden = false;
     var c = entry && entry.actual || {};
     correctionVersion = entry ? entry.version : 0;
     $("co-original").textContent = "En la visita: No cumple. " + ((A.notas || {})[n] || itemByN(n).q);
@@ -1404,37 +1519,35 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("co-mensaje").textContent = "";
   }
   function renderCorrections(selected) {
-    $("co-contexto").textContent = curEmpresa.nombre + " · Auditoría " + fmtDate(A.fecha);
-    var findings = ITEMS.filter(function (it) { return A.respuestas[it.n] === "no"; });
-    $("co-hallazgo").innerHTML = findings.map(function (it) {
-      var c = correctionOf(A, it.n);
-      return '<option value="' + it.n + '">' + esc(it.n + " · " + it.q +
-        (c ? c.estado === "verificada" ? " — Realizado" : " — Corrección informada" : " — Pendiente")) + "</option>";
-    }).join("");
-    if (selected) $("co-hallazgo").value = selected;
-    $("co-form").hidden = !findings.length;
-    $("co-detalle-historial").hidden = !findings.length;
-    if (findings.length) fillCorrection();
-    else $("co-original").textContent = "Esta auditoría no tiene hallazgos marcados No cumple.";
+    correctionAudits = correctionAudits.map(function (audit) { return audit.id === A.id ? A : audit; });
+    var correction = correctionOf(A, selected);
+    if (correction && correction.estado === "verificada") $("co-resueltos").checked = true;
+    updateCorrectionOptions(A.id + ":" + selected);
+    fillCorrection();
   }
   $("at-correcciones").addEventListener("click", function () {
-    return runAfterSave(function () {
-      return curAudRef.get({ source: "server" }).then(function (snap) {
-        A = Object.assign({}, snap.data(), { id: snap.id });
-        if (!isLocked()) throw new Error("Cierra la evaluación antes de registrar correcciones.");
-        navNow("correccionesView");
-        renderCorrections();
-      });
-    });
+    return runAfterSave(function () { return openSeguimientoNow(curEmpresa.id, A.id); });
   });
-  $("co-hallazgo").addEventListener("change", function () {
-    // Guarda o descarta expresamente el formulario antes de cambiar de hallazgo.
-    if (correctionDirty && !confirm("¿Descartar los cambios de esta corrección?")) {
-      $("co-hallazgo").value = $("co-form").dataset.item;
-      return;
+  $("co-empresa").addEventListener("change", async function () {
+    var previous = curEmpresa && curEmpresa.id || "", selected = $("co-empresa").value;
+    var done = await runAfterSave(function () { return loadCorrectionCompany(selected); });
+    if (!done) $("co-empresa").value = previous;
+  });
+  $("co-hallazgo").addEventListener("change", async function () {
+    var previous = $("co-form").dataset.item, selected = $("co-hallazgo").value;
+    var done = await runAfterSave(function () { return loadCorrectionFinding(selected); });
+    if (!done) $("co-hallazgo").value = previous;
+  });
+  $("co-resueltos").addEventListener("change", async function () {
+    var selected = $("co-hallazgo").value, checked = $("co-resueltos").checked;
+    var done = await runAfterSave(function () {
+      updateCorrectionOptions(selected);
+      return loadCorrectionFinding($("co-hallazgo").value);
+    });
+    if (!done) {
+      $("co-resueltos").checked = !checked;
+      updateCorrectionOptions(selected);
     }
-    fillCorrection();
-    $("co-form").dataset.item = $("co-hallazgo").value;
   });
   $("co-form").addEventListener("input", function () { correctionDirty = true; });
   $("co-estado").addEventListener("change", correctionVerification);
@@ -1442,12 +1555,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (correctionSaving) return;
     if (correctionDirty && !confirm("¿Descartar los cambios de esta corrección?")) return;
     correctionDirty = false;
-    openAuditoria(curEmpresa.id, A.id);
+    if (A && curEmpresa) openAuditoria(curEmpresa.id, A.id);
+    else nav("empresasView");
   });
   $("co-form").addEventListener("submit", async function (event) {
     event.preventDefault();
     if (correctionSaving) return;
-    var n = $("co-hallazgo").value, auditRef = curAudRef, expectedVersion = correctionVersion;
+    var n = correctionItem(), auditRef = curAudRef, expectedVersion = correctionVersion;
     var verified = $("co-estado").value === "verificada";
     var data = {
       estado: $("co-estado").value, solucion: $("co-solucion").value.trim(),
