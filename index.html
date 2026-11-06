@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-19">
+<meta name="grd-build" content="20261106-20">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -517,6 +517,10 @@
 .delete-question .btn{min-width:40px;padding:6px 10px}
 .delete-question .delete-yes{background:#942823;color:white}
 @media(pointer:coarse){.delete-question .btn{min-width:44px;min-height:44px}}
+@media screen {
+    .audit-reading:not(.expanded) { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:6; overflow:hidden; }
+  }
+  @media print { .audit-reading-controls { display:none !important; } }
 </style>
 </head>
 <body>
@@ -2006,6 +2010,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       container.appendChild(card);
     });
 
+    prepareAuditText();
     wireAuditEvents();
     updateGauge();
     renderCrumbs();
@@ -2022,6 +2027,48 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     window.scrollTo({ top: y < 0 ? 0 : y, behavior: "smooth" });
   }
 
+  var auditTextObserver;
+  function prepareAuditText() {
+    if (auditTextObserver) auditTextObserver.disconnect();
+    auditTextObserver = new ResizeObserver(function(entries) {
+      entries.forEach(function(entry) {
+        var text = entry.target;
+        if (!entry.contentRect.width) return;
+        var sixLines = parseFloat(getComputedStyle(text).lineHeight) * 6;
+        var controls = text.nextElementSibling;
+        var long = text.scrollHeight > sixLines + 1;
+        controls.hidden = !long;
+        if (!long) {
+          text.classList.remove("expanded");
+          controls.querySelectorAll("button").forEach(function(b){ b.setAttribute("aria-expanded","false"); });
+        }
+      });
+    });
+    document.querySelectorAll("#sections .item-q, #sections .ans-text").forEach(function(text) {
+      var kind = text.matches(".item-q") ? "pregunta" : text.closest(".ans-si") ? "verificación" : "medida";
+      text.id = "lectura-" + kind + "-" + text.closest(".item").dataset.n;
+      text.classList.add("audit-reading");
+      var controls = document.createElement("div");
+      controls.className = "brecha-controls audit-reading-controls";
+      controls.hidden = true;
+      [true,false].forEach(function(expand) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = expand ? "brecha-open" : "brecha-close";
+        button.textContent = expand ? "+" : "−";
+        button.setAttribute("aria-controls", text.id);
+        button.setAttribute("aria-expanded","false");
+        button.setAttribute("aria-label", (expand ? "Ampliar " : "Reducir a seis líneas: ") + kind);
+        button.onclick = function() {
+          text.classList.toggle("expanded",expand);
+          controls.querySelectorAll("button").forEach(function(b){ b.setAttribute("aria-expanded",String(expand)); });
+        };
+        controls.appendChild(button);
+      });
+      text.after(controls);
+      auditTextObserver.observe(text);
+    });
+  }
   function wireAuditEvents() {
     var ro = isLocked();
     document.querySelectorAll("#sections .toggle button").forEach(function (btn) {
