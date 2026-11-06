@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-21">
+<meta name="grd-build" content="20261106-22">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -611,6 +611,7 @@
             <button class="btn primary" id="ev-nueva-aud">＋ Nueva auditoría</button>
           </div>
         </div>
+        <form id="visit-create" class="meta-card" hidden></form>
         <div class="meta-card"><div class="meta-read" id="ev-datos"></div>
           <div id="ev-editform" style="display:none;margin-top:12px">
             <div class="form-grid">
@@ -675,7 +676,7 @@
         <div class="locked-banner" id="lockedBanner" style="display:none">Auditoría cerrada — respuestas de la visita original. Usa «Registrar correcciones» para actualizar el seguimiento.</div>
         <div class="meta-card">
           <h3>Datos de la auditoría</h3>
-          <div class="meta-read" id="at-datos"></div>
+          <div class="meta-read" id="at-datos"></div><form id="visit-edit" style="margin-top:12px"></form>
           <div class="note-line"><label>Observaciones generales</label><textarea id="at-obs" placeholder="Contexto de la visita, alcance, participantes…"></textarea></div>
         </div>
         <div id="sections"></div>
@@ -1291,7 +1292,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var ref=db.collection("empresas").doc(id), uid=ME.uid;
     clearSubs();
     var cached=empresasCache.find(function(e){return e.id===id;});
-    function show(e){curEmpresa=e; navNow("empresaView");paintEmpresaHeader();$("aud-list").textContent="Cargando auditorías…";}
+    function show(e){$("visit-create").hidden=true;curEmpresa=e; navNow("empresaView");paintEmpresaHeader();$("aud-list").textContent="Cargando auditorías…";}
     if(cached) show(cached);
     else show({id:id,nombre:"Cargando empresa…"});
     var u=ref.collection("auditorias").onSnapshot(function(qs){
@@ -1376,11 +1377,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       var st = statusOf(sc.pct, sc);
       var estado = a.estado === "cerrada" ? '<span class="badge b-cerrada">Cerrada</span>' : '<span class="badge b-borrador">Borrador</span>';
       var pctB = '<span class="badge b-' + st.cls + '">' + (sc.pct == null ? "—" : sc.pct + "%") + "</span>";
+      var visit = (a.brechas || {}).antecedentes || {};
+      var details = [visit.horaInicio && "Inicio " + visit.horaInicio, visit.horaTermino && "Término " + visit.horaTermino, visit.integrantes && "Integrantes: " + visit.integrantes].filter(Boolean);
       var nBr = a.brechas && a.brechas.filas ? Object.keys(a.brechas.filas).length : 0;
       var brBtn = '<button class="btn ghost aud-brechas" data-id="' + a.id + '" style="padding:6px 10px;font-size:12px">Plan de brechas' + (nBr ? " · " + nBr : "") + "</button>";
       return '<div class="list-row" data-id="' + a.id + '"><div class="grow"><div class="t">Auditoría ' + fmtDate(a.fecha) +
         '</div><div class="m">' + esc(a.evaluadorNombre || "—") + " · " + st.label +
         (" · " + sc.no + " no cumple · " + sc.pend + " pendientes") +
+        (details.length ? "<br>" + esc(details.join(" · ")) : "") +
         (a.seguimiento ? "<br>" + esc(scoreLabel(a)) : "") +
         '</div></div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end">' + brBtn + pctB + estado + (ME.rol==="admin" ? '<button type="button" class="btn ghost aud-delete" style="color:#942823">Borrar</button>' : "") + "</div></div>";
     }).join("");
@@ -1421,18 +1425,47 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     });
   }
 
-  $("ev-nueva-aud").addEventListener("click", function () {
-    var payload = {
-      fecha: todayISO(), evaluadorUid: ME.uid, evaluadorNombre: ME.nombre || ME.email, evaluadorCargo: ME.cargo || "",
-      estado: "borrador", obs: "", respuestas: {}, medidas: {}, notas: {},
-      pct: null, contadores: { si: 0, no: 0, na: 0, pend: TOTAL },
-      creado: FV.serverTimestamp(), actualizado: FV.serverTimestamp()
-    };
-    db.collection("empresas").doc(curEmpresa.id).collection("auditorias").add(payload)
-      .then(function (ref) { seguimientoIndex = null; historyMemo = null; openAuditoria(curEmpresa.id, ref.id); })
-      .catch(function (e) { alert("No se pudo crear la auditoría: " + e.message); });
-  });
-
+  var visitFields = [
+    ["fecha","Fecha de auditoría","date"], ["horaInicio","Hora inicio","time"],
+    ["horaTermino","Hora término","time"], ["integrantes","Cantidad de integrantes","number"],
+    ["tipoActividad","Tipo de actividad","select"], ["nAdherente","N° adherente","text"],
+    ["telefono","Teléfono","tel"], ["comuna","Comuna del centro de trabajo","text"]
+  ];
+  function visitForm(form, values, submitLabel, locked) {
+    form.innerHTML = '<div class="form-grid">' + visitFields.map(function(field) {
+      var name=field[0], id=form.id+"-"+name;
+      var attrs=' id="'+id+'" name="'+name+'"'+(locked?' disabled':'');
+      var input=field[2]==="select" ? '<select'+attrs+'><option value="">—</option><option>Presencial</option><option>Vía remota</option><option>Zoom</option></select>' :
+        '<input'+attrs+' type="'+field[2]+'"'+(name==="fecha"?' required':name==="integrantes"?' min="1" step="1"':'')+'>';
+      return '<div class="field"><label for="'+id+'">'+field[1]+'</label>'+input+'</div>';
+    }).join("") + '</div>' + (submitLabel ? '<button class="btn primary" type="submit">'+submitLabel+'</button> <button type="button" class="btn visit-cancel">Cancelar</button>' : '');
+    visitFields.forEach(function(field){form.elements[field[0]].value=values[field[0]]||"";});
+  }
+  $("ev-nueva-aud").onclick=function(){
+    var form=$("visit-create");
+    visitForm(form,{fecha:todayISO()},"Crear auditoría",false);
+    form.hidden=false;
+    form.querySelector(".visit-cancel").onclick=function(){form.hidden=true;};
+    form.elements.fecha.focus();
+  };
+  $("visit-create").onsubmit=async function(event){
+    event.preventDefault();
+    var form=event.currentTarget, values=Object.fromEntries(new FormData(form)), companyId=curEmpresa.id;
+    var button=form.querySelector('[type="submit"]');
+    if(button.disabled)return;
+    button.disabled=true;
+    try {
+      var ref=await db.collection("empresas").doc(companyId).collection("auditorias").add({
+        fecha:values.fecha, brechas:{antecedentes:values,filas:{},manualIds:[]},
+        evaluadorUid:ME.uid,evaluadorNombre:ME.nombre||ME.email,evaluadorCargo:ME.cargo||"",
+        estado:"borrador",obs:"",respuestas:{},medidas:{},notas:{},pct:null,
+        contadores:{si:0,no:0,na:0,pend:TOTAL},creado:FV.serverTimestamp(),actualizado:FV.serverTimestamp()
+      });
+      form.hidden=true; seguimientoIndex=null;historyMemo=null;
+      if(VIEW==="empresaView" && curEmpresa.id===companyId) await openAuditoria(companyId,ref.id);
+    } catch(error){alert("No se pudo crear la auditoría: "+error.message);}
+    finally {button.disabled=false;}
+  };
   /* ==================================================
      AUDITORÍA
   ================================================== */
@@ -1921,7 +1954,21 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("at-datos").innerHTML =
       row("Empresa", e.nombre) + row("RUT", e.rut) + row("Centro de trabajo", e.direccion) +
       row("Actividad", e.actividad) + row("N° trabajadores", dotDisplay(e)) + row("Organismo administrador", e.organismo) +
-      row("Fecha de la evaluación", fmtDate(A.fecha)) + row("Evaluador(a)", A.evaluadorNombre);
+      row("Evaluador(a)", A.evaluadorNombre);
+    var visitEditor=$("visit-edit");
+    var antecedents=ensureBrechas().antecedentes;
+    visitForm(visitEditor,Object.assign({},antecedents,{fecha:A.fecha}),"",isLocked());
+    visitEditor.onsubmit=function(event){event.preventDefault();};
+    visitEditor.oninput=function(event){
+      var input=event.target;
+      if(isLocked() || !input.name || !input.checkValidity())return;
+      antecedents[input.name]=input.value;
+      if(input.name==="fecha"){
+        A.fecha=input.value;historyMemo=null;seguimientoIndex=null;renderCrumbs();
+        $("at-sub").textContent="Auditoría "+fmtDate(A.fecha)+" · "+(A.evaluadorNombre||"—");
+      }
+      queueSaveBrechas(false,"saveflag",input.name==="fecha");
+    };
     $("at-obs").value = A.obs || "";
     $("lockedBanner").style.display = isLocked() ? "block" : "none";
     $("auditoriaView").classList.toggle("locked", isLocked());
@@ -2037,6 +2084,10 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         var sixLines = parseFloat(getComputedStyle(text).lineHeight) * 6;
         var controls = text.nextElementSibling;
         var long = text.scrollHeight > sixLines + 1;
+        if (!controls || !controls.classList.contains("audit-reading-controls")) {
+          if (!long) return;
+          controls = createReadingControls(text);
+        }
         controls.hidden = !long;
         if (!long) {
           text.classList.remove("expanded");
@@ -2044,7 +2095,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         }
       });
     });
-    document.querySelectorAll("#sections .item-q, #sections .ans-text").forEach(function(text) {
+    function createReadingControls(text) {
       var kind = text.matches(".item-q") ? "pregunta" : text.closest(".ans-si") ? "verificación" : "medida";
       text.id = "lectura-" + kind + "-" + text.closest(".item").dataset.n;
       text.classList.add("audit-reading");
@@ -2066,6 +2117,10 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         controls.appendChild(button);
       });
       text.after(controls);
+      return controls;
+    }
+    document.querySelectorAll("#sections .item-q, #sections .ans-text").forEach(function(text) {
+      text.classList.add("audit-reading");
       auditTextObserver.observe(text);
     });
   }
@@ -2218,6 +2273,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       ["Actividad económica", e.actividad || "—"], ["Organismo administrador", e.organismo || "—"],
       ["Centro de trabajo", e.direccion || "—"], ["Dotación", dotDisplay(e)],
       ["Evaluador(a)", A.evaluadorNombre || "—"], ["Fecha de evaluación", fmtDate(A.fecha)],
+      ["Hora inicio", ensureBrechas().antecedentes.horaInicio || "—"], ["Hora término", A.brechas.antecedentes.horaTermino || "—"],
+      ["Cantidad de integrantes", A.brechas.antecedentes.integrantes || "—"],
       ["Estado del acta", A.estado === "cerrada" ? "Cerrada" : "Borrador"]
     ];
     h += '<dl class="rv-meta">' + meta.map(function (r) {
@@ -2423,7 +2480,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   ================================================== */
   var BA_FIELDS = {
     "ba-tipo": "tipoActividad", "ba-fecha": "fecha", "ba-adh": "nAdherente",
-    "ba-hini": "horaInicio", "ba-hfin": "horaTermino", "ba-tel": "telefono", "ba-comuna": "comuna",
+    "ba-integrantes":"integrantes", "ba-hini": "horaInicio", "ba-hfin": "horaTermino", "ba-tel": "telefono", "ba-comuna": "comuna",
     "ba-felab": "fechaElaboracion", "ba-fapr": "fechaAprobacion", "ba-relab": "respElaboracion", "ba-rapr": "respAprobacion"
   };
   var brechasResizeBound = false;
@@ -2550,7 +2607,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
 
     if (!B.antecedentes.fechaElaboracion) B.antecedentes.fechaElaboracion = todayISO();
     if (!B.antecedentes.respElaboracion) B.antecedentes.respElaboracion = A.evaluadorNombre || "";
-    if (!B.antecedentes.fecha) B.antecedentes.fecha = A.fecha || todayISO();
+    B.antecedentes.fecha = A.fecha || B.antecedentes.fecha || todayISO();
 
     $("bt-empresa").textContent = e.nombre;
     $("bt-sub").textContent = "Plan de brechas · Auditoría " + fmtDate(A.fecha) + " · " + (A.evaluadorNombre || "—") +
@@ -2566,6 +2623,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       '<tr><td class="k">Fecha</td><td><input type="date" id="ba-fecha"></td>' +
         '<td class="k">Hora inicio</td><td><input type="time" id="ba-hini"></td>' +
         '<td class="k">Hora término</td><td><input type="time" id="ba-hfin"></td></tr>' +
+      '<tr><td class="k">Cantidad de integrantes</td><td colspan="5"><input type="number" min="1" step="1" id="ba-integrantes"></td></tr>' +
       '<tr><td class="k">Tipo de actividad</td><td><select id="ba-tipo">' + tipoOpts + '</select></td>' +
         '<td class="k">N° adherente</td><td><input type="text" id="ba-adh"></td>' +
         '<td class="k">Teléfono</td><td><input type="text" id="ba-tel"></td></tr>' +
@@ -2665,9 +2723,12 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var B = ensureBrechas();
     Object.keys(BA_FIELDS).forEach(function (id) {
       var el = $(id); if (!el) return;
+      if (id==="ba-fecha") {el.required=true;el.disabled=isLocked();}
       el.oninput = el.onchange = function () {
+        if (!el.checkValidity() || el.disabled) return;
+        if (id==="ba-fecha"){A.fecha=el.value;historyMemo=null;seguimientoIndex=null;renderCrumbs();$("bt-sub").textContent="Plan de brechas · Auditoría "+fmtDate(A.fecha)+" · "+(A.evaluadorNombre||"—");}
         B.antecedentes[BA_FIELDS[id]] = el.value;
-        queueSaveBrechas();
+        queueSaveBrechas(false,"bp-saveflag",id==="ba-fecha");
       };
     });
     $("bp-rows").querySelectorAll("tr[data-id]").forEach(function (rowEl) {
@@ -2719,11 +2780,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (window.requestAnimationFrame) requestAnimationFrame(autosizeAllBrechas);
   }
 
-  function queueSaveBrechas(autoSeed) {
+  function queueSaveBrechas(autoSeed, flag, dateChanged) {
     if (!curAudRef || !A) return;
     ensureBrechas();
     var onlyDefaults = autoSeed === true && !brechasWrites.pending && !brechasWrites.inFlight;
-    enqueueWrite(brechasWrites, { brechas: A.brechas }, "bp-saveflag");
+    var payload={brechas:A.brechas};
+    var pending=brechasWrites.pending;
+    if (!isLocked() && (dateChanged || (pending && pending.ref.path===curAudRef.path && pending.data.fecha))) payload.fecha=A.fecha;
+    enqueueWrite(brechasWrites, payload, flag || "bp-saveflag");
     brechasWrites.pending.onlyDefaults = onlyDefaults;
   }
 
@@ -2771,6 +2835,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       '<tr><td class="k">Fecha</td><td>' + bdate(an.fecha) + '</td>' +
         '<td class="k">Hora inicio</td><td>' + bcell(an.horaInicio) + '</td>' +
         '<td class="k">Hora término</td><td>' + bcell(an.horaTermino) + '</td></tr>' +
+        '<tr><td class="k">Cantidad de integrantes</td><td colspan="5">' + bcell(an.integrantes) + '</td></tr>' +
       '<tr><td class="k">Tipo de actividad</td><td class="tbox">' + bcell(an.tipoActividad) + '</td>' +
         '<td class="k">N° adherente</td><td>' + bcell(an.nAdherente) + '</td>' +
         '<td class="k">Teléfono</td><td>' + bcell(an.telefono) + '</td></tr>' +
