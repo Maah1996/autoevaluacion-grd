@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-18">
+<meta name="grd-build" content="20261106-19">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -511,6 +511,12 @@
     .brechas-filter label { flex-basis:100%; }
     .brechas-filter select { width:auto; flex:1; min-width:140px; }
   }
+.aud-delete[hidden]{display:none}
+.delete-question{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px}
+.delete-question strong{font-weight:600;margin-right:3px}
+.delete-question .btn{min-width:40px;padding:6px 10px}
+.delete-question .delete-yes{background:#942823;color:white}
+@media(pointer:coarse){.delete-question .btn{min-width:44px;min-height:44px}}
 </style>
 </head>
 <body>
@@ -1330,6 +1336,35 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     }).catch(function (e) { alert(e.message); });
   });
 
+  function confirmAuditDelete(button) {
+    var other = $("aud-list").querySelector(".delete-no");
+    if (other) other.click();
+    var group = document.createElement("span");
+    group.className = "delete-question";
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", "¿Borrar esta auditoría?");
+    group.innerHTML = '<strong>¿Borrar esta auditoría?</strong><button type="button" class="btn ghost delete-no">No</button><button type="button" class="btn delete-yes">Sí</button>';
+    button.hidden = true;
+    button.after(group);
+    var cancel = group.querySelector(".delete-no");
+    cancel.focus();
+    return new Promise(function(resolve) {
+      function finish(answer) {
+        group.remove();
+        button.hidden = false;
+        button.focus();
+        resolve(answer);
+      }
+      group.onclick = function(event) {
+        event.stopPropagation();
+        if (event.target.tagName === "BUTTON") finish(event.target !== cancel);
+      };
+      group.onkeydown = function(event) {
+        if (event.key === "Escape") { event.preventDefault(); finish(false); }
+      };
+    });
+  }
+
   function paintAudList(auds) {
     if (!auds.length) { $("aud-list").innerHTML = '<div class="empty">Sin auditorías. Crea la primera con «＋ Nueva auditoría».</div>'; return; }
     $("aud-list").innerHTML = auds.map(function (a) {
@@ -1349,16 +1384,15 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       r.onclick = function () { openAuditoria(curEmpresa.id, r.getAttribute("data-id")); };
     });
     $("aud-list").querySelectorAll(".aud-delete").forEach(function(button){
-      button.onclick=function(ev){
+      button.onclick=async function(ev){
         ev.stopPropagation();
         var id=button.closest(".list-row").dataset.id, a=auds.find(function(x){return x.id===id;}), company=curEmpresa;
         if(!a || ME.rol!=="admin")return;
-        var summary=scoreOf(currentResponses(a));
-        if(!confirm("¿Borrar definitivamente esta auditoría de "+company.nombre+"?\n"+fmtDate(a.fecha)+" · "+a.estado+" · "+summary.no+" no cumple · "+summary.pend+" pendientes\nIdentificador: "+id+"\nTambién se borrarán su plan de brechas y su historial de correcciones. Esta acción no se puede deshacer."))return;
+        if (!await confirmAuditDelete(button)) return;
         runAfterSave(async function(){
           var ref=db.collection("empresas").doc(company.id), audits=ref.collection("auditorias");
           await db.runTransaction(async function(tx){
-            var c=await tx.get(ref), target=await tx.get(audits.doc(id));
+            var [c, target] = await Promise.all([tx.get(ref), tx.get(audits.doc(id))]);
             if(!target.exists)throw new Error("La auditoría ya no existe.");
             if(c.exists && (c.data().ultimaAuditoria||{}).id===id){
               var replacement=null;
