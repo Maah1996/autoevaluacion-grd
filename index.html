@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-23">
+<meta name="grd-build" content="20261106-24">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -234,7 +234,12 @@
   .disclosure > summary::-webkit-details-marker { display:none; }
   .disclosure > summary::before { content:"＋"; font-family:"IBM Plex Mono",monospace; font-size:11px; }
   .disclosure[open] > summary::before { content:"－"; }
-  #visit-details > summary { display:flex; min-height:44px; font-size:15px; }
+  #visit-details > summary {
+    display:flex; min-height:44px; padding:0 12px; font-size:15px;
+    background:#edf4fa; color:#244562; border:1px solid #cbdcea; border-radius:8px;
+  }
+  #visit-details[open] > summary { background:#e5eff7; }
+  #visit-details > summary:focus-visible { outline:2px solid #476e90; outline-offset:2px; }
   .disclosure .body { margin-top:7px; font-size:13px; color:var(--ink-soft); line-height:1.55; white-space:pre-wrap; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
 
   .toggle { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
