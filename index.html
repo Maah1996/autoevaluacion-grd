@@ -163,6 +163,7 @@
   @media(max-width:700px) { .a-title-row { flex-wrap:wrap; } .a-title-row > div { min-width:0; max-width:100%; } .a-actions { justify-content:flex-start; } }
   .result-shortcut { width:34px; height:34px; padding:0; border:1px solid; border-radius:5px; font:700 15px/1 sans-serif; cursor:pointer; }
   .result-a { background:#dcefe3; color:#125b32; border-color:#32824b; }
+  .result-s { background:#dfebfc; color:#194f96; border-color:#3976c4; }
   .result-b { background:#fff0b8; color:#654900; border-color:#b99526; }
   .result-shortcut:disabled { opacity:.4; cursor:default; }
   .result-shortcut:focus-visible { outline:2px solid var(--navy); outline-offset:3px; }
@@ -632,7 +633,7 @@
             <div class="a-actions">
               <button class="btn" id="at-volver">← Volver</button>
               <button class="btn" id="at-brechas">Plan de brechas →</button>
-              <button class="btn" id="at-correcciones">Seguimiento →</button>
+              <button class="result-shortcut result-s" id="at-correcciones" type="button" title="Ver seguimiento de esta auditoría" aria-label="Ver seguimiento de esta auditoría">S</button>
               <button class="btn primary" id="at-cerrar">Cerrar auditoría</button>
             </div>
           </div>
@@ -731,7 +732,7 @@
             </div>
             <div class="a-actions">
               <button class="btn" id="bt-volver">← Auditoría</button>
-              <button class="btn" id="bt-seguimiento">Seguimiento →</button>
+              <button class="result-shortcut result-s" id="bt-seguimiento" type="button" title="Ver seguimiento de esta auditoría" aria-label="Ver seguimiento de esta auditoría">S</button>
             </div>
           </div>
           <div class="counts" id="bt-counts" style="margin-top:10px"></div>
