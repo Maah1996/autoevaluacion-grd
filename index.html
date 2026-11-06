@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-20">
+<meta name="grd-build" content="20261106-21">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -2096,13 +2096,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         inp.value = md[f] || "";
         inp.onclick = function (e) { e.stopPropagation(); };
         inp.oninput = function () {
-          var cur = A.medidas[n] || {}; cur[f] = inp.value; A.medidas[n] = cur; queueSave();
+          var cur = A.medidas[n] || {}; cur[f] = inp.value; A.medidas[n] = cur;
+          queueSave(n, f === "fecha" ? "plazoImpl" : "respImpl", inp.value);
         };
       });
       var ta = rowEl.querySelector(".note-line textarea");
       ta.value = A.notas[n] || "";
       ta.onclick = function (e) { e.stopPropagation(); };
-      ta.oninput = function () { A.notas[n] = ta.value; queueSave(); };
+      ta.oninput = function () { A.notas[n] = ta.value; queueSave(n, "obs", ta.value); };
     });
     $("at-obs").oninput = function () { if (!ro) { A.obs = $("at-obs").value; queueSave(); } };
   }
@@ -2144,13 +2145,24 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     return { pct: o.pct, contadores: { si: o.si, no: o.no, na: o.na, pend: o.pend } };
   }
 
-  function queueSave() {
+  function queueSave(question, field, value) {
     if (!curAudRef || !A || isLocked()) return;
     var summary = computeSummary();
-    enqueueWrite(auditWrites, {
+    // Keep queued field edits together when the debounce replaces a pending job.
+    var pending = auditWrites.pending;
+    var patches = pending && pending.ref.path === curAudRef.path
+      ? Object.assign({}, pending.planPatches) : {};
+    var key = "q" + question;
+    var row = field && A.brechas && A.brechas.filas && A.brechas.filas[key];
+    if (row && row.origen === "checklist") {
+      row[field] = value;
+      patches["brechas.filas." + key + "." + field] = value;
+    }
+    enqueueWrite(auditWrites, Object.assign({}, patches, {
       respuestas: A.respuestas, medidas: A.medidas, notas: A.notas, obs: A.obs || "",
       pct: summary.pct, contadores: summary.contadores
-    }, "saveflag");
+    }), "saveflag");
+    auditWrites.pending.planPatches = patches;
   }
 
   $("at-volver").addEventListener("click", function () {
@@ -2482,6 +2494,16 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       if (A.respuestas[it.n] !== "no") return;
       var id = "q" + it.n;
       if (B.filas[id]) {
+        var row = B.filas[id];
+        if (row.origen === "checklist") {
+          var source = A.medidas[it.n] || {};
+          var defaults = {respImpl: source.responsable, plazoImpl: source.fecha, obs: A.notas[it.n]};
+          Object.keys(defaults).forEach(function(field) {
+            if (!row[field] && defaults[field] && !(row.editadoEnPlan || {})[field]) {
+              row[field] = defaults[field];
+            }
+          });
+        }
         // migración: requisito autogenerado viejo ("N° x · Sección") → número solo
         if (B.filas[id].origen === "checklist" && B.filas[id].requisito === "N° " + it.n + " · " + it.sec) {
           B.filas[id].requisito = String(it.n);
@@ -2666,6 +2688,11 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         var handler = function () {
           if (!B.filas[id]) return;
           B.filas[id][f] = inp.value;
+          if (B.filas[id].origen === "checklist" && ["respImpl","plazoImpl","obs"].includes(f)) {
+            var edited = B.filas[id].editadoEnPlan || {};
+            edited[f] = true;
+            B.filas[id].editadoEnPlan = edited;
+          }
           if (inp.tagName === "TEXTAREA") autosizeTA(inp);
           if (f === "plazoImpl" || f === "respImpl" || f === "requisito") updateBrechasCounts();
           queueSaveBrechas();
