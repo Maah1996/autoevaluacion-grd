@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-22">
+<meta name="grd-build" content="20261106-23">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -234,6 +234,7 @@
   .disclosure > summary::-webkit-details-marker { display:none; }
   .disclosure > summary::before { content:"＋"; font-family:"IBM Plex Mono",monospace; font-size:11px; }
   .disclosure[open] > summary::before { content:"－"; }
+  #visit-details > summary { display:flex; min-height:44px; font-size:15px; }
   .disclosure .body { margin-top:7px; font-size:13px; color:var(--ink-soft); line-height:1.55; white-space:pre-wrap; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
 
   .toggle { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
@@ -676,8 +677,11 @@
         <div class="locked-banner" id="lockedBanner" style="display:none">Auditoría cerrada — respuestas de la visita original. Usa «Registrar correcciones» para actualizar el seguimiento.</div>
         <div class="meta-card">
           <h3>Datos de la auditoría</h3>
-          <div class="meta-read" id="at-datos"></div><form id="visit-edit" style="margin-top:12px"></form>
-          <div class="note-line"><label>Observaciones generales</label><textarea id="at-obs" placeholder="Contexto de la visita, alcance, participantes…"></textarea></div>
+          <div class="meta-read" id="at-datos"></div>
+          <details class="disclosure" id="visit-details"><summary>Datos de la visita y observaciones</summary>
+          <form id="visit-edit" style="margin-top:12px"></form>
+          <div class="note-line"><label for="at-obs">Observaciones generales</label><textarea id="at-obs" placeholder="Contexto de la visita, alcance, participantes…"></textarea></div>
+          </details>
         </div>
         <div id="sections"></div>
         <footer class="credits">Fuente: Lista de Autoevaluación de Aspectos Legales GRD en Centros de Trabajo — Dirección del Trabajo · SUSESO · SENAPRED · organismos administradores Ley N°16.744.</footer>
@@ -1187,6 +1191,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   ================================================== */
   function nav(view) { return runAfterSave(function () { navNow(view); }); }
   function navNow(view) {
+    if (view === "auditoriaView" && VIEW !== view) $("visit-details").open = false;
     VIEW = view;
     clearSubs();
     document.querySelectorAll(".view").forEach(function (v) { v.classList.toggle("active", v.id === view); });
