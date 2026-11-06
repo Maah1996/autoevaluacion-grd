@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261105-17">
+<meta name="grd-build" content="20261106-18">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -1091,17 +1091,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (saved.empresa && saved.auditoria && ["auditoriaView", "brechasView"].includes(saved.view)) {
       var companyRef = db.collection("empresas").doc(saved.empresa);
       var auditRef = companyRef.collection("auditorias").doc(saved.auditoria);
-      var reads = [companyRef.get({source:"server"}), auditRef.get({source:"server"})];
-      if (saved.view === "auditoriaView") reads.push(companyRef.collection("auditorias").get({source:"server"}));
-      var readStarted = performance.now();
-      var snapshots = await Promise.all(reads);
-      window.grdRefreshTiming.readMs = Math.round(performance.now()-readStarted);
-      if (!snapshots[0].exists || !snapshots[1].exists) throw new Error("La empresa o auditoría ya no existe. Vuelve a Empresas.");
-      curEmpresa = Object.assign({id:saved.empresa},snapshots[0].data());
-      A = Object.assign({id:saved.auditoria},snapshots[1].data());
-      A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
-      curAudRef = auditRef;
-      PREV = snapshots[2] ? previousClosedAudit(A,snapshots[2].docs.map(function (d) { return Object.assign({id:d.id},d.data()); })) : null;
+      var readStarted=performance.now(), token=await auth.currentUser.getIdToken();
+      var result=await Promise.all([readRecord(companyRef,token),readRecord(auditRef,token),
+        saved.view==="auditoriaView" ? comparisonHistory(saved.empresa,token,true) : Promise.resolve([])]);
+      var prior=previousClosedAudit(result[1],result[2]);
+      var previous=prior ? await readRecord(auditRef.parent.doc(prior.id),token) : null;
+      window.grdRefreshTiming.readMs=Math.round(performance.now()-readStarted);
+      curEmpresa=result[0]; A=result[1]; PREV=previous; curAudRef=auditRef;
+      A.respuestas=A.respuestas||{}; A.medidas=A.medidas||{}; A.notas=A.notas||{};
       var paintStarted = performance.now();
       navNow(saved.view);
       if (saved.view === "auditoriaView") renderAuditoria(); else renderBrechas();
@@ -1109,9 +1106,6 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       return;
     }
     if (saved.empresa && saved.view === "empresaView") {
-      var company = await db.collection("empresas").doc(saved.empresa).get({source:"server"});
-      if (!company.exists) throw new Error("Empresa no encontrada.");
-      curEmpresa = Object.assign({id:company.id},company.data());
       return openEmpresaNow(saved.empresa);
     }
     // Confirm connection before restarting the existing live list.
@@ -1283,20 +1277,24 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
      EMPRESA (detalle + historial)
   ================================================== */
   function openEmpresa(id) { return runAfterSave(function () { return openEmpresaNow(id); }); }
-  function openEmpresaNow(id) {
+  async function openEmpresaNow(id) {
+    var ref=db.collection("empresas").doc(id), uid=ME.uid;
     clearSubs();
-    return db.collection("empresas").doc(id).get().then(function (snap) {
-      if (!snap.exists) { alert("Empresa no encontrada."); navNow("empresasView"); return; }
-      curEmpresa = Object.assign({ id: id }, snap.data());
-      navNow("empresaView");
-      paintEmpresaHeader();
-      var u = db.collection("empresas").doc(id).collection("auditorias").onSnapshot(function (qs) {
-        var auds = qs.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        auds.sort(function (a, b) { return (b.fecha || "").localeCompare(a.fecha || "") || (b.id).localeCompare(a.id); });
-        paintAudList(auds);
-      });
-      unsubs.push(u);
-    }).catch(function (e) { alert(e.message); });
+    var cached=empresasCache.find(function(e){return e.id===id;});
+    function show(e){curEmpresa=e; navNow("empresaView");paintEmpresaHeader();$("aud-list").textContent="Cargando auditorías…";}
+    if(cached) show(cached);
+    else show({id:id,nombre:"Cargando empresa…"});
+    var u=ref.collection("auditorias").onSnapshot(function(qs){
+      if(!ME || ME.uid!==uid || VIEW!=="empresaView" || curEmpresa.id!==id)return;
+      var rows=qs.docs.map(function(d){return Object.assign({},d.data(),{id:d.id});});
+      rows.sort(function(a,b){return (b.fecha||"").localeCompare(a.fecha||"")||b.id.localeCompare(a.id);});
+      paintAudList(rows);
+    },function(){if(VIEW==="empresaView" && curEmpresa.id===id)$("aud-list").textContent="No se pudieron cargar las auditorías. Vuelve a intentar.";});
+    unsubs.push(u);
+    try {
+      var live=await readRecord(ref);
+      if(ME && ME.uid===uid && VIEW==="empresaView" && curEmpresa.id===id){curEmpresa=live;paintEmpresaHeader();renderCrumbs();}
+    } catch(err){if(VIEW==="empresaView" && curEmpresa.id===id){navNow("empresasView");throw err;}}
   }
   function paintEmpresaHeader() {
     var e = curEmpresa;
@@ -1345,10 +1343,40 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         '</div><div class="m">' + esc(a.evaluadorNombre || "—") + " · " + st.label +
         (" · " + sc.no + " no cumple · " + sc.pend + " pendientes") +
         (a.seguimiento ? "<br>" + esc(scoreLabel(a)) : "") +
-        '</div></div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end">' + brBtn + pctB + estado + "</div></div>";
+        '</div></div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end">' + brBtn + pctB + estado + (ME.rol==="admin" ? '<button type="button" class="btn ghost aud-delete" style="color:#942823">Borrar</button>' : "") + "</div></div>";
     }).join("");
     $("aud-list").querySelectorAll(".list-row").forEach(function (r) {
       r.onclick = function () { openAuditoria(curEmpresa.id, r.getAttribute("data-id")); };
+    });
+    $("aud-list").querySelectorAll(".aud-delete").forEach(function(button){
+      button.onclick=function(ev){
+        ev.stopPropagation();
+        var id=button.closest(".list-row").dataset.id, a=auds.find(function(x){return x.id===id;}), company=curEmpresa;
+        if(!a || ME.rol!=="admin")return;
+        var summary=scoreOf(currentResponses(a));
+        if(!confirm("¿Borrar definitivamente esta auditoría de "+company.nombre+"?\n"+fmtDate(a.fecha)+" · "+a.estado+" · "+summary.no+" no cumple · "+summary.pend+" pendientes\nIdentificador: "+id+"\nTambién se borrarán su plan de brechas y su historial de correcciones. Esta acción no se puede deshacer."))return;
+        runAfterSave(async function(){
+          var ref=db.collection("empresas").doc(company.id), audits=ref.collection("auditorias");
+          await db.runTransaction(async function(tx){
+            var c=await tx.get(ref), target=await tx.get(audits.doc(id));
+            if(!target.exists)throw new Error("La auditoría ya no existe.");
+            if(c.exists && (c.data().ultimaAuditoria||{}).id===id){
+              var replacement=null;
+              for(var row of auds){
+                if(row.id===id || row.estado!=="cerrada")continue;
+                var candidate=await tx.get(audits.doc(row.id));
+                if(candidate.exists && candidate.data().estado==="cerrada"){
+                  var data=candidate.data(), n=scoreOf(currentResponses(data));
+                  replacement={id:row.id,fecha:data.fecha,pct:n.pct,hallazgos:n.no,contadores:{si:n.si,no:n.no,na:n.na,pend:n.pend}};break;
+                }
+              }
+              tx.update(ref,{ultimaAuditoria:replacement,actualizado:FV.serverTimestamp()});
+            }
+            tx.delete(target.ref);
+          });
+          seguimientoIndex=null;historyMemo=null;
+        });
+      };
     });
     $("aud-list").querySelectorAll(".aud-brechas").forEach(function (b) {
       b.onclick = function (ev) { ev.stopPropagation(); openBrechasFor(curEmpresa.id, b.getAttribute("data-id")); };
