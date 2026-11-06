@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-24">
+<meta name="grd-build" content="20261106-25">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -2489,8 +2489,6 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
      PLAN DE BRECHAS (Paso 2)
   ================================================== */
   var BA_FIELDS = {
-    "ba-tipo": "tipoActividad", "ba-fecha": "fecha", "ba-adh": "nAdherente",
-    "ba-integrantes":"integrantes", "ba-hini": "horaInicio", "ba-hfin": "horaTermino", "ba-tel": "telefono", "ba-comuna": "comuna",
     "ba-felab": "fechaElaboracion", "ba-fapr": "fechaAprobacion", "ba-relab": "respElaboracion", "ba-rapr": "respAprobacion"
   };
   var brechasResizeBound = false;
@@ -2623,24 +2621,21 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("bt-sub").textContent = "Plan de brechas · Auditoría " + fmtDate(A.fecha) + " · " + (A.evaluadorNombre || "—") +
       (A.estado === "cerrada" ? "  ·  auditoría cerrada" : "");
 
-    // ---- Antecedentes generales (grilla formato Mutual, banda verde, editable) ----
-    var tipoOpts = ["", "Presencial", "Vía remota", "Zoom"].map(function (o) {
-      return '<option value="' + esc(o) + '">' + (o || "—") + "</option>";
-    }).join("");
+    var visit = B.antecedentes;
     $("bp-ant").innerHTML =
       '<div class="bt-scroll"><table class="ant-grid">' +
       '<tr class="ant-band"><td colspan="6">Antecedentes generales</td></tr>' +
-      '<tr><td class="k">Fecha</td><td><input type="date" id="ba-fecha"></td>' +
-        '<td class="k">Hora inicio</td><td><input type="time" id="ba-hini"></td>' +
-        '<td class="k">Hora término</td><td><input type="time" id="ba-hfin"></td></tr>' +
-      '<tr><td class="k">Cantidad de integrantes</td><td colspan="5"><input type="number" min="1" step="1" id="ba-integrantes"></td></tr>' +
-      '<tr><td class="k">Tipo de actividad</td><td><select id="ba-tipo">' + tipoOpts + '</select></td>' +
-        '<td class="k">N° adherente</td><td><input type="text" id="ba-adh"></td>' +
-        '<td class="k">Teléfono</td><td><input type="text" id="ba-tel"></td></tr>' +
+      '<tr><td class="k">Fecha</td><td class="ro" id="ba-fecha">' + esc(fmtDate(A.fecha) || "—") + '</td>' +
+        '<td class="k">Hora inicio</td><td class="ro" id="ba-hini">' + esc(visit.horaInicio || "—") + '</td>' +
+        '<td class="k">Hora término</td><td class="ro" id="ba-hfin">' + esc(visit.horaTermino || "—") + '</td></tr>' +
+      '<tr><td class="k">Cantidad de integrantes</td><td class="ro" colspan="5" id="ba-integrantes">' + esc(visit.integrantes || "—") + '</td></tr>' +
+      '<tr><td class="k">Tipo de actividad</td><td class="ro" id="ba-tipo">' + esc(visit.tipoActividad || "—") + '</td>' +
+        '<td class="k">N° adherente</td><td class="ro" id="ba-adh">' + esc(visit.nAdherente || "—") + '</td>' +
+        '<td class="k">Teléfono</td><td class="ro" id="ba-tel">' + esc(visit.telefono || "—") + '</td></tr>' +
       '<tr><td class="k">Razón social</td><td class="ro" colspan="3">' + esc(e.nombre || "") + '</td>' +
         '<td class="k">RUT</td><td class="ro">' + esc(e.rut || "") + '</td></tr>' +
       '<tr><td class="k">Dirección centro de trabajo</td><td class="ro" colspan="3">' + esc(e.direccion || "") + '</td>' +
-        '<td class="k">Comuna centro de trabajo</td><td><input type="text" id="ba-comuna"></td></tr>' +
+        '<td class="k">Comuna centro de trabajo</td><td class="ro" id="ba-comuna">' + esc(visit.comuna || "—") + '</td></tr>' +
       '<tr><td class="k">Fecha de elaboración</td><td><input type="date" id="ba-felab"></td>' +
         '<td class="k">Responsable de elaboración</td><td colspan="3"><input type="text" id="ba-relab"></td></tr>' +
       '<tr><td class="k">Fecha de aprobación</td><td><input type="date" id="ba-fapr"></td>' +
@@ -2733,12 +2728,10 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var B = ensureBrechas();
     Object.keys(BA_FIELDS).forEach(function (id) {
       var el = $(id); if (!el) return;
-      if (id==="ba-fecha") {el.required=true;el.disabled=isLocked();}
       el.oninput = el.onchange = function () {
         if (!el.checkValidity() || el.disabled) return;
-        if (id==="ba-fecha"){A.fecha=el.value;historyMemo=null;seguimientoIndex=null;renderCrumbs();$("bt-sub").textContent="Plan de brechas · Auditoría "+fmtDate(A.fecha)+" · "+(A.evaluadorNombre||"—");}
         B.antecedentes[BA_FIELDS[id]] = el.value;
-        queueSaveBrechas(false,"bp-saveflag",id==="ba-fecha");
+        queueSaveBrechas();
       };
     });
     $("bp-rows").querySelectorAll("tr[data-id]").forEach(function (rowEl) {
