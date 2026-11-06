@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-26">
+<meta name="grd-build" content="20261106-27">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -613,6 +613,7 @@
       <div class="wrap">
         <div class="page-h"><h2 id="ev-nombre">—</h2>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn" id="ev-back">← Volver a empresas</button>
             <button class="btn" id="ev-edit">Editar datos</button>
             <button class="btn primary" id="ev-nueva-aud">＋ Nueva auditoría</button>
           </div>
@@ -1328,6 +1329,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
   function row(k, v) { return "<div><b>" + esc(k) + "</b>" + esc(v || "—") + "</div>"; }
 
+  $("ev-back").onclick = function () { nav("empresasView"); };
   $("ev-edit").addEventListener("click", function () {
     var e = curEmpresa;
     $("ee-nombre").value = e.nombre || ""; $("ee-rut").value = e.rut || ""; $("ee-actividad").value = e.actividad || "";
