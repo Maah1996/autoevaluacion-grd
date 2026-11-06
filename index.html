@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261105-16">
+<meta name="grd-build" content="20261105-17">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -694,7 +694,8 @@
         </div>
         <div class="meta-card">
           <label for="co-empresa">Empresa y fecha de auditoría</label>
-          <select id="co-empresa"></select>
+          <select id="co-empresa" aria-describedby="co-list-status"></select>
+          <small id="co-list-status" role="status"></small>
           <div class="a-actions" style="margin-top:12px;justify-content:flex-start"><button class="result-shortcut result-a" id="co-volver" type="button" title="Ver auditoría seleccionada" aria-label="Ver auditoría seleccionada" disabled>A</button><button class="result-shortcut result-b" id="co-brechas" type="button" title="Ver plan de brechas de la auditoría seleccionada" aria-label="Ver plan de brechas de la auditoría seleccionada" disabled>B</button></div>
           <label class="co-filter"><input id="co-resueltos" type="checkbox"> Ver también los resueltos</label>
           <label for="co-hallazgo">Hallazgo y auditoría de origen</label>
@@ -924,7 +925,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         try {
           var payload = Object.assign({}, job.data);
           if (job.flag === "saveflag") payload.actualizado = FV.serverTimestamp();
-          await job.ref.update(payload);
+          if (job.onlyDefaults) await saveGeneratedPlan(job.ref, payload.brechas);
+          else await job.ref.update(payload);
           if (channel.pending === job) {
             channel.pending = null;
             var d = new Date();
@@ -947,7 +949,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     });
     auditWrites = { pending: null, inFlight: null, timer: null };
     brechasWrites = { pending: null, inFlight: null, timer: null };
-    curAudRef = null; A = null; PREV = null; curEmpresa = null; seguimientoIndex = null;
+    curAudRef = null; A = null; PREV = null; curEmpresa = null; seguimientoIndex = null; historyMemo = null;
   }
   function flushPendingWrites() {
     return Promise.all([saveChannel(auditWrites), saveChannel(brechasWrites)]);
@@ -1084,7 +1086,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
 
   async function refreshVisibleData(saved) {
-    seguimientoIndex = null;
+    seguimientoIndex = null; historyMemo = null;
     if (saved.view === "correccionesView") return openSeguimientoNow(saved.empresa, saved.auditoria, saved.hallazgo, true);
     if (saved.empresa && saved.auditoria && ["auditoriaView", "brechasView"].includes(saved.view)) {
       var companyRef = db.collection("empresas").doc(saved.empresa);
@@ -1131,14 +1133,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       var versionStarted = performance.now(), controller = new AbortController();
       var timer = setTimeout(function () { controller.abort(); }, 8000), response, html;
       try {
-        var checkUrl = new URL(location.href); checkUrl.searchParams.set("__grd_version",Date.now());
+        var checkUrl = new URL("version.json",location.href); checkUrl.searchParams.set("__grd_version","1");
         response = await fetch(checkUrl.href,{cache:"no-store",signal:controller.signal});
         if (!response.ok) throw new Error("No se pudo comprobar la versión del programa.");
         html = await response.text();
       } finally { clearTimeout(timer); }
       times.versionMs = Math.round(performance.now() - versionStarted);
-      var remote = new DOMParser().parseFromString(html,"text/html").querySelector('meta[name="grd-build"]');
-      if (!remote) throw new Error("La respuesta no corresponde a una versión reconocida. Reintenta actualizar.");
+      var remote = JSON.parse(html);
+      if (!remote || !/^\d{8}-\d+$/.test(remote.content)) throw new Error("La respuesta no corresponde a una versión reconocida. Reintenta actualizar.");
       if (remote.content !== document.querySelector('meta[name="grd-build"]').content) {
         times.mode = "new-version";
         sessionStorage.setItem("grd-refresh",JSON.stringify(saved));
@@ -1361,7 +1363,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       creado: FV.serverTimestamp(), actualizado: FV.serverTimestamp()
     };
     db.collection("empresas").doc(curEmpresa.id).collection("auditorias").add(payload)
-      .then(function (ref) { seguimientoIndex = null; openAuditoria(curEmpresa.id, ref.id); })
+      .then(function (ref) { seguimientoIndex = null; historyMemo = null; openAuditoria(curEmpresa.id, ref.id); })
       .catch(function (e) { alert("No se pudo crear la auditoría: " + e.message); });
   });
 
@@ -1406,26 +1408,80 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     });
     return candidates[0] || null;
   }
+  // Authenticated point reads use the HTTP API; reads and writes use the signed-in user and Firestore rules.
+  function fieldValue(v) {
+    if ("stringValue" in v) return v.stringValue;
+    if ("nullValue" in v) return null;
+    if ("booleanValue" in v) return v.booleanValue;
+    if ("integerValue" in v || "doubleValue" in v) return Number(v.integerValue === undefined ? v.doubleValue : v.integerValue);
+    if ("timestampValue" in v) {
+      var t = v.timestampValue, fraction = /\.(\d+)/.exec(t);
+      return new firebase.firestore.Timestamp(Math.floor(Date.parse(t)/1000),fraction ? Number(fraction[1].padEnd(9,"0")) : 0);
+    }
+    if ("mapValue" in v) return Object.fromEntries(Object.entries(v.mapValue.fields||{}).map(function ([k,x]) { return [k,fieldValue(x)]; }));
+    if ("arrayValue" in v) return (v.arrayValue.values||[]).map(fieldValue);
+    if ("bytesValue" in v) return firebase.firestore.Blob.fromBase64String(v.bytesValue);
+    if ("geoPointValue" in v) return new firebase.firestore.GeoPoint(v.geoPointValue.latitude,v.geoPointValue.longitude);
+    if ("referenceValue" in v) return db.doc(v.referenceValue.split("/documents/")[1]);
+    throw new Error("Tipo de dato no reconocido.");
+  }
+  function documentUrl(path) { return new URL("https://firestore.googleapis.com/v1/projects/" + encodeURIComponent(firebaseConfig.projectId) + "/databases/(default)/documents/" + path); }
+  // The generated plan is plain JSON. Patch only this field and wait for server confirmation.
+  async function saveGeneratedPlan(ref, plan) {
+    function encode(value) {
+      if (value === null) return {nullValue:null};
+      if (Array.isArray(value)) return {arrayValue:{values:value.map(encode)}};
+      if (typeof value === "object") return {mapValue:{fields:Object.fromEntries(Object.entries(value).map(function(pair){return [pair[0],encode(pair[1])];}))}};
+      if (typeof value === "boolean") return {booleanValue:value};
+      if (typeof value === "number") return Number.isSafeInteger(value)?{integerValue:String(value)}:{doubleValue:value};
+      return {stringValue:value};
+    }
+    var url=documentUrl(ref.path.split("/").map(encodeURIComponent).join("/"));
+    url.searchParams.set("updateMask.fieldPaths","brechas");
+    url.searchParams.set("currentDocument.exists","true");
+    url.searchParams.set("mask.fieldPaths","fecha");
+    var response=await fetch(url.href,{method:"PATCH",headers:{Authorization:"Bearer "+await auth.currentUser.getIdToken(),"Content-Type":"application/json"},body:JSON.stringify({fields:{brechas:encode(plan)}})});
+    if (!response.ok) throw new Error("No se pudo confirmar el plan ("+response.status+").");
+  }
+  async function readJSON(url,token) {
+    var response=await fetch(url.href,{headers:{Authorization:"Bearer "+token},cache:"no-store",redirect:"error"});
+    if (!response.ok) throw new Error(response.status===404 ? "Registro no encontrado." : "No se pudo leer el registro ("+response.status+").");
+    return response.json();
+  }
+  async function fieldList(path,fields,token) {
+    var rows=[],cursor="";
+    do {
+      var url=documentUrl(path);url.searchParams.set("pageSize","300");fields.forEach(function(f){url.searchParams.append("mask.fieldPaths",f);});
+      if(cursor) url.searchParams.set("pageToken",cursor);
+      var page=await readJSON(url,token);
+      (page.documents||[]).forEach(function(d){rows.push(Object.assign(fieldValue({mapValue:{fields:d.fields||{}}}),{id:d.name.split("/").pop()}));});
+      cursor=page.nextPageToken||"";
+    } while(cursor);
+    return rows;
+  }
+  async function readRecord(ref,token) {
+    var path=ref.path.split("/").map(encodeURIComponent).join("/");
+    var d=await readJSON(documentUrl(path),token || await auth.currentUser.getIdToken());
+    return Object.assign(fieldValue({mapValue:{fields:d.fields||{}}}),{id:ref.id});
+  }
+  async function comparisonHistory(companyId,token,force) {
+    var known=!force && recentHistory(companyId); if(known) return known;
+    var rows=await fieldList("empresas/"+encodeURIComponent(companyId)+"/auditorias",["fecha","estado","creado"],token);
+    rememberHistory(companyId,rows);return rows;
+  }
+  var historyMemo = null;
+  function rememberHistory(companyId, rows) { historyMemo = {uid:ME.uid, companyId:companyId, rows:rows, at:Date.now()}; }
+  function recentHistory(companyId) { return historyMemo && ME && historyMemo.uid === ME.uid && historyMemo.companyId === companyId && Date.now()-historyMemo.at < 30000 ? historyMemo.rows : null; }
   var firstRenderSecs = true;
   function openAuditoria(empresaId, audId) { return runAfterSave(function () { return openAuditoriaNow(empresaId, audId); }); }
-  function openAuditoriaNow(empresaId, audId) {
-    clearSubs();
-    var ref = db.collection("empresas").doc(empresaId).collection("auditorias").doc(audId);
-    return Promise.all([
-      ref.get(),
-      db.collection("empresas").doc(empresaId).collection("auditorias").get()
-    ]).then(function (res) {
-      if (!res[0].exists) { alert("Auditoría no encontrada."); return openEmpresaNow(empresaId); }
-      curAudRef = ref;
-      A = Object.assign({}, res[0].data(), { id: audId });
-      A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
-      // última auditoría cerrada anterior (para mostrar "novedades")
-      var audits = res[1].docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
-      PREV = previousClosedAudit(Object.assign({}, A, { id: audId }), audits);
-      firstRenderSecs = true;
-      navNow("auditoriaView");
-      renderAuditoria();
-    }).catch(function (e) { alert(e.message); });
+  async function openAuditoriaNow(empresaId, audId) {
+    var ref=db.collection("empresas").doc(empresaId).collection("auditorias").doc(audId), token=await auth.currentUser.getIdToken();
+    var pair=await Promise.all([readRecord(ref,token),comparisonHistory(empresaId,token,false)]);
+    var prev=previousClosedAudit(pair[0],pair[1]);
+    var previous=prev ? await readRecord(ref.parent.doc(prev.id),token) : null;
+    clearSubs(); curAudRef=ref; A=pair[0]; PREV=previous;
+    A.respuestas=A.respuestas||{}; A.medidas=A.medidas||{}; A.notas=A.notas||{};
+    firstRenderSecs=true; navNow("auditoriaView"); renderAuditoria();
   }
 
   function isLocked() { return A && A.estado === "cerrada"; }
@@ -1509,11 +1565,9 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     }
     var split = key.lastIndexOf(":"), auditId = key.slice(0, split), n = key.slice(split + 1);
     var ref = db.collection("empresas").doc(curEmpresa.id).collection("auditorias").doc(auditId);
-    var snap = await ref.get({ source: "server" });
-    if (!snap.exists || (snap.data().respuestas || {})[n] !== "no") {
-      throw new Error("Este hallazgo cambió. Selecciona nuevamente la empresa para actualizar la lista.");
-    }
-    activateCorrection(Object.assign({ id: snap.id }, snap.data()), n);
+    var audit=await readRecord(ref);
+    if ((audit.respuestas||{})[n]!=="no") throw new Error("Este hallazgo cambió. Actualiza la auditoría.");
+    activateCorrection(audit,n);
   }
   function activateCorrection(audit, n) {
     A = audit;
@@ -1521,7 +1575,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     curAudRef = db.collection("empresas").doc(curEmpresa.id).collection("auditorias").doc(A.id);
     renderCorrections(n);
   }
-  async function loadCorrectionCompany(companyId, auditId, n) {
+  async function loadCorrectionCompany(companyId, auditId, n, force) {
     if (!companyId) {
       curEmpresa = null; correctionAudits = [];
       correctionAuditId = "";
@@ -1530,13 +1584,11 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       return;
     }
     var ref = db.collection("empresas").doc(companyId);
-    var results = await Promise.all([
-      ref.get({ source: "server" }),
-      ref.collection("auditorias").get({ source: "server" })
-    ]);
-    if (!results[0].exists) throw new Error("Empresa no encontrada.");
-    curEmpresa = Object.assign({ id: companyId }, results[0].data());
-    correctionAudits = results[1].docs.map(function (doc) { return Object.assign({ id: doc.id }, doc.data()); });
+    var token = await auth.currentUser.getIdToken();
+    var pair = await Promise.all([readRecord(ref,token),comparisonHistory(companyId,token,force),
+      auditId ? readRecord(ref.collection("auditorias").doc(auditId),token) : Promise.resolve(null)]);
+    curEmpresa=pair[0]; correctionAudits=pair[1].filter(function(row){return row.id!==auditId;});
+    if(pair[2]) correctionAudits.push(pair[2]);
     correctionAudits.sort(function (a, b) {
       return (b.fecha || "").localeCompare(a.fecha || "") || b.id.localeCompare(a.id);
     });
@@ -1561,9 +1613,11 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
   var seguimientoLoad = 0, seguimientoIndex = null;
   async function openSeguimientoNow(companyId, auditId, n, keepIndex) {
-    var existingIndex = keepIndex ? $("co-empresa").innerHTML : "";
+    var existingIndex = keepIndex && $("co-empresa").getAttribute("aria-busy") !== "true" ? $("co-empresa").innerHTML : "";
     var loadId = ++seguimientoLoad, uid = ME.uid;
     navNow("correccionesView");
+    $("co-list-status").textContent = "";
+    $("co-empresa").setAttribute("aria-busy","false");
     $("co-empresa").disabled = true;
     $("co-empresa").innerHTML = '<option value="">Cargando auditorías…</option>';
     clearCorrectionSelection("Cargando la auditoría seleccionada…");
@@ -1576,7 +1630,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     }
     var selectedCompany, selectedAudits;
     if (companyId) {
-      await loadCorrectionCompany(companyId, auditId, n);
+      await loadCorrectionCompany(companyId, auditId, n, keepIndex);
       selectedCompany = curEmpresa; selectedAudits = correctionAudits.slice();
       $("co-empresa").innerHTML = options(selectedCompany, selectedAudits);
       $("co-empresa").value = JSON.stringify([companyId,auditId]);
@@ -1601,25 +1655,52 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         if (!companyId) clearCorrectionSelection("Selecciona empresa y fecha de auditoría.");
         return;
       }
-      var companies = await db.collection("empresas").orderBy("nombre").get({ source: "server" });
-      var groups = await Promise.all(companies.docs.map(async function (doc) {
-        if (selectedCompany && doc.id === selectedCompany.id) return options(selectedCompany, selectedAudits);
-        var snap = await doc.ref.collection("auditorias").get({ source: "server" });
-        var audits = snap.docs.map(function (audit) { return Object.assign({ id:audit.id },audit.data()); });
-        audits.sort(function (a,b) { return (b.fecha || "").localeCompare(a.fecha || "") || b.id.localeCompare(a.id); });
-        return options(Object.assign({id:doc.id},doc.data()),audits);
-      }));
+      var picker = $("co-empresa"); picker.setAttribute("aria-busy","true");
+      $("co-list-status").textContent = "Cargando lista de auditorías…";
+      if (!companyId) picker.innerHTML = '<option value="">Selecciona empresa y fecha de auditoría</option>';
+      var token = await auth.currentUser.getIdToken();
+      var companies = await fieldList("empresas",["nombre"],token);
+      companies.sort(function(a,b){return (a.nombre||"").localeCompare(b.nombre||"")||a.id.localeCompare(b.id);});
+      var anchors = [], complete = 0;
+      function available(i, markup) {
+        if (!ME || ME.uid !== uid || loadId !== seguimientoLoad || VIEW !== "correccionesView") return;
+        ++complete;
+        if (!companyId && markup) {
+          var fragment = document.createElement("template"); fragment.innerHTML = markup;
+          anchors[i] = fragment.content.firstElementChild;
+          picker.insertBefore(fragment.content, anchors.slice(i+1).find(Boolean) || null);
+          picker.disabled = false;
+        }
+        $("co-list-status").textContent = complete < companies.length ? "Cargando empresas: " + complete + " de " + companies.length + "…" : "";
+      }
+      var groups = new Array(companies.length), next = 0;
+      // Only names, dates and states are needed for the picker. Keep full answers out of the index request.
+      async function worker() {
+        while (next < companies.length) {
+          if (!ME || ME.uid !== uid || loadId !== seguimientoLoad || VIEW !== "correccionesView") return;
+          var i = next++, doc = companies[i];
+          if (selectedCompany && doc.id === selectedCompany.id) { groups[i] = options(selectedCompany,selectedAudits); available(i,groups[i]); continue; }
+          var audits = await fieldList("empresas/" + encodeURIComponent(doc.id) + "/auditorias",["fecha","estado"],token);
+          audits.sort(function (a,b) {return (b.fecha||"").localeCompare(a.fecha||"")||b.id.localeCompare(a.id);});
+          groups[i] = options(doc,audits); available(i,groups[i]);
+        }
+      }
+      await Promise.all(Array.from({length:Math.min(6,companies.length)},worker));
       if (!ME || ME.uid !== uid || loadId !== seguimientoLoad || VIEW !== "correccionesView") return;
       var current = $("co-empresa").value;
-      $("co-empresa").innerHTML = '<option value="">Selecciona empresa y fecha de auditoría</option>' + groups.join("");
+      if (companyId) $("co-empresa").innerHTML = '<option value="">Selecciona empresa y fecha de auditoría</option>' + groups.join("");
+      $("co-empresa").setAttribute("aria-busy","false"); $("co-list-status").textContent = "";
       seguimientoIndex = { uid:uid, time:Date.now(), html:$("co-empresa").innerHTML };
       $("co-empresa").value = current;
       $("co-empresa").disabled = false;
-      if (!companyId) clearCorrectionSelection("Selecciona empresa y fecha de auditoría.");
+      if (!companyId && !current) clearCorrectionSelection("Selecciona empresa y fecha de auditoría.");
     }
-    if (companyId) {
-      loadList().catch(function () { /* The selected company's audits remain usable. */ });
-    } else await loadList();
+    if (keepIndex && !companyId) return loadList();
+    loadList().catch(function () {
+      if (loadId !== seguimientoLoad || VIEW !== "correccionesView" || !ME || ME.uid !== uid) return;
+      $("co-empresa").setAttribute("aria-busy","false");
+      $("co-list-status").textContent = "No se completó la lista. Vuelve a Seguimiento para reintentar.";
+    });
   }
   function correctionVerification() {
     var verified = $("co-estado").value === "verificada";
@@ -2323,18 +2404,12 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     renderBrechas();
   }
   function openBrechasFor(empresaId, audId) { return runAfterSave(function () { return openBrechasForNow(empresaId, audId); }); }
-  function openBrechasForNow(empresaId, audId) {
-    clearSubs();
-    var ref = db.collection("empresas").doc(empresaId).collection("auditorias").doc(audId);
-    return ref.get().then(function (snap) {
-      if (!snap.exists) { alert("Auditoría no encontrada."); return; }
-      curAudRef = ref;
-      A = Object.assign({ id: audId }, snap.data());
-      A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
-      PREV = null;
-      navNow("brechasView");
-      renderBrechas();
-    }).catch(function (e) { alert(e.message); });
+  async function openBrechasForNow(empresaId,audId) {
+    var ref=db.collection("empresas").doc(empresaId).collection("auditorias").doc(audId);
+    var audit=await readRecord(ref);
+    clearSubs(); curAudRef=ref; A=audit; PREV=null;
+    A.respuestas=A.respuestas||{}; A.medidas=A.medidas||{}; A.notas=A.notas||{};
+    navNow("brechasView");renderBrechas();
   }
 
   function renderBrechas() {
@@ -2414,7 +2489,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     }
     $("bp-rows").innerHTML = head + body + "</tbody></table></div>";
 
-    if (JSON.stringify(A.brechas) !== beforeSeed) queueSaveBrechas();
+    if (JSON.stringify(A.brechas) !== beforeSeed) queueSaveBrechas(true);
     wireBrechasEvents();
     updateBrechasCounts();
     renderCrumbs();
@@ -2508,10 +2583,12 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (window.requestAnimationFrame) requestAnimationFrame(autosizeAllBrechas);
   }
 
-  function queueSaveBrechas() {
+  function queueSaveBrechas(autoSeed) {
     if (!curAudRef || !A) return;
     ensureBrechas();
+    var onlyDefaults = autoSeed === true && !brechasWrites.pending && !brechasWrites.inFlight;
     enqueueWrite(brechasWrites, { brechas: A.brechas }, "bp-saveflag");
+    brechasWrites.pending.onlyDefaults = onlyDefaults;
   }
 
   $("at-brechas").addEventListener("click", openBrechas);
