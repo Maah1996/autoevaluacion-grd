@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="grd-build" content="20261105-15">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -105,7 +106,8 @@
   .appbar .who b { color:var(--ink-soft); font-weight:600; display:block; font-size:12.5px; }
   .appbar .lnk { background:none; border:1px solid var(--line-strong); color:var(--ink-soft); font-size:12px; font-weight:600; padding:6px 10px; border-radius:8px; cursor:pointer; flex:none; }
   .appbar .lnk:hover { border-color:var(--navy); color:var(--navy); }
-  #nav-refresh { display:none; }
+  #nav-refresh[hidden] { display:none; }
+  #nav-refresh:not([hidden]) { display:inline-flex; align-items:center; }
   @media screen and (max-width:1100px), screen and (pointer:coarse) and (max-width:1400px) {
     .appbar-inner { flex-wrap:wrap; }
     #auditoriaView .a-top { position:static; }
@@ -1081,25 +1083,79 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     finally { $("sessionLoading").style.display = "none"; $("app").style.display = "block"; $("app").inert = false; }
   }
 
-  $("nav-refresh").addEventListener("click", function () {
-    if (!ME || ME.rol !== "admin" || correctionSaving) return;
-    if (correctionDirty) {
-      alert("Guarda la corrección antes de actualizar.");
+  async function refreshVisibleData(saved) {
+    seguimientoIndex = null;
+    if (saved.view === "correccionesView") return openSeguimientoNow(saved.empresa, saved.auditoria, saved.hallazgo, true);
+    if (saved.empresa && saved.auditoria && ["auditoriaView", "brechasView"].includes(saved.view)) {
+      var companyRef = db.collection("empresas").doc(saved.empresa);
+      var auditRef = companyRef.collection("auditorias").doc(saved.auditoria);
+      var reads = [companyRef.get({source:"server"}), auditRef.get({source:"server"})];
+      if (saved.view === "auditoriaView") reads.push(companyRef.collection("auditorias").get({source:"server"}));
+      var readStarted = performance.now();
+      var snapshots = await Promise.all(reads);
+      window.grdRefreshTiming.readMs = Math.round(performance.now()-readStarted);
+      if (!snapshots[0].exists || !snapshots[1].exists) throw new Error("La empresa o auditoría ya no existe. Vuelve a Empresas.");
+      curEmpresa = Object.assign({id:saved.empresa},snapshots[0].data());
+      A = Object.assign({id:saved.auditoria},snapshots[1].data());
+      A.respuestas = A.respuestas || {}; A.medidas = A.medidas || {}; A.notas = A.notas || {};
+      curAudRef = auditRef;
+      PREV = snapshots[2] ? previousClosedAudit(A,snapshots[2].docs.map(function (d) { return Object.assign({id:d.id},d.data()); })) : null;
+      var paintStarted = performance.now();
+      navNow(saved.view);
+      if (saved.view === "auditoriaView") renderAuditoria(); else renderBrechas();
+      window.grdRefreshTiming.renderMs = Math.round(performance.now()-paintStarted);
       return;
     }
-    $("nav-refresh").textContent = "Actualizando…";
-    return runAfterSave(function () {
-      sessionStorage.setItem("grd-refresh", JSON.stringify({
-        uid: ME.uid, view: VIEW, empresa: curEmpresa && curEmpresa.id, auditoria: VIEW === "correccionesView" ? correctionAuditId : A && A.id,
-        hallazgo: VIEW === "correccionesView" ? correctionItem() : ""
-      }));
-      var url = new URL(window.location.href);
-      url.searchParams.set("v", String(Date.now()));
-      $("sessionLoading").textContent = "Actualizando el programa…";
-      $("sessionLoading").style.display = "grid"; $("app").style.display = "none";
-      refreshingPage = true;
-      window.location.replace(url.href);
-    }).then(function (done) { if (!done) $("nav-refresh").textContent = "Actualizar"; });
+    if (saved.empresa && saved.view === "empresaView") {
+      var company = await db.collection("empresas").doc(saved.empresa).get({source:"server"});
+      if (!company.exists) throw new Error("Empresa no encontrada.");
+      curEmpresa = Object.assign({id:company.id},company.data());
+      return openEmpresaNow(saved.empresa);
+    }
+    // Confirm connection before restarting the existing live list.
+    await db.collection(saved.view === "usuariosView" ? "usuarios" : "empresas").limit(1).get({source:"server"});
+    navNow(saved.view);
+  }
+  $("nav-refresh").addEventListener("click", async function () {
+    if (!ME || ME.rol !== "admin" || correctionSaving || leaving) return;
+    if (correctionDirty) { alert("Guarda la corrección antes de actualizar."); return; }
+    var started = performance.now(), times = { mode:"pending" };
+    window.grdRefreshTiming = times;
+    var saved = {uid:ME.uid,view:VIEW,empresa:curEmpresa && curEmpresa.id,
+      auditoria:VIEW === "correccionesView" ? correctionAuditId : A && A.id,
+      hallazgo:VIEW === "correccionesView" ? correctionItem() : ""};
+    $("nav-refresh").textContent = "Guardando…";
+    var done = await runAfterSave(async function () {
+      times.saveMs = Math.round(performance.now() - started);
+      $("nav-refresh").textContent = "Comprobando versión…";
+      var versionStarted = performance.now(), controller = new AbortController();
+      var timer = setTimeout(function () { controller.abort(); }, 8000), response, html;
+      try {
+        var checkUrl = new URL(location.href); checkUrl.searchParams.set("__grd_version",Date.now());
+        response = await fetch(checkUrl.href,{cache:"no-store",signal:controller.signal});
+        if (!response.ok) throw new Error("No se pudo comprobar la versión del programa.");
+        html = await response.text();
+      } finally { clearTimeout(timer); }
+      times.versionMs = Math.round(performance.now() - versionStarted);
+      var remote = new DOMParser().parseFromString(html,"text/html").querySelector('meta[name="grd-build"]');
+      if (!remote) throw new Error("La respuesta no corresponde a una versión reconocida. Reintenta actualizar.");
+      if (remote.content !== document.querySelector('meta[name="grd-build"]').content) {
+        times.mode = "new-version";
+        sessionStorage.setItem("grd-refresh",JSON.stringify(saved));
+        var url = new URL(location.href); url.searchParams.set("v",remote.content);
+        refreshingPage = true; location.replace(url.href); return;
+      }
+      times.mode = "data-only";
+      $("nav-refresh").textContent = "Actualizando datos…";
+      var dataStarted = performance.now();
+      await refreshVisibleData(saved);
+      times.dataMs = Math.round(performance.now() - dataStarted);
+    });
+    times.totalMs = Math.round(performance.now() - started); times.ok = done;
+    if (times.mode !== "new-version") {
+      $("nav-refresh").textContent = "Actualizar";
+      $("nav-refresh").title = done ? "Datos actualizados en " + (times.totalMs / 1000).toFixed(1) + " s" : "No se completó la actualización. Reintenta.";
+    }
   });
   async function restoreAfterRefresh() {
     var saved;
@@ -1504,7 +1560,8 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     activateCorrection(selected, key.slice(separator + 1));
   }
   var seguimientoLoad = 0, seguimientoIndex = null;
-  async function openSeguimientoNow(companyId, auditId, n) {
+  async function openSeguimientoNow(companyId, auditId, n, keepIndex) {
+    var existingIndex = keepIndex ? $("co-empresa").innerHTML : "";
     var loadId = ++seguimientoLoad, uid = ME.uid;
     navNow("correccionesView");
     $("co-empresa").disabled = true;
@@ -1524,6 +1581,16 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       $("co-empresa").innerHTML = options(selectedCompany, selectedAudits);
       $("co-empresa").value = JSON.stringify([companyId,auditId]);
       $("co-empresa").disabled = false;
+      if (existingIndex) {
+        var select = $("co-empresa"); select.innerHTML = existingIndex;
+        Array.from(select.options).forEach(function (option) {
+          if (option.value) { try { if (JSON.parse(option.value)[0] === companyId) option.remove(); } catch (e) {} }
+        });
+        select.insertAdjacentHTML("beforeend",options(selectedCompany,selectedAudits));
+        select.value = JSON.stringify([companyId,auditId]);
+        seguimientoIndex = null;
+        return;
+      }
     }
     async function loadList() {
       if (seguimientoIndex && seguimientoIndex.uid === uid && Date.now() - seguimientoIndex.time < 30000 && (!companyId || seguimientoIndex.html.includes(esc(JSON.stringify([companyId,auditId]))))) {
