@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-36">
+<meta name="grd-build" content="20261106-37">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -1881,7 +1881,11 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     return days>0 ? (days===1?"Queda 1 día":"Quedan "+days+" días")+" para que se cumpla el plazo." : "Plazo vencido hace "+amount+" "+unit+".";
   }
   function updateCorrectionDeadline() {
-    $("co-plazo-contador").textContent=correctionDeadlineText($("co-plazo").value,$("co-fecha").value,todayISO());
+    var notice=$("co-plazo-contador");
+    var solved=validAuditDate($("co-fecha").value);
+    notice.textContent=correctionDeadlineText($("co-plazo").value,$("co-fecha").value,todayISO());
+    notice.style.background=solved?"#e3f3e8":"#fff2b3";
+    notice.style.color=solved?"#185c35":"#513d00";
   }
   $("co-fecha").addEventListener("input",updateCorrectionDeadline);
   setInterval(function(){
