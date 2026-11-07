@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-39">
+<meta name="grd-build" content="20261106-40">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -686,6 +686,7 @@
               <div class="a-sub" id="at-sub">—</div>
             </div>
             <div class="a-actions">
+              <button class="btn" id="at-admin-edit" type="button" hidden>Editar auditoría</button>
               <button class="btn primary" id="at-cerrar">Cerrar auditoría</button>
             </div>
           </div>
@@ -1004,6 +1005,19 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
           var payload = Object.assign({}, job.data);
           if (job.flag === "saveflag") payload.actualizado = FV.serverTimestamp();
           if (job.onlyDefaults) await saveGeneratedPlan(job.ref, payload.brechas);
+          else if(channel===auditWrites) {
+            var companyRef=job.ref.parent.parent;
+            await db.runTransaction(async function(tx){
+              var auditSnapshot=await tx.get(job.ref), companySnapshot=await tx.get(companyRef);
+              var updated=Object.assign({},auditSnapshot.data(),payload);
+              tx.update(job.ref,payload);
+              if(companySnapshot.exists && (companySnapshot.data().ultimaAuditoria || {}).id===job.ref.id){
+                var counts=scoreOf(currentResponses(updated));
+                tx.update(companyRef,{"ultimaAuditoria.pct":counts.pct,"ultimaAuditoria.pctVisita":scoreOf(updated.respuestas).pct,
+                  "ultimaAuditoria.hallazgos":counts.no,"ultimaAuditoria.contadores":counts,actualizado:FV.serverTimestamp()});
+              }
+            });
+          }
           else if (channel === visitWrites && Object.keys(payload).some(function(k){return k.startsWith("brechas.");})) {
             var companyRef = job.ref.parent.parent;
             await db.runTransaction(async function(tx) {
@@ -1270,6 +1284,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   function nav(view) { return runAfterSave(function () { navNow(view); }); }
   function navNow(view) {
     if (view === "auditoriaView" && VIEW !== view) $("visit-details").open = false;
+    if(view!==VIEW)adminEditingAudit=false;
     VIEW = view;
     clearSubs();
     document.querySelectorAll(".view").forEach(function (v) { v.classList.toggle("active", v.id === view); });
@@ -1672,9 +1687,11 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var previous=prev ? await readRecord(ref.parent.doc(prev.id),token) : null;
     clearSubs(); curAudRef=ref; A=pair[0]; PREV=previous;
     A.respuestas=A.respuestas||{}; A.medidas=A.medidas||{}; A.notas=A.notas||{};
-    firstRenderSecs=true; activeSection=0; navNow("auditoriaView"); renderAuditoria();
+    adminEditingAudit=false; firstRenderSecs=true; activeSection=0; navNow("auditoriaView"); renderAuditoria();
   }
 
+  var adminEditingAudit = false;
+  function canEditAudit() { return !isLocked() || !!(ME && ME.rol==="admin" && adminEditingAudit); }
   function isLocked() { return A && A.estado === "cerrada"; }
 
   function correctionOf(audit, n) {
@@ -2121,7 +2138,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       row("Evaluador(a)", A.evaluadorNombre);
     var visitEditor=$("visit-edit");
     var antecedents=ensureBrechas().antecedentes;
-    var locked = isLocked(), visitOpen = !locked;
+    var locked = !canEditAudit(), visitOpen = !locked;
     var unlock = $("visit-unlock"), notes = $("at-obs");
     visitForm(visitEditor,Object.assign({},antecedents,{fecha:A.fecha,evaluadorNombre:A.evaluadorNombre,evaluadorCargo:A.evaluadorCargo||""}),"",locked);
     notes.value = A.obs || "";
@@ -2130,8 +2147,9 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     visitSave.hidden=locked;
     visitSave.disabled=false;
     visitStatus.textContent="";
-    unlock.hidden = !locked;
+    unlock.hidden = !locked || ME.rol!=="admin";
     unlock.onclick = function() {
+      if(ME.rol!=="admin")return;
       visitOpen = true;
       visitSave.hidden=false;
       unlock.hidden = true;
@@ -2180,7 +2198,10 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     };
     notes.oninput=function(){if(visitOpen){A.obs=notes.value;saveVisitField("obs",notes.value);}};
     $("lockedBanner").style.display = isLocked() ? "block" : "none";
-    $("auditoriaView").classList.toggle("locked", isLocked());
+    $("auditoriaView").classList.toggle("locked", !canEditAudit());
+    $("at-admin-edit").hidden=!(isLocked() && ME.rol==="admin");
+    $("at-admin-edit").textContent=adminEditingAudit?"Guardar y finalizar edición":"Editar auditoría";
+    $("lockedBanner").textContent=adminEditingAudit?"Edición de administrador habilitada. Al terminar pulsa Guardar y finalizar edición.":"Auditoría cerrada. Las correcciones se registran en Seguimiento.";
     $("at-cerrar").style.display = isLocked() ? "none" : "";
     $("at-cerrar").disabled = false;
     $("at-correcciones").style.display = "";
@@ -2367,7 +2388,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     });
   }
   function wireAuditEvents() {
-    var ro = isLocked();
+    var ro = !canEditAudit();
     document.querySelectorAll("#sections .toggle button").forEach(function (btn) {
       btn.onclick = function (ev) {
         ev.stopPropagation(); if (ro) return;
@@ -2459,7 +2480,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
 
   function queueSave(question, field, value) {
-    if (!curAudRef || !A || isLocked()) return;
+    if (!curAudRef || !A || !canEditAudit()) return;
     var summary = computeSummary();
     // Keep queued field edits together when the debounce replaces a pending job.
     var pending = auditWrites.pending;
@@ -2482,6 +2503,10 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     openEmpresa(curEmpresa.id);
   });
 
+  $("at-admin-edit").onclick=function(){
+    if(!ME || ME.rol!=="admin" || !isLocked())return;
+    return runAfterSave(function(){adminEditingAudit=!adminEditingAudit;renderAuditoria();});
+  };
   $("at-cerrar").addEventListener("click", function () { return runAfterSave(closeAuditoria); });
   function closeAuditoria() {
     if (isLocked()) return;
