@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261107-03">
+<meta name="grd-build" content="20261107-04">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -206,7 +206,8 @@
   .cr-table td:first-child { text-align:center; padding-inline:2px; font-variant-numeric:tabular-nums; }
   .cr-table th:nth-child(2) { width:auto; }
   .cr-table th:nth-child(3) { width:13ch; }
-  .cr-table th:nth-child(4) { width:12%; }
+  .cr-table th:nth-child(4) { width:16ch; }
+  .cr-table td:nth-child(4) { white-space:normal; overflow-wrap:break-word; padding-inline:3px; }
   .cr-table th:nth-child(5) { width:12ch; }
   .cr-table th:nth-child(6) { width:16%; }
   .cr-table th:nth-child(3),.cr-table th:nth-child(5),.cr-table td:nth-child(3),.cr-table td:nth-child(5) { white-space:normal; overflow-wrap:normal; word-break:normal; }
@@ -220,8 +221,8 @@
   .cr-table tr.cr-selected { background:#fff8dc; outline:2px solid #d5aa30; outline-offset:-2px; }
   @media print { .cron-return-row { display:none; } }
   .cr-reading { white-space:pre-wrap; line-height:1.2; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:6; }
-  .cr-note-title { font-weight:700; margin-bottom:4px; }
-  .cr-solution-title { margin-top:2.4em; }
+  .cr-note-title { font-weight:700; color:#a92420; margin-bottom:4px; }
+  .cr-solution-title { margin-top:1.2em; color:#1c6a3c; }
   .cr-date { display:block; margin-bottom:8px; }
   .cr-label { display:none; }
   .cr-count { padding:3px 4px; border-radius:6px; background:#fff2b3; color:#513d00; }
@@ -2896,7 +2897,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       button.setAttribute("aria-expanded", String(expanded));
     });
     if (el.tagName !== "TEXTAREA") el.style.webkitLineClamp = expanded ? "unset" : "6";
-    el.style.height = Math.max(44, expanded ? fullHeight : Math.min(fullHeight, limit)) + "px";
+    el.style.height = Math.max(el.classList.contains("cr-reading") ? 0 : 44, expanded ? fullHeight : Math.min(fullHeight, limit)) + "px";
     // El texto completo sigue disponible al editar con teclado o mediante desplazamiento.
     el.style.overflowY = el.tagName === "TEXTAREA" && !expanded && !controls.hidden ? "auto" : "hidden";
   }
