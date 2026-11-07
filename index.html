@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-42">
+<meta name="grd-build" content="20261107-01">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -199,8 +199,8 @@
     .audit-navigation .chip { flex-shrink:0; white-space:nowrap; }
   }
   #cronogramaView .a-top { top:var(--appbar-height,80px); }
-  .cr-table { width:100%; border-collapse:collapse; table-layout:fixed; background:var(--surface); font-size:16px; }
-  .cr-table th,.cr-table td { padding:12px; border:1px solid var(--line); text-align:left; vertical-align:top; overflow-wrap:anywhere; }
+  .cr-table { width:100%; border-collapse:collapse; table-layout:fixed; background:var(--surface); font-size:12px; line-height:1.2; }
+  .cr-table th,.cr-table td { padding:4px; border:1px solid var(--line); text-align:left; vertical-align:top; overflow-wrap:anywhere; }
   .cr-table th { background:var(--navy-soft); color:var(--navy-ink); }
   .cr-table th:first-child { width:4%; }
   .cr-table th:nth-child(2) { width:48%; }
@@ -208,17 +208,17 @@
   .cr-table th:nth-child(4) { width:12%; }
   .cr-table th:nth-child(5) { width:10%; }
   .cr-table th:nth-child(6) { width:16%; }
-  .cr-event { display:inline-flex; align-items:center; min-height:32px; margin-bottom:6px; padding:2px 5px; border:0; border-radius:4px; background:transparent; color:#b42318; font:inherit; font-weight:700; text-decoration:underline; cursor:pointer; }
+  .cr-event { display:inline-flex; align-items:center; min-height:0; margin-bottom:2px; padding:0; border:0; border-radius:4px; background:transparent; color:#b42318; font:inherit; font-weight:700; text-decoration:underline; cursor:pointer; }
   .cr-event:hover { background:#fff0ee; }
   .cron-return-row { display:flex; justify-content:flex-end; margin-top:5px; }
   .cron-return { width:32px; height:32px; padding:0; border:1px solid #9db7da; border-radius:4px; background:#eaf2ff; color:#1d4f91; font:600 21px/1 sans-serif; cursor:pointer; }
   .cron-return:hover { background:#dceaff; }
   .cr-table tr.cr-selected { background:#fff8dc; outline:2px solid #d5aa30; outline-offset:-2px; }
   @media print { .cron-return-row { display:none; } }
-  .cr-reading { white-space:pre-wrap; line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:6; }
+  .cr-reading { white-space:pre-wrap; line-height:1.2; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:6; }
   .cr-date { display:block; margin-bottom:8px; }
   .cr-label { display:none; }
-  .cr-count { padding:8px; border-radius:6px; background:#fff2b3; color:#513d00; }
+  .cr-count { padding:3px 4px; border-radius:6px; background:#fff2b3; color:#513d00; }
   .cr-count.solved { background:#e3f3e8; color:#185c35; }
   @media(max-width:900px) {
     #cronogramaView .bt-scroll { overflow:visible; border:0; }
@@ -459,6 +459,9 @@
   .brecha-controls .brecha-open:hover { background:#d8edde; }
   .brecha-controls .brecha-close:hover { background:#f6deda; }
   @media(pointer:coarse) { .brecha-controls button { width:32px; height:32px; } }
+  #cronogramaView .brecha-controls { gap:3px; margin-top:2px; }
+  #cronogramaView .brecha-controls button { width:20px; height:20px; border-radius:3px; font-size:14px; }
+  @media(pointer:coarse) { #cronogramaView .brecha-controls button { width:26px; height:26px; } }
   .brecha-controls button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .bt-field-label { display:none; }
   @media screen and (max-width:1100px), screen and (pointer:coarse) and (max-width:1400px) {
@@ -515,8 +518,24 @@
   .bpr-foot { margin-top:12px; padding-top:8px; border-top:1px solid #7f9a86; font-size:8px; color:#5b6b60; line-height:1.4; }
   @page brechas { size:A4 landscape; margin:11mm; }
 
+  #chronologyReportView { display:none; }
   @media print {
     @page { margin:13mm; }
+    @page cronograma { size:A4 landscape; margin:10mm; }
+    body.chronology-print > :not(#chronologyReportView) { display:none !important; }
+    body.chronology-print #chronologyReportView { display:block !important; page:cronograma; color:#173351; background:#fff; }
+    #chronologyReportView h1 { font-size:14pt; margin:0 0 3mm; }
+    #chronologyReportView p { font-size:9pt; margin:0 0 3mm; }
+    #chronologyReportView .cr-table { display:table; font-size:9pt; line-height:1.2; }
+    #chronologyReportView .cr-table thead { display:table-header-group; }
+    #chronologyReportView .cr-table tbody { display:table-row-group; }
+    #chronologyReportView .cr-table tr { display:table-row; break-inside:avoid; outline:none; background:#fff; }
+    #chronologyReportView .cr-table th,#chronologyReportView .cr-table td { display:table-cell; padding:1mm; border:1px solid #bcc6d0; }
+    #chronologyReportView .cr-reading { display:block !important; height:auto !important; overflow:visible !important; -webkit-line-clamp:unset !important; }
+    #chronologyReportView .cr-label { display:none; }
+    #chronologyReportView .cr-event { color:#9a241d; text-decoration:none; }
+    #chronologyReportView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
     body.report-print { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     #reportView, #reportView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     body.report-print > :not(#reportView) { display:none !important; }
@@ -808,7 +827,7 @@
     <div class="view" id="cronogramaView">
       <div class="a-top"><div class="a-top-inner">
         <div class="a-title-row"><div><h3 class="a-title">Cronograma de correcciones</h3><div class="a-sub" id="cr-contexto"></div></div>
-        <div class="a-actions"><button class="btn" id="cr-volver">Volver a auditoría</button><button class="result-shortcut result-s" id="cr-seguimiento" title="Seguimiento" aria-label="Seguimiento">S</button></div></div>
+        <div class="a-actions"><button class="btn" id="cr-print" type="button">Imprimir / PDF</button><button class="btn" id="cr-volver">Volver a auditoría</button><button class="result-shortcut result-s" id="cr-seguimiento" title="Seguimiento" aria-label="Seguimiento">S</button></div></div>
       </div></div>
       <div class="wrap"><div class="bt-scroll"><table class="cr-table"><thead><tr><th>N°</th><th>Observación y medida</th><th>Días para la corrección</th><th>Responsable de solución</th><th>Fecha de solución</th><th>Observaciones</th></tr></thead><tbody id="cr-rows"></tbody></table></div><p id="cr-empty" hidden>Esta auditoría no tiene observaciones marcadas «No cumple».</p></div>
     </div>
@@ -1931,7 +1950,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       var measure=(audit.medidas || {})[item.n] || {};
       var plan=((audit.brechas || {}).filas || {})["q"+item.n] || {};
       var correction=correctionOf(audit,item.n);
-      return {n:item.n,text:item.q+"\n\n"+item.medida,
+      return {n:item.n,text:item.q+"\n"+item.medida,
         deadline:Object.prototype.hasOwnProperty.call(measure,"fecha")?measure.fecha:plan.plazoImpl,
         responsible:(Object.prototype.hasOwnProperty.call(measure,"responsable")?measure.responsable:plan.respImpl) || "",
         solutionDate:correction?correction.fechaSolucion || "":"",
@@ -1985,6 +2004,17 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       });});
     });
   });
+  function buildChronologyPrint() {
+    var report=$("chronologyReportView");
+    report.innerHTML='<h1>Cronograma de correcciones</h1><p>'+esc(curEmpresa.nombre)+' · RUT '+esc(curEmpresa.rut || "")+' · Auditoría '+esc(fmtDate(A.fecha))+'</p>';
+    var table=document.querySelector("#cronogramaView .cr-table").cloneNode(true);
+    table.querySelectorAll(".brecha-controls").forEach(function(controls){controls.remove();});
+    table.querySelectorAll(".cr-event").forEach(function(button){var label=document.createElement("span");label.className="cr-event";label.textContent=button.textContent;button.replaceWith(label);});
+    table.querySelectorAll("[id]").forEach(function(el){el.removeAttribute("id");});
+    report.appendChild(table);
+    if($("cr-empty").hidden===false){var empty=document.createElement("p");empty.textContent=$("cr-empty").textContent;report.appendChild(empty);}
+  }
+  $("cr-print").onclick=function(){buildChronologyPrint();document.body.classList.add("chronology-print");window.print();};
   $("cr-volver").onclick=function(){return openAuditoria(curEmpresa.id,A.id);};
   $("cr-seguimiento").onclick=function(){return runAfterSave(function(){return openSeguimientoNow(curEmpresa.id,A.id);});};
   window.addEventListener("resize",function(){
@@ -2736,11 +2766,13 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   });
 
   window.addEventListener("beforeprint", function () {
+    if(VIEW==="cronogramaView"){buildChronologyPrint();document.body.classList.add("chronology-print");return;}
     if (document.body.classList.contains("report-print") || document.body.classList.contains("form-print") || document.body.classList.contains("brechas-print")) return;
     if (VIEW === "brechasView") { if (buildBrechas()) document.body.classList.add("brechas-print"); return; }
     if (buildReport()) document.body.classList.add("report-print");
   });
   window.addEventListener("afterprint", function () {
+    document.body.classList.remove("chronology-print");
     document.body.classList.remove("report-print");
     document.body.classList.remove("form-print");
     document.body.classList.remove("brechas-print");
@@ -3274,6 +3306,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   $("cb-emp");
 })();
 </script>
+<div id="chronologyReportView"></div>
 <div id="reportView"></div>
 <div id="formView"></div>
 <div id="brechasReportView"></div>
