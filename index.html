@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-41">
+<meta name="grd-build" content="20261106-42">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -210,6 +210,11 @@
   .cr-table th:nth-child(6) { width:16%; }
   .cr-event { display:inline-flex; align-items:center; min-height:32px; margin-bottom:6px; padding:2px 5px; border:0; border-radius:4px; background:transparent; color:#b42318; font:inherit; font-weight:700; text-decoration:underline; cursor:pointer; }
   .cr-event:hover { background:#fff0ee; }
+  .cron-return-row { display:flex; justify-content:flex-end; margin-top:5px; }
+  .cron-return { width:32px; height:32px; padding:0; border:1px solid #9db7da; border-radius:4px; background:#eaf2ff; color:#1d4f91; font:600 21px/1 sans-serif; cursor:pointer; }
+  .cron-return:hover { background:#dceaff; }
+  .cr-table tr.cr-selected { background:#fff8dc; outline:2px solid #d5aa30; outline-offset:-2px; }
+  @media print { .cron-return-row { display:none; } }
   .cr-reading { white-space:pre-wrap; line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:6; }
   .cr-date { display:block; margin-bottom:8px; }
   .cr-label { display:none; }
@@ -1961,6 +1966,25 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     });
   });
   $("at-cronograma").onclick=function(){return runAfterSave(function(){navNow("cronogramaView");renderChronology();});};
+  $("sections").addEventListener("click",function(event){
+    var button=event.target.closest("[data-cr-return]");
+    if(!button)return;
+    var n=Number(button.dataset.crReturn);
+    return runAfterSave(function(){
+      navNow("cronogramaView");
+      renderChronology();
+      requestAnimationFrame(function(){requestAnimationFrame(function(){
+        var row=$("cr-rows").querySelector('[data-id="cron-'+n+'"]');
+        if(!row)return;
+        row.classList.add("cr-selected");
+        var header=document.querySelector("#cronogramaView .a-top");
+        var offset=(parseFloat(getComputedStyle(header).top)||0)+header.getBoundingClientRect().height+10;
+        window.scrollTo({top:Math.max(0,row.getBoundingClientRect().top+window.pageYOffset-offset),behavior:"instant"});
+        var link=row.querySelector(".cr-event");
+        if(link)link.focus({preventScroll:true});
+      });});
+    });
+  });
   $("cr-volver").onclick=function(){return openAuditoria(curEmpresa.id,A.id);};
   $("cr-seguimiento").onclick=function(){return runAfterSave(function(){return openSeguimientoNow(curEmpresa.id,A.id);});};
   window.addEventListener("resize",function(){
@@ -2298,6 +2322,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
               '<div class="ans-text">' + esc(it.verificar || "—") + "</div></div></div>" +
             '<div class="ans-col ans-no"><div class="ans-head">Medida a implementar (No)</div><div class="ans-body">' +
               '<div class="ans-text">' + esc(it.medida || "—") + "</div>" +
+              (v === "no" ? '<div class="cron-return-row"><button type="button" class="cron-return" data-cr-return="'+it.n+'" title="Volver al evento '+it.n+' del cronograma" aria-label="Volver al evento '+it.n+' del cronograma">↩</button></div>' : '') +
               '<div class="fix-grid"><div class="field"><label for="cargo-' + it.n + '">Responsable</label><select id="cargo-' + it.n + '" data-cargo>' + responsableOptions + '</select><input type="text" data-fix="responsable" aria-label="Otro cargo" placeholder="Escribe otro cargo" hidden></div>' +
               '<div class="field"><label>Fecha compromiso</label><input type="date" data-fix="fecha"></div></div>' +
             "</div></div>" +
