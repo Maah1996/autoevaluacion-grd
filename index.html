@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-37">
+<meta name="grd-build" content="20261106-38">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -157,6 +157,7 @@
 
   /* ---------- audit header ---------- */
   .a-top { position:sticky; top:51px; z-index:30; background:var(--paper); border-bottom:1px solid var(--line); }
+  @media screen { #brechasView .a-top { position:sticky; top:var(--appbar-height, 80px); z-index:30; } }
   .a-top-inner { max-width:var(--shell); margin:0 auto; padding:12px 18px 10px; }
   .a-title-row { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
   .a-title { font-size:16px; font-weight:700; color:var(--navy-ink); margin:0; }
@@ -438,7 +439,6 @@
     #brechasView table.bt-grid tr[data-id] td { display:block; width:auto; min-width:0; border:0; padding:0; text-align:left; }
     #brechasView table.bt-grid tr[data-id] td.bt-dt, #brechasView table.bt-grid tr[data-id] td.bt-rs { display:flex; flex-direction:column; }
     #brechasView table.bt-grid td.bt-dt input, #brechasView table.bt-grid td.bt-rs input { margin-top:auto; }
-    #brechasView .a-top { position:static; }
     #brechasView table.bt-grid td.bt-med, #brechasView table.bt-grid td.bt-obs, #brechasView table.bt-grid td.bt-req { grid-column:1/-1; }
     #brechasView .bt-field-label { display:block; font-family:"Source Sans 3",sans-serif; font-size:14px; font-weight:600; color:#26482f; margin-bottom:6px; }
     #brechasView table.ant-grid tr { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr); background:#fff; }
