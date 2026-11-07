@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261107-01">
+<meta name="grd-build" content="20261107-02">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -201,13 +201,17 @@
   #cronogramaView .a-top { top:var(--appbar-height,80px); }
   .cr-table { width:100%; border-collapse:collapse; table-layout:fixed; background:var(--surface); font-size:12px; line-height:1.2; }
   .cr-table th,.cr-table td { padding:4px; border:1px solid var(--line); text-align:left; vertical-align:top; overflow-wrap:anywhere; }
-  .cr-table th { background:var(--navy-soft); color:var(--navy-ink); }
-  .cr-table th:first-child { width:4%; }
-  .cr-table th:nth-child(2) { width:48%; }
-  .cr-table th:nth-child(3) { width:10%; }
+  .cr-table th { background:var(--navy-soft); color:var(--navy-ink); text-align:center; }
+  .cr-table th:first-child { width:3.5ch; }
+  .cr-table td:first-child { text-align:center; padding-inline:2px; font-variant-numeric:tabular-nums; }
+  .cr-table th:nth-child(2) { width:auto; }
+  .cr-table th:nth-child(3) { width:13ch; }
   .cr-table th:nth-child(4) { width:12%; }
-  .cr-table th:nth-child(5) { width:10%; }
+  .cr-table th:nth-child(5) { width:12ch; }
   .cr-table th:nth-child(6) { width:16%; }
+  .cr-table th:nth-child(3),.cr-table th:nth-child(5),.cr-table td:nth-child(3),.cr-table td:nth-child(5) { white-space:normal; overflow-wrap:normal; word-break:normal; }
+  .cr-table td:nth-child(3),.cr-table td:nth-child(5) { padding-inline:3px; }
+  .cr-table td:nth-child(5) { font-variant-numeric:tabular-nums; }
   .cr-event { display:inline-flex; align-items:center; min-height:0; margin-bottom:2px; padding:0; border:0; border-radius:4px; background:transparent; color:#b42318; font:inherit; font-weight:700; text-decoration:underline; cursor:pointer; }
   .cr-event:hover { background:#fff0ee; }
   .cron-return-row { display:flex; justify-content:flex-end; margin-top:5px; }
