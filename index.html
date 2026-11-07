@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-32">
+<meta name="grd-build" content="20261106-33">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -2075,7 +2075,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       chip.className = "chip";
       chip.setAttribute("data-state", answered ? st.cls : "vacio");
       chip.innerHTML = esc(sec.title) + ' <span class="n">' + answered + "/" + sec.items.length + "</span>";
-      chip.onclick = function () { openSection(sIdx); scrollToSection(sIdx); };
+      chip.onclick = function () { openSection(sIdx); };
       chips.appendChild(chip);
 
       var card = document.createElement("div");
@@ -2147,19 +2147,36 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     renderCrumbs();
   }
 
-  function toggleSection(i) { var card=$("sec-"+i); if(card.classList.contains("open")) card.classList.remove("open"); else openSection(i); }
+  function toggleSection(i) {
+    var card=$("sec-"+i);
+    if(card.classList.contains("open")) card.classList.remove("open");
+    else openSection(i);
+  }
   function openSection(i) {
     if(i>0 && SECTIONS[i-1].items.every(function(item){return !!A.respuestas[item.n];}))
       $("sec-"+(i-1)).classList.remove("open");
     $("sec-"+i).classList.add("open");
+    scrollToSection(i);
   }
+  var sectionScrollFrame;
   function scrollToSection(i) {
-    var el = $("sec-" + i); if (!el) return;
-    var off = ($(".a-top") ? 0 : 0);
-    var bar = document.querySelector(".a-top");
-    var offset = (bar ? bar.getBoundingClientRect().bottom : 60) + 6;
-    var y = el.getBoundingClientRect().top + window.pageYOffset - offset;
-    window.scrollTo({ top: y < 0 ? 0 : y, behavior: "smooth" });
+    cancelAnimationFrame(sectionScrollFrame);
+    // Espera el nuevo tamaño de los módulos y el ajuste de sus textos.
+    sectionScrollFrame=requestAnimationFrame(function(){
+      sectionScrollFrame=requestAnimationFrame(function(){
+        var card=$("sec-"+i);
+        if(!card || !card.classList.contains("open"))return;
+        var target=card.querySelector(".item") || card;
+        var offset=8;
+        document.querySelectorAll(".appbar, #auditoriaView .a-top").forEach(function(bar){
+          var style=getComputedStyle(bar);
+          if(style.position==="sticky" || style.position==="fixed")
+            offset=Math.max(offset,(parseFloat(style.top)||0)+bar.getBoundingClientRect().height+8);
+        });
+        var y=target.getBoundingClientRect().top+window.pageYOffset-offset;
+        window.scrollTo({top:Math.max(0,y),behavior:"instant"});
+      });
+    });
   }
 
   var auditTextObserver;
