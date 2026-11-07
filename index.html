@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261107-04">
+<meta name="grd-build" content="20261107-05">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -1970,9 +1970,9 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("cr-contexto").textContent=curEmpresa.nombre+" · Auditoría "+fmtDate(A.fecha);
     var rows=chronologyRows(A);
     $("cr-empty").hidden=!!rows.length;
-    $("cr-rows").innerHTML=rows.map(function(row){
+    $("cr-rows").innerHTML=rows.map(function(row,index){
       function cell(label,content){return '<td><span class="cr-label">'+label+'</span>'+content+'</td>';}
-      return '<tr data-id="cron-'+row.n+'">'+cell("N°",String(row.n))+
+      return '<tr data-id="cron-'+row.n+'">'+cell("N°",String(index+1))+
         cell("Observación y medida",'<button type="button" class="cr-event" data-event="'+row.n+'" aria-label="Ir al evento '+row.n+' en la auditoría">Evento '+row.n+'</button><div class="cr-reading" data-f="medida">'+esc(row.text)+'</div>')+
         cell("Días para la corrección",'<div title="'+esc(row.deadline?"Fecha compromiso: "+fmtDate(row.deadline):"Sin fecha compromiso")+'" class="cr-count'+(row.solutionDate?' solved':'')+'">'+esc(correctionDeadlineText(row.deadline,row.solutionDate,todayISO(),true))+'</div>')+
         cell("Responsable de solución",esc(row.responsible))+cell("Fecha de solución",row.solutionDate?fmtDate(row.solutionDate):'')+
