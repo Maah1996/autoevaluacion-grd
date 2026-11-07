@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-28">
+<meta name="grd-build" content="20261106-29">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -1961,6 +1961,11 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if (correctionDirty || correctionSaving) { event.preventDefault(); event.returnValue = ""; }
   });
 
+  var responsableRoles = ["Gerente", "Depto. de Prevención Riesgos", "Prevencionista de Riesgos", "Auxiliar de Prevención Riesgos", "Supervisor del Área/Sección"];
+  var responsableOptions = '<option value="">Selecciona un cargo</option>' +
+    responsableRoles.map(function (role) { return '<option>' + esc(role) + '</option>'; }).join("") +
+    '<option value="custom">Otro</option>';
+
   function renderAuditoria() {
     var e = curEmpresa;
     $("at-empresa").textContent = e.nombre;
@@ -2058,7 +2063,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
               '<div class="ans-text">' + esc(it.verificar || "—") + "</div></div></div>" +
             '<div class="ans-col ans-no"><div class="ans-head">Medida a implementar (No)</div><div class="ans-body">' +
               '<div class="ans-text">' + esc(it.medida || "—") + "</div>" +
-              '<div class="fix-grid"><div class="field"><label>Responsable</label><input type="text" data-fix="responsable" placeholder="Nombre y cargo"></div>' +
+              '<div class="fix-grid"><div class="field"><label for="cargo-' + it.n + '">Responsable</label><select id="cargo-' + it.n + '" data-cargo>' + responsableOptions + '</select><input type="text" data-fix="responsable" aria-label="Otro cargo" placeholder="Escribe otro cargo" hidden></div>' +
               '<div class="field"><label>Fecha compromiso</label><input type="date" data-fix="fecha"></div></div>' +
             "</div></div>" +
           "</div>" +
@@ -2169,6 +2174,20 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
           queueSave(n, f === "fecha" ? "plazoImpl" : "respImpl", inp.value);
         };
       });
+      var roleSelect = rowEl.querySelector("[data-cargo]");
+      var customRole = rowEl.querySelector('[data-fix="responsable"]');
+      var savedRole = customRole.value;
+      roleSelect.value = savedRole && !responsableRoles.includes(savedRole) ? "custom" : savedRole;
+      customRole.hidden = roleSelect.value !== "custom";
+      roleSelect.disabled = customRole.disabled = ro;
+      roleSelect.onchange = function () {
+        if (ro) return;
+        var isCustom = roleSelect.value === "custom";
+        customRole.hidden = !isCustom;
+        customRole.value = isCustom ? "" : roleSelect.value;
+        customRole.oninput();
+        if (isCustom) customRole.focus();
+      };
       var ta = rowEl.querySelector(".note-line textarea");
       ta.value = A.notas[n] || "";
       ta.onclick = function (e) { e.stopPropagation(); };
