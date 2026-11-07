@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-31">
+<meta name="grd-build" content="20261106-32">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -691,6 +691,7 @@
           <button type="button" class="btn" id="visit-unlock" hidden>Abrir evaluación · editar datos de la visita</button>
           <form id="visit-edit" style="margin-top:12px"></form>
           <div class="note-line"><label for="at-obs">Observaciones generales</label><textarea id="at-obs" placeholder="Contexto de la visita, alcance, participantes…"></textarea></div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><button type="submit" form="visit-edit" class="btn primary" id="visit-save">Guardar cambios</button><span id="visit-save-status" role="status" aria-live="polite"></span></div>
           </details>
         </div>
         <div id="sections"></div>
@@ -2000,22 +2001,41 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     visitForm(visitEditor,Object.assign({},antecedents,{fecha:A.fecha,evaluadorNombre:A.evaluadorNombre,evaluadorCargo:A.evaluadorCargo||""}),"",locked);
     notes.value = A.obs || "";
     notes.disabled = locked;
+    var visitSave=$("visit-save"), visitStatus=$("visit-save-status");
+    visitSave.hidden=locked;
+    visitSave.disabled=false;
+    visitStatus.textContent="";
     unlock.hidden = !locked;
     unlock.onclick = function() {
       visitOpen = true;
+      visitSave.hidden=false;
       unlock.hidden = true;
       Array.from(visitEditor.elements).forEach(function(field){field.disabled=false;});
       notes.disabled = false;
       visitEditor.elements.evaluadorNombre.focus();
     };
     function saveVisitField(key,value) {
+      visitStatus.textContent="Cambios pendientes de confirmar";
       var pending = visitWrites.pending;
       var patch = Object.assign({},pending && pending.ref.path===curAudRef.path ? pending.data : {});
       patch[key]=value;
       if(key==="fecha") patch["brechas.antecedentes.fecha"]=value;
       enqueueWrite(visitWrites,patch,"saveflag");
     }
-    visitEditor.onsubmit=function(event){event.preventDefault();};
+    visitEditor.onsubmit=async function(event){
+      event.preventDefault();
+      if(!visitOpen || visitSave.disabled || !visitEditor.reportValidity())return;
+      visitSave.disabled=true;
+      visitStatus.textContent="Guardando…";
+      try {
+        await saveChannel(visitWrites);
+        visitStatus.textContent="Cambios guardados";
+      } catch(error) {
+        visitStatus.textContent="No se pudo guardar. Pulsa Guardar cambios para reintentar.";
+      } finally {
+        visitSave.disabled=false;
+      }
+    };
     visitEditor.oninput=function(event){
       var input=event.target;
       if(!visitOpen || !input.name || !input.checkValidity())return;
