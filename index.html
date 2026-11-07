@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261107-02">
+<meta name="grd-build" content="20261107-03">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -220,6 +220,8 @@
   .cr-table tr.cr-selected { background:#fff8dc; outline:2px solid #d5aa30; outline-offset:-2px; }
   @media print { .cron-return-row { display:none; } }
   .cr-reading { white-space:pre-wrap; line-height:1.2; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:6; }
+  .cr-note-title { font-weight:700; margin-bottom:4px; }
+  .cr-solution-title { margin-top:2.4em; }
   .cr-date { display:block; margin-bottom:8px; }
   .cr-label { display:none; }
   .cr-count { padding:3px 4px; border-radius:6px; background:#fff2b3; color:#513d00; }
@@ -1958,8 +1960,9 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         deadline:Object.prototype.hasOwnProperty.call(measure,"fecha")?measure.fecha:plan.plazoImpl,
         responsible:(Object.prototype.hasOwnProperty.call(measure,"responsable")?measure.responsable:plan.respImpl) || "",
         solutionDate:correction?correction.fechaSolucion || "":"",
-        notes:[(audit.notas || {})[item.n],correction && correction.solucion,correction && correction.evidencia,
-          correction && (correction.estado==="verificada"?"Solución verificada":"Corrección informada")].filter(Boolean).join("\n\n")};
+        requested:(audit.notas || {})[item.n] || "",
+        solution:correction ? [correction.solucion,correction.evidencia && "Evidencia: "+correction.evidencia,
+          correction.estado==="verificada"?"Solución verificada":"Corrección informada"].filter(Boolean).join("\n\n") : ""};
     });
   }
   function renderChronology() {
@@ -1972,7 +1975,10 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         cell("Observación y medida",'<button type="button" class="cr-event" data-event="'+row.n+'" aria-label="Ir al evento '+row.n+' en la auditoría">Evento '+row.n+'</button><div class="cr-reading" data-f="medida">'+esc(row.text)+'</div>')+
         cell("Días para la corrección",'<div title="'+esc(row.deadline?"Fecha compromiso: "+fmtDate(row.deadline):"Sin fecha compromiso")+'" class="cr-count'+(row.solutionDate?' solved':'')+'">'+esc(correctionDeadlineText(row.deadline,row.solutionDate,todayISO(),true))+'</div>')+
         cell("Responsable de solución",esc(row.responsible))+cell("Fecha de solución",row.solutionDate?fmtDate(row.solutionDate):'')+
-        cell("Observaciones",'<div class="cr-reading" data-f="obs">'+esc(row.notes)+'</div>')+'</tr>';
+        cell("Observaciones",'<div class="cr-note-title">Solicitado por la auditoría</div>'+
+          (row.requested?'<div class="cr-reading" data-f="solicitado">'+esc(row.requested)+'</div>':'')+
+          '<div class="cr-note-title cr-solution-title">Solución del seguimiento</div>'+
+          (row.solution?'<div class="cr-reading" data-f="solucion">'+esc(row.solution)+'</div>':''))+'</tr>';
     }).join("");
     $("cr-rows").querySelectorAll(".cr-reading").forEach(autosizeTA);
   }
