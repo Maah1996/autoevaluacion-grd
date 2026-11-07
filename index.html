@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-34">
+<meta name="grd-build" content="20261106-35">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -187,6 +187,16 @@
 
   .chips { display:flex; flex-wrap:wrap; gap:6px; padding:9px 18px 11px; border-top:1px solid var(--line); max-width:var(--shell); margin:0 auto; }
   .chip { flex:0 1 auto; font-size:12px; padding:6px 10px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px; }
+  #auditoriaView .a-top { position:static; }
+  .audit-navigation { position:sticky; top:var(--appbar-height, 80px); z-index:30; background:var(--paper); border-block:1px solid var(--line); }
+  .audit-navigation-inner { max-width:var(--shell); margin:0 auto; padding:9px 18px; display:flex; align-items:center; gap:12px; }
+  .audit-navigation .chips { flex:1; min-width:0; padding:0; border:0; margin:0; }
+  .audit-navigation .a-actions { flex-shrink:0; flex-wrap:nowrap; }
+  @media(max-width:700px) {
+    .audit-navigation-inner { padding:8px; gap:8px; }
+    .audit-navigation .chips { flex-wrap:nowrap; overflow-x:auto; padding:3px; }
+    .audit-navigation .chip { flex-shrink:0; white-space:nowrap; }
+  }
   .chip .n { font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--muted); }
   .chip[data-state="verde"]{border-color:var(--green);} .chip[data-state="ambar"]{border-color:var(--amber);} .chip[data-state="rojo"]{border-color:var(--red);}
   .chip[aria-current="step"] { background:#fff2b3; color:#513d00; box-shadow:inset 0 0 0 1px #d5aa30; font-weight:600; }
@@ -656,9 +666,6 @@
               <div class="a-sub" id="at-sub">—</div>
             </div>
             <div class="a-actions">
-              <button class="btn" id="at-volver">← Volver</button>
-              <button class="result-shortcut result-b" id="at-brechas" type="button" title="Ver plan de brechas de esta auditoría" aria-label="Ver plan de brechas de esta auditoría">B</button>
-              <button class="result-shortcut result-s" id="at-correcciones" type="button" title="Ver seguimiento de esta auditoría" aria-label="Ver seguimiento de esta auditoría">S</button>
               <button class="btn primary" id="at-cerrar">Cerrar auditoría</button>
             </div>
           </div>
@@ -681,7 +688,16 @@
             </div>
           </div>
         </div>
-        <div class="chips" id="chips"></div>
+      </div>
+      <div class="audit-navigation">
+        <div class="audit-navigation-inner">
+          <div class="chips" id="chips"></div>
+          <div class="a-actions" aria-label="Navegación de auditoría">
+              <button class="btn" id="at-volver">← Volver</button>
+              <button class="result-shortcut result-b" id="at-brechas" type="button" title="Ver plan de brechas de esta auditoría" aria-label="Ver plan de brechas de esta auditoría">B</button>
+              <button class="result-shortcut result-s" id="at-correcciones" type="button" title="Ver seguimiento de esta auditoría" aria-label="Ver seguimiento de esta auditoría">S</button>
+          </div>
+        </div>
       </div>
 
       <div class="wrap">
@@ -1607,6 +1623,10 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   var historyMemo = null;
   function rememberHistory(companyId, rows) { historyMemo = {uid:ME.uid, companyId:companyId, rows:rows, at:Date.now()}; }
   function recentHistory(companyId) { return historyMemo && ME && historyMemo.uid === ME.uid && historyMemo.companyId === companyId && Date.now()-historyMemo.at < 30000 ? historyMemo.rows : null; }
+  var appbar=document.querySelector(".appbar");
+  new ResizeObserver(function(){
+    document.documentElement.style.setProperty("--appbar-height",appbar.getBoundingClientRect().height+"px");
+  }).observe(appbar);
   var firstRenderSecs = true;
   var activeSection = 0;
   function openAuditoria(empresaId, audId) { return runAfterSave(function () { return openAuditoriaNow(empresaId, audId); }); }
@@ -2183,7 +2203,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
         if(!card || !card.classList.contains("open"))return;
         var target=card.querySelector(".item") || card;
         var offset=8;
-        document.querySelectorAll(".appbar, #auditoriaView .a-top").forEach(function(bar){
+        document.querySelectorAll(".appbar, #auditoriaView .audit-navigation").forEach(function(bar){
           var style=getComputedStyle(bar);
           if(style.position==="sticky" || style.position==="fixed")
             offset=Math.max(offset,(parseFloat(style.top)||0)+bar.getBoundingClientRect().height+8);
