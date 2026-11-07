@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-30">
+<meta name="grd-build" content="20261106-31">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -1458,6 +1458,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
 
   var visitFields = [
     ["evaluadorNombre","Nombre del evaluador(a)","text"],
+    ["evaluadorCargo","Cargo del evaluador(a)","text"],
     ["fecha","Fecha de auditoría","date"], ["horaInicio","Hora inicio","time"],
     ["horaTermino","Hora término","time"], ["integrantes","Cantidad de integrantes","number"],
     ["tipoActividad","Tipo de actividad","select"], ["nAdherente","N° adherente","text"],
@@ -1475,7 +1476,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
   }
   $("ev-nueva-aud").onclick=function(){
     var form=$("visit-create");
-    visitForm(form,{fecha:todayISO(),evaluadorNombre:ME.nombre||ME.email},"Crear auditoría",false);
+    visitForm(form,{fecha:todayISO(),evaluadorNombre:ME.nombre||ME.email,evaluadorCargo:ME.cargo||""},"Crear auditoría",false);
     form.hidden=false;
     form.querySelector(".visit-cancel").onclick=function(){form.hidden=true;};
     form.elements.fecha.focus();
@@ -1489,7 +1490,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     try {
       var ref=await db.collection("empresas").doc(companyId).collection("auditorias").add({
         fecha:values.fecha, brechas:{antecedentes:values,filas:{},manualIds:[]},
-        evaluadorUid:ME.uid,evaluadorNombre:values.evaluadorNombre,evaluadorCargo:ME.cargo||"",
+        evaluadorUid:ME.uid,evaluadorNombre:values.evaluadorNombre,evaluadorCargo:values.evaluadorCargo||"",
         estado:"borrador",obs:"",respuestas:{},medidas:{},notas:{},pct:null,
         contadores:{si:0,no:0,na:0,pend:TOTAL},creado:FV.serverTimestamp(),actualizado:FV.serverTimestamp()
       });
@@ -1996,7 +1997,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     var antecedents=ensureBrechas().antecedentes;
     var locked = isLocked(), visitOpen = !locked;
     var unlock = $("visit-unlock"), notes = $("at-obs");
-    visitForm(visitEditor,Object.assign({},antecedents,{fecha:A.fecha,evaluadorNombre:A.evaluadorNombre}),"",locked);
+    visitForm(visitEditor,Object.assign({},antecedents,{fecha:A.fecha,evaluadorNombre:A.evaluadorNombre,evaluadorCargo:A.evaluadorCargo||""}),"",locked);
     notes.value = A.obs || "";
     notes.disabled = locked;
     unlock.hidden = !locked;
@@ -2019,7 +2020,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       var input=event.target;
       if(!visitOpen || !input.name || !input.checkValidity())return;
       var key=input.name, value=input.value;
-      if(key==="evaluadorNombre" || key==="fecha"){
+      if(key==="evaluadorNombre" || key==="evaluadorCargo" || key==="fecha"){
         A[key]=value;
         historyMemo=null; seguimientoIndex=null;
         if(key==="fecha") antecedents.fecha=value;
@@ -2415,7 +2416,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       'Las ' + o.na + ' preguntas «No aplica» no entran en este cálculo.</p>';
     if (A.obs) h += '<p class="rv-tot"><b>Observaciones generales:</b> ' + esc(A.obs) + '</p>';
 
-    h += '<div class="rv-sign"><div><b>' + esc(A.evaluadorNombre || "Evaluador(a)") + '</b>Evaluador(a)</div>' +
+    h += '<div class="rv-sign"><div><b>' + esc(A.evaluadorNombre || "Evaluador(a)") + '</b>' + esc(A.evaluadorCargo || 'Evaluador(a)') + '</div>' +
       '<div><b>Representante de la empresa</b>' + esc(e.nombre) + '</div></div>';
     h += '<div class="rv-foot">Informe generado a partir de la Lista de Autoevaluación de Aspectos Legales asociados a la ' +
       'Gestión del Riesgo de Desastres (GRD) en Centros de Trabajo (Dirección del Trabajo · SUSESO · SENAPRED · ' +
@@ -2473,7 +2474,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
           '<div class="fv-obs-label">Observaciones / evidencia</div>' + fvLines(4) + '</div>';
       });
     });
-    h += '<div class="fv-sign"><div>Firma evaluador(a) · ' + esc(ev) + ' · RUT</div>' +
+    h += '<div class="fv-sign"><div>Firma evaluador(a) · ' + esc(ev) + (A && A.evaluadorCargo ? ' · ' + esc(A.evaluadorCargo) : '') + ' · RUT</div>' +
       '<div>Firma representante de la empresa · nombre y RUT</div></div>' +
       '<div class="fv-foot">Instrumento: Lista de Autoevaluación de Aspectos Legales asociados a la Gestión del ' +
       'Riesgo de Desastres (GRD) en Centros de Trabajo — Dirección del Trabajo · SUSESO · SENAPRED · organismos ' +
