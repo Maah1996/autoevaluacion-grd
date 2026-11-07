@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-35">
+<meta name="grd-build" content="20261106-36">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -746,10 +746,15 @@
           <select id="co-hallazgo"></select>
           <p id="co-original"></p>
           <form id="co-form">
+            <div class="co-grid">
+              <label>Fecha compromiso de la auditoría<input id="co-plazo" type="date" readonly></label>
+              <label>Responsable asignado en la auditoría<input id="co-asignado" readonly placeholder="Sin responsable asignado"></label>
+            </div>
+            <p id="co-plazo-contador" role="status" style="padding:10px 12px;border-radius:8px;background:#fff2b3;color:#513d00"></p>
             <label for="co-solucion">Solución realizada</label>
             <textarea id="co-solucion" rows="3" maxlength="4000" required></textarea>
             <div class="co-grid">
-              <label>Fecha de solución<input id="co-fecha" type="date" required></label>
+              <label>Fecha real de solución<input id="co-fecha" type="date" required></label>
               <label>Responsable de la corrección<input id="co-responsable" maxlength="200" required></label>
             </div>
             <label for="co-estado">Estado del seguimiento</label>
@@ -1863,6 +1868,25 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("co-verificacion").hidden = !verified;
     $("co-fecha-verificacion").required = verified;
   }
+  function correctionDeadlineText(deadline, solution, today) {
+    if(!validAuditDate(deadline))return "Sin fecha compromiso registrada en la auditoría.";
+    var solved=validAuditDate(solution);
+    var days=Math.round((Date.parse(deadline+"T00:00:00Z")-Date.parse((solved?solution:today)+"T00:00:00Z"))/86400000);
+    var amount=Math.abs(days), unit=amount===1?"día":"días";
+    if(solved) {
+      if(days===0)return "Se corrigió el mismo día del plazo.";
+      return "Se corrigió "+amount+" "+unit+(days>0?" antes del plazo.":" después del plazo.");
+    }
+    if(days===0)return "El plazo vence hoy.";
+    return days>0 ? (days===1?"Queda 1 día":"Quedan "+days+" días")+" para que se cumpla el plazo." : "Plazo vencido hace "+amount+" "+unit+".";
+  }
+  function updateCorrectionDeadline() {
+    $("co-plazo-contador").textContent=correctionDeadlineText($("co-plazo").value,$("co-fecha").value,todayISO());
+  }
+  $("co-fecha").addEventListener("input",updateCorrectionDeadline);
+  setInterval(function(){
+    if(VIEW==="correccionesView" && !$("co-form").hidden)updateCorrectionDeadline();
+  },60000);
   function fillCorrection() {
     var n = correctionItem(), entry = (A.seguimiento || {})[n];
     $("co-form").dataset.item = $("co-hallazgo").value;
@@ -1876,7 +1900,14 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("co-original").textContent = "En la visita: No cumple. " + ((A.notas || {})[n] || itemByN(n).q);
     $("co-solucion").value = c.solucion || "";
     $("co-fecha").value = c.fechaSolucion || "";
-    $("co-responsable").value = c.responsable || "";
+    var measure=(A.medidas || {})[n] || {};
+    var plan=((A.brechas || {}).filas || {})["q"+n] || {};
+    var deadline=Object.prototype.hasOwnProperty.call(measure,"fecha")?measure.fecha:plan.plazoImpl;
+    var assigned=Object.prototype.hasOwnProperty.call(measure,"responsable")?measure.responsable:plan.respImpl;
+    $("co-plazo").value=deadline || "";
+    $("co-asignado").value=assigned || "";
+    $("co-responsable").value = c.responsable || assigned || "";
+    updateCorrectionDeadline();
     $("co-evidencia").value = c.evidencia || "";
     $("co-estado").value = c.estado || "informada";
     $("co-fecha-verificacion").value = c.fechaVerificacion || "";
