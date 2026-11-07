@@ -70,8 +70,7 @@ service cloud.firestore {
           let campos = request.resource.data.diff(resource.data).affectedKeys();
           return (!campos.hasAny(['brechas']) || planValido())
             && (resource.data.estado != 'cerrada'
-                || isAdmin()
-                || campos.hasOnly(['brechas']));
+                || campos.hasOnly(['brechas','fecha','evaluadorNombre','obs','actualizado']));
         }
         function texto(value, maximum) {
           return value is string && value.trim().size() > 0 && value.size() <= maximum;
