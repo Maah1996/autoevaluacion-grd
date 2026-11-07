@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261106-40">
+<meta name="grd-build" content="20261106-41">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -202,8 +202,14 @@
   .cr-table { width:100%; border-collapse:collapse; table-layout:fixed; background:var(--surface); font-size:16px; }
   .cr-table th,.cr-table td { padding:12px; border:1px solid var(--line); text-align:left; vertical-align:top; overflow-wrap:anywhere; }
   .cr-table th { background:var(--navy-soft); color:var(--navy-ink); }
-  .cr-table th:first-child { width:55px; }
-  .cr-table th:nth-child(2) { width:32%; }
+  .cr-table th:first-child { width:4%; }
+  .cr-table th:nth-child(2) { width:48%; }
+  .cr-table th:nth-child(3) { width:10%; }
+  .cr-table th:nth-child(4) { width:12%; }
+  .cr-table th:nth-child(5) { width:10%; }
+  .cr-table th:nth-child(6) { width:16%; }
+  .cr-event { display:inline-flex; align-items:center; min-height:32px; margin-bottom:6px; padding:2px 5px; border:0; border-radius:4px; background:transparent; color:#b42318; font:inherit; font-weight:700; text-decoration:underline; cursor:pointer; }
+  .cr-event:hover { background:#fff0ee; }
   .cr-reading { white-space:pre-wrap; line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:6; }
   .cr-date { display:block; margin-bottom:8px; }
   .cr-label { display:none; }
@@ -1922,7 +1928,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       var correction=correctionOf(audit,item.n);
       return {n:item.n,text:item.q+"\n\n"+item.medida,
         deadline:Object.prototype.hasOwnProperty.call(measure,"fecha")?measure.fecha:plan.plazoImpl,
-        responsible:correction?correction.responsable || "":"",
+        responsible:(Object.prototype.hasOwnProperty.call(measure,"responsable")?measure.responsable:plan.respImpl) || "",
         solutionDate:correction?correction.fechaSolucion || "":"",
         notes:[(audit.notas || {})[item.n],correction && correction.solucion,correction && correction.evidencia,
           correction && (correction.estado==="verificada"?"Solución verificada":"Corrección informada")].filter(Boolean).join("\n\n")};
@@ -1935,24 +1941,41 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     $("cr-rows").innerHTML=rows.map(function(row){
       function cell(label,content){return '<td><span class="cr-label">'+label+'</span>'+content+'</td>';}
       return '<tr data-id="cron-'+row.n+'">'+cell("N°",String(row.n))+
-        cell("Observación y medida",'<div class="cr-reading" data-f="medida">'+esc(row.text)+'</div>')+
-        cell("Plazo de corrección",'<span class="cr-date">'+(row.deadline?fmtDate(row.deadline):'Sin fecha compromiso')+'</span><div class="cr-count'+(row.solutionDate?' solved':'')+'">'+esc(correctionDeadlineText(row.deadline,row.solutionDate,todayISO()))+'</div>')+
+        cell("Observación y medida",'<button type="button" class="cr-event" data-event="'+row.n+'" aria-label="Ir al evento '+row.n+' en la auditoría">Evento '+row.n+'</button><div class="cr-reading" data-f="medida">'+esc(row.text)+'</div>')+
+        cell("Días para la corrección",'<div title="'+esc(row.deadline?"Fecha compromiso: "+fmtDate(row.deadline):"Sin fecha compromiso")+'" class="cr-count'+(row.solutionDate?' solved':'')+'">'+esc(correctionDeadlineText(row.deadline,row.solutionDate,todayISO(),true))+'</div>')+
         cell("Responsable de solución",esc(row.responsible))+cell("Fecha de solución",row.solutionDate?fmtDate(row.solutionDate):'')+
         cell("Observaciones",'<div class="cr-reading" data-f="obs">'+esc(row.notes)+'</div>')+'</tr>';
     }).join("");
     $("cr-rows").querySelectorAll(".cr-reading").forEach(autosizeTA);
   }
+  $("cr-rows").addEventListener("click",function(event){
+    var button=event.target.closest("[data-event]");
+    if(!button)return;
+    var n=Number(button.dataset.event), companyId=curEmpresa.id, auditId=A.id;
+    return runAfterSave(async function(){
+      await openAuditoriaNow(companyId,auditId);
+      var section=SECTIONS.findIndex(function(group){return group.items.some(function(item){return item.n===n;});});
+      if(section<0)return;
+      $("sections").querySelectorAll(".section.open").forEach(function(card){card.classList.remove("open");});
+      openSection(section,n);
+    });
+  });
   $("at-cronograma").onclick=function(){return runAfterSave(function(){navNow("cronogramaView");renderChronology();});};
   $("cr-volver").onclick=function(){return openAuditoria(curEmpresa.id,A.id);};
   $("cr-seguimiento").onclick=function(){return runAfterSave(function(){return openSeguimientoNow(curEmpresa.id,A.id);});};
   window.addEventListener("resize",function(){
     if(VIEW==="cronogramaView")$("cr-rows").querySelectorAll(".cr-reading").forEach(autosizeTA);
   });
-  function correctionDeadlineText(deadline, solution, today) {
-    if(!validAuditDate(deadline))return "Sin fecha compromiso registrada en la auditoría.";
+  function correctionDeadlineText(deadline, solution, today, compact) {
+    if(!validAuditDate(deadline))return compact?"Sin plazo":"Sin fecha compromiso registrada en la auditoría.";
     var solved=validAuditDate(solution);
     var days=Math.round((Date.parse(deadline+"T00:00:00Z")-Date.parse((solved?solution:today)+"T00:00:00Z"))/86400000);
     var amount=Math.abs(days), unit=amount===1?"día":"días";
+    if(compact){
+      if(solved)return days===0?"Corregido en plazo":"Corregido "+amount+" "+unit+(days>0?" antes":" después");
+      if(days===0)return "Vence hoy";
+      return days>0?(days===1?"Falta 1 día":"Faltan "+days+" días"):"Vencido hace "+amount+" "+unit;
+    }
     if(solved) {
       if(days===0)return "Se corrigió el mismo día del plazo.";
       return "Se corrigió "+amount+" "+unit+(days>0?" antes del plazo.":" después del plazo.");
@@ -1972,7 +1995,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
     if(VIEW==="correccionesView" && !$("co-form").hidden)updateCorrectionDeadline();
     if(VIEW==="cronogramaView")chronologyRows(A).forEach(function(row){
       var notice=$("cr-rows").querySelector('[data-id="cron-'+row.n+'"] .cr-count');
-      if(notice)notice.textContent=correctionDeadlineText(row.deadline,row.solutionDate,todayISO());
+      if(notice)notice.textContent=correctionDeadlineText(row.deadline,row.solutionDate,todayISO(),true);
     });
   },60000);
   function fillCorrection() {
@@ -2309,22 +2332,22 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       else chip.removeAttribute("aria-current");
     });
   }
-  function openSection(i) {
+  function openSection(i, question) {
     if(i>0 && SECTIONS[i-1].items.every(function(item){return !!A.respuestas[item.n];}))
       $("sec-"+(i-1)).classList.remove("open");
     $("sec-"+i).classList.add("open");
     markActiveSection(i);
-    scrollToSection(i);
+    scrollToSection(i, question);
   }
   var sectionScrollFrame;
-  function scrollToSection(i) {
+  function scrollToSection(i, question) {
     cancelAnimationFrame(sectionScrollFrame);
     // Espera el nuevo tamaño de los módulos y el ajuste de sus textos.
     sectionScrollFrame=requestAnimationFrame(function(){
       sectionScrollFrame=requestAnimationFrame(function(){
         var card=$("sec-"+i);
         if(!card || !card.classList.contains("open"))return;
-        var target=card.querySelector(".item") || card;
+        var target=(question ? card.querySelector('.item[data-n="'+question+'"]') : card.querySelector(".item")) || card;
         var offset=8;
         document.querySelectorAll(".appbar, #auditoriaView .audit-navigation").forEach(function(bar){
           var style=getComputedStyle(bar);
