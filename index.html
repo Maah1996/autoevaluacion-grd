@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261107-05">
+<meta name="grd-build" content="20261108-01">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -542,6 +542,17 @@
     #chronologyReportView .cr-label { display:none; }
     #chronologyReportView .cr-event { color:#9a241d; text-decoration:none; }
     #chronologyReportView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+    /* Tamaño físico de lectura para auditoría y plan de brechas. */
+    #reportView, #reportView *,
+    #brechasReportView, #brechasReportView * { font-size:14pt !important; }
+    #reportView, #brechasReportView { overflow-wrap:anywhere; }
+    #reportView th.rv-n { width:30px; white-space:nowrap; }
+    #reportView th.rv-c { width:110px; white-space:nowrap; }
+    #brechasReportView table { table-layout:fixed; }
+    #brechasReportView .bpr-ant .k,
+    #brechasReportView td.bpr-dt { white-space:normal; }
+    #brechasReportView .bpr-ant .k { width:auto; }
 
     body.report-print { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     #reportView, #reportView * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -3217,7 +3228,7 @@ Factibilidad de adopción: si la medida es de fácil, rápida y económica adopc
       '</table>';
 
     // ---- Plan de brechas (tabla, banda verda + 7 columnas del modelo) ----
-    h += '<table><thead>' +
+    h += '<table><colgroup><col style="width:8%"><col style="width:27%"><col style="width:10%"><col style="width:14%"><col style="width:10%"><col style="width:14%"><col style="width:17%"></colgroup><thead>' +
       '<tr class="bpr-band"><th colspan="7">Plan de brechas</th></tr>' +
       '<tr>' +
         '<th>Indique requisito a abordar</th>' +
