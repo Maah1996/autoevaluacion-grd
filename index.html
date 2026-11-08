@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="grd-build" content="20261108-01">
+<meta name="grd-build" content="20261108-02">
 <title>Autoevaluación GRD — Gestión del Riesgo de Desastres</title>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
@@ -549,7 +549,11 @@
     #reportView, #brechasReportView { overflow-wrap:anywhere; }
     #reportView th.rv-n { width:30px; white-space:nowrap; }
     #reportView th.rv-c { width:110px; white-space:nowrap; }
-    #brechasReportView table { table-layout:fixed; }
+    #brechasReportView table { table-layout:fixed; border-collapse:separate; border-spacing:0; }
+    #brechasReportView td, #brechasReportView th {
+      border-width:1px;
+      -webkit-box-decoration-break:clone; box-decoration-break:clone;
+    }
     #brechasReportView .bpr-ant .k,
     #brechasReportView td.bpr-dt { white-space:normal; }
     #brechasReportView .bpr-ant .k { width:auto; }
